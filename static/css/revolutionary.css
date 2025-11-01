@@ -1,0 +1,563 @@
+/* ====================================================
+   🚀 REVOLUTIONARY FINANCIAL DASHBOARD INTERFACE
+   The most innovative, cinematic, and futuristic UI design
+   Combining glassmorphism, 3D transforms, and AI-guided UX
+   ==================================================== */
+
+/* Core Design System - Cinematic Dark Mode */
+:root {
+  /* Cinematic Color Palette */
+  --void-black: #000000;
+  --deep-space: #0a0a0f;
+  --quantum-dark: #111118;
+  --carbon-fiber: #1a1a25;
+  --neural-gray: #252532;
+  --cyber-silver: #404050;
+  
+  /* Luminous Accents */
+  --neon-blue: #00d4ff;
+  --plasma-purple: #8b5cf6;
+  --quantum-green: #00ff88;
+  --energy-orange: #ff6b35;
+  --danger-red: #ff3366;
+  --warning-amber: #ffaa00;
+  
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --glass-blur: blur(12px);
+  
+  /* 3D Transform Variables */
+  --perspective: 1200px;
+  --card-depth: 8px;
+  --hover-lift: 12px;
+  
+  /* Animation System */
+  --micro-transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --smooth-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --cinematic-transition: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Typography Scale */
+  --text-nano: 0.625rem;
+  --text-micro: 0.75rem;
+  --text-small: 0.875rem;
+  --text-base: 1rem;
+  --text-medium: 1.125rem;
+  --text-large: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-xxl: 2rem;
+  --text-hero: 3rem;
+}
+
+/* Quantum Background System */
+body {
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(ellipse at top, var(--deep-space) 0%, var(--void-black) 70%);
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  perspective: var(--perspective);
+}
+
+/* Animated Background Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.05) 0%, transparent 50%);
+  animation: aurora 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes aurora {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  33% { opacity: 0.8; transform: scale(1.1) rotate(2deg); }
+  66% { opacity: 0.9; transform: scale(0.95) rotate(-1deg); }
+}
+
+/* Holo-Card System - Revolutionary Glass Cards */
+.holo-card {
+  background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 
+    var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(0, 212, 255, 0.1);
+  transform: translateZ(var(--card-depth));
+  transition: all var(--smooth-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.holo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left var(--cinematic-transition);
+}
+
+.holo-card:hover {
+  transform: translateZ(var(--hover-lift)) rotateX(2deg);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(0, 212, 255, 0.3);
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.holo-card:hover::before {
+  left: 100%;
+}
+
+/* Interactive Elements with Quantum Glow */
+.quantum-btn {
+  background: linear-gradient(135deg, var(--neon-blue), var(--plasma-purple));
+  border: none;
+  border-radius: 12px;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: var(--text-small);
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--smooth-transition);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+}
+
+.quantum-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left var(--smooth-transition);
+}
+
+.quantum-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+}
+
+.quantum-btn:hover::before {
+  left: 100%;
+}
+
+.quantum-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Mission Control Typography */
+.hero-title {
+  font-size: var(--text-hero);
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffffff 0%, var(--neon-blue) 50%, var(--plasma-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.section-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.01em;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-blue), var(--plasma-purple));
+  border-radius: 2px;
+}
+
+/* Data Visualization Enhancements */
+.data-metric {
+  font-size: var(--text-xxl);
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.data-label {
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.data-change-positive {
+  color: var(--quantum-green);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.data-change-negative {
+  color: var(--danger-red);
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+}
+
+/* Orbital Navigation System */
+.orbital-nav {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+}
+
+.orbital-item {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all var(--smooth-transition);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.orbital-item:hover {
+  transform: scale(1.1) translateZ(10px);
+  color: var(--neon-blue);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+  border-color: var(--neon-blue);
+}
+
+/* Panoramic InfoCanvas */
+.info-canvas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+/* Sparkline Integration */
+.sparkline-container {
+  height: 40px;
+  margin: 8px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.sparkline-canvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  transition: opacity var(--micro-transition);
+}
+
+.holo-card:hover .sparkline-canvas {
+  opacity: 1;
+}
+
+/* Adaptive Data Tables */
+.quantum-table {
+  width: 100%;
+  background: transparent;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.quantum-table th {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 16px 12px;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.quantum-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+  transition: all var(--micro-transition);
+}
+
+.quantum-table tbody tr {
+  transition: all var(--micro-transition);
+}
+
+.quantum-table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.quantum-table tbody tr:hover td {
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+/* Micro-animations and Interactions */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.6); }
+}
+
+.pulse-active {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.data-loading {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Responsive Spatial Layout */
+@container (max-width: 768px) {
+  .holo-card {
+    border-radius: 12px;
+    transform: translateZ(4px);
+  }
+  
+  .hero-title {
+    font-size: var(--text-xxl);
+  }
+  
+  .info-canvas {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .orbital-nav {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .orbital-item {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Accessibility and Performance Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .holo-card::before,
+  .quantum-btn::before,
+  body::before {
+    display: none;
+  }
+  
+  .holo-card {
+    transform: none !important;
+  }
+  
+  .orbital-item:hover {
+    transform: none !important;
+  }
+}
+
+/* Screen Reader Support */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Styles for Accessibility */
+.orbital-item:focus,
+.quantum-btn:focus {
+  outline: 2px solid var(--neon-blue);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.3);
+}
+
+.holo-card:focus-within {
+  border-color: var(--neon-blue);
+  box-shadow: 
+    var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(0, 212, 255, 0.3),
+    0 0 0 2px var(--neon-blue);
+}
+
+/* Performance Optimization for Mobile */
+@media (max-width: 768px) {
+  .holo-card::before {
+    display: none; /* Reduce GPU usage on mobile */
+  }
+  
+  .holo-card {
+    backdrop-filter: blur(8px); /* Reduced blur for better performance */
+  }
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+  .orbital-nav {
+    top: 10px;
+    right: 10px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .orbital-item {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.3);
+  }
+  
+  .holo-card {
+    border-width: 2px;
+  }
+}
+
+/* GPU Acceleration Hints */
+.holo-card,
+.quantum-btn,
+.orbital-item {
+  will-change: transform;
+}
+
+/* Mission Control Status Indicators */
+.status-holo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: var(--text-nano);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.status-holo.active {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--quantum-green);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  animation: pulse-glow-green 2s ease-in-out infinite;
+}
+
+.status-holo.warning {
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--warning-amber);
+  border: 1px solid rgba(255, 170, 0, 0.4);
+}
+
+.status-holo.critical {
+  background: rgba(255, 51, 102, 0.2);
+  color: var(--danger-red);
+  border: 1px solid rgba(255, 51, 102, 0.4);
+  animation: pulse-glow-red 1s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-green {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+}
+
+@keyframes pulse-glow-red {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 51, 102, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 51, 102, 0.6); }
+}
+
+/* Ultra-modern Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 212, 255, 0.5) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--neon-blue), var(--plasma-purple));
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--plasma-purple), var(--neon-blue));
+}
+
+/* Advanced Container Queries for Ultra-Responsive Design */
+@container (min-width: 1400px) {
+  .info-canvas {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@container (min-width: 1800px) {
+  .info-canvas {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
