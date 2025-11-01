@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Data Download</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-primary {
+            background-color: #238636;
+            border-color: #238636;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2ea043;
+            border-color: #2ea043;
+        }
+        
+        .btn-danger {
+            background-color: #da3633;
+            border-color: #da3633;
+        }
+        
+        .btn-info {
+            background-color: #0969da;
+            border-color: #0969da;
+        }
+        
+        .progress-bar {
+            background-color: #238636;
+        }
+        
+        .table-dark {
+            background-color: #161b22;
+        }
+        
+        .alert-success {
+            background-color: #0f2419;
+            border-color: #238636;
+            color: #7ee787;
+        }
+        
+        .alert-danger {
+            background-color: #2d1117;
+            border-color: #da3633;
+            color: #f85149;
+        }
+        
+        .alert-info {
+            background-color: #0c2d48;
+            border-color: #0969da;
+            color: #79c0ff;
+        }
+        
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .status-pending {
+            background-color: #f8c471;
+            color: #7d6608;
+        }
+        
+        .status-downloading {
+            background-color: #85c1e9;
+            color: #0c4a6e;
+        }
+        
+        .status-completed {
+            background-color: #82e5aa;
+            color: #0f5132;
+        }
+        
+        .status-error {
+            background-color: #f8b2b2;
+            color: #7c2d12;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-chart-line"></i> Stock Market Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin_panel') }}">
+                    <i class="fas fa-arrow-left"></i> Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-download"></i> Historical Data Download
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Historical Data Authentication:</strong> Connected<br>
+                                    <small>Ready to download historical candle data for all symbols</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="daysInput" class="form-label">Number of Days to Download:</label>
+                                    <div class="input-group">
+                                        <input type="number" id="daysInput" class="form-control" value="1" min="1" max="3650" placeholder="Enter days">
+                                        <span class="input-group-text">days</span>
+                                    </div>
+                                    <small class="text-muted">Max: 3650 days (~10 years)</small>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button id="downloadAllBtn" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Download All Symbols
+                                    </button>
+                                    <button id="stopDownloadBtn" class="btn btn-warning" style="display: none;">
+                                        <i class="fas fa-stop"></i> Stop Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Download Progress</h6>
+                                        <div class="progress mb-2">
+                                            <div id="overallProgress" class="progress-bar" role="progressbar" style="width: 0%">
+                                                <span id="progressText">0%</span>
+                                            </div>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-3">
+                                                <small class="text-muted">Total Symbols</small>
+                                                <br><span id="totalSymbols" class="fw-bold">0</span>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="text-muted">Downloaded</small>
+                                                <br><span id="downloadedSymbols" class="fw-bold text-success">0</span>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="text-muted">Failed</small>
+                                                <br><span id="failedSymbols" class="fw-bold text-danger">0</span>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="text-muted">Remaining</small>
+                                                <br><span id="remainingSymbols" class="fw-bold text-warning">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Symbol Download Status</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                            <table class="table table-dark table-striped mb-0">
+                                                <thead class="sticky-top">
+                                                    <tr>
+                                                        <th>Symbol</th>
+                                                        <th>Status</th>
+                                                        <th>Records</th>
+                                                        <th>Last Updated</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="symbolTable">
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted">
+                                                            <i class="fas fa-spinner fa-spin"></i> Loading symbols...
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class HistData365Manager {
+            constructor() {
+                this.symbols = [];
+                this.downloadStatus = {};
+                this.isDownloading = false;
+                this.shouldStop = false;
+                this.init();
+            }
+
+            async init() {
+                await this.loadSymbols();
+                this.bindEvents();
+            }
+
+            async loadSymbols() {
+                try {
+                    // Add cache-busting parameter to force fresh data
+                    const cacheBuster = new Date().getTime();
+                    const response = await fetch(`/api/stocks?_cb=${cacheBuster}`, {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    const data = await response.json();
+                    this.symbols = data.stocks || [];
+                    
+                    // Debug: Show symbols with and without historical data
+                    const withData = this.symbols.filter(s => s.hist_record_count > 0);
+                    const withoutData = this.symbols.filter(s => !s.hist_record_count || s.hist_record_count === 0);
+                    console.log(`DEBUG: Total symbols: ${this.symbols.length}, With data: ${withData.length}, Without data: ${withoutData.length}`);
+                    
+                    this.updateSymbolTable();
+                    this.updateCounters();
+                } catch (error) {
+                    console.error('Error loading symbols:', error);
+                    this.showError('Failed to load symbols');
+                }
+            }
+
+            bindEvents() {
+                document.getElementById('downloadAllBtn').addEventListener('click', () => {
+                    if (!this.isDownloading) {
+                        // Force refresh symbols before download to get latest data
+                        this.loadSymbols().then(() => {
+                            this.downloadAllSymbols();
+                        });
+                    }
+                });
+
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    // Triple confirmation for data deletion
+                    const confirmation1 = confirm('⚠️ WARNING: This will permanently delete ALL historical data!\\n\\nAre you absolutely sure you want to continue?');
+                    if (!confirmation1) return;
+                    
+                    const adminConfirmation = prompt('Type \"DELETE ALL DATA\" in capital letters to confirm:');
+                    if (adminConfirmation !== 'DELETE ALL DATA') {
+                        alert('Confirmation text does not match. Clear operation cancelled.');
+                        return;
+                    }
+                    
+                    const finalConfirm = confirm('FINAL WARNING: This action cannot be undone!\\n\\nProceed with deleting all historical data?');
+                    if (finalConfirm) {
+                        this.clearAllData();
+                    }
+                });
+
+                document.getElementById('stopDownloadBtn').addEventListener('click', () => {
+                    this.stopDownload();
+                });
+            }
+
+            stopDownload() {
+                if (this.isDownloading) {
+                    this.shouldStop = true;
+                    const stopBtn = document.getElementById('stopDownloadBtn');
+                    stopBtn.disabled = true;
+                    stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Stopping...';
+                }
+            }
+
+            async downloadAllSymbols() {
+                if (this.isDownloading) return;
+                
+                // Get requested days and filter symbols that need more data
+                const days = parseInt(document.getElementById('daysInput').value) || 365;
+                
+                let symbolsToDownload;
+                let skipped = 0;
+                
+                // For 1-day downloads, always download all symbols to get latest data
+                if (days === 1) {
+                    symbolsToDownload = this.symbols;
+                    skipped = 0;
+                } else {
+                    // For multi-day downloads, filter symbols that need more data
+                    const bufferDays = 5; // Buffer for weekends/holidays
+                    const requiredRecords = days + bufferDays;
+                    symbolsToDownload = this.symbols.filter(stock => !stock.hist_record_count || stock.hist_record_count < requiredRecords);
+                    skipped = this.symbols.length - symbolsToDownload.length;
+                }
+                
+                // Debug logging
+                console.log(`DEBUG: Symbols to download: ${symbolsToDownload.length}`);
+                if (symbolsToDownload.length > 0) {
+                    console.log(`DEBUG: First few symbols to download:`, symbolsToDownload.slice(0, 5).map(s => s.symbol));
+                }
+                
+                if (symbolsToDownload.length === 0) {
+                    this.showSuccess('All symbols already have historical data!');
+                    return;
+                }
+                
+                this.isDownloading = true;
+                this.shouldStop = false;
+                const downloadBtn = document.getElementById('downloadAllBtn');
+                const stopBtn = document.getElementById('stopDownloadBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                stopBtn.style.display = 'block';
+
+                let completed = 0;
+                let failed = 0;
+                const total = symbolsToDownload.length;
+
+                // Batch processing configuration - optimized for maximum speed
+                const BATCH_SIZE = 15; // Process 15 symbols at a time for faster downloads
+                const BATCH_DELAY = 50; // 50ms delay between batches (ultra-fast mode)
+
+                // Different messages for 1-day vs multi-day downloads
+                if (days === 1) {
+                    this.showSuccess(`Starting parallel download (${BATCH_SIZE} at a time) of latest 1 day data for ${total} symbols`);
+                } else {
+                    this.showSuccess(`Starting parallel download (${BATCH_SIZE} at a time) for ${total} symbols with ${days} days of data (${skipped} already have data)`);
+                }
+
+                // Process symbols in batches
+                for (let i = 0; i < symbolsToDownload.length; i += BATCH_SIZE) {
+                    // Check if user requested stop
+                    if (this.shouldStop) {
+                        this.showSuccess(`Download stopped by user! ${completed} successful, ${failed} failed, ${total - completed - failed} skipped.`);
+                        break;
+                    }
+
+                    // Get current batch
+                    const batch = symbolsToDownload.slice(i, i + BATCH_SIZE);
+                    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+                    const totalBatches = Math.ceil(symbolsToDownload.length / BATCH_SIZE);
+                    
+                    console.log(`Processing batch ${batchNumber}/${totalBatches}: ${batch.map(s => s.symbol).join(', ')}`);
+
+                    // Process all symbols in this batch in parallel
+                    const batchPromises = batch.map(async (symbol) => {
+                        try {
+                            this.updateSymbolStatus(symbol.symbol, 'downloading');
+                            const result = await this.downloadSymbolData(symbol.symbol);
+                            const recordCount = result.records_saved || days;
+                            this.updateSymbolStatus(symbol.symbol, 'completed', recordCount);
+                            return { success: true, symbol: symbol.symbol };
+                        } catch (error) {
+                            console.error(`Error downloading ${symbol.symbol}:`, error);
+                            this.updateSymbolStatus(symbol.symbol, 'error');
+                            return { success: false, symbol: symbol.symbol, error };
+                        }
+                    });
+
+                    // Wait for all downloads in this batch to complete
+                    const results = await Promise.all(batchPromises);
+
+                    // Update counters
+                    results.forEach(result => {
+                        if (result.success) {
+                            completed++;
+                        } else {
+                            failed++;
+                        }
+                    });
+
+                    // Update progress
+                    const progress = ((completed + failed) / total) * 100;
+                    this.updateProgress(progress, completed, failed, total - completed - failed);
+                    
+                    // Delay between batches to avoid rate limits (except for last batch)
+                    if (i + BATCH_SIZE < symbolsToDownload.length && !this.shouldStop) {
+                        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+                    }
+                }
+
+                this.isDownloading = false;
+                this.shouldStop = false;
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download All Symbols';
+                stopBtn.style.display = 'none';
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Download';
+                
+                // Different completion messages for 1-day vs multi-day downloads
+                if (days === 1) {
+                    this.showSuccess(`Download completed! ${completed} successful, ${failed} failed. ⚡ Used parallel processing for faster downloads.`);
+                } else {
+                    this.showSuccess(`Download completed! ${completed} successful, ${failed} failed, ${skipped} skipped (already had data). ⚡ Used parallel processing for faster downloads.`);
+                }
+            }
+
+            async downloadSymbolData(symbol) {
+                const days = parseInt(document.getElementById('daysInput').value) || 365;
+                const response = await fetch('/api/hist_data_365/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        symbol: symbol,
+                        days: days
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to download ${symbol}`);
+                }
+
+                return await response.json();
+            }
+
+            async clearAllData() {
+                try {
+                    const response = await fetch('/api/hist_data_365/clear', {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        this.downloadStatus = {};
+                        
+                        // Reload symbols to get updated record counts (should all be 0 now)
+                        await this.loadSymbols();
+                        
+                        this.showSuccess(`All historical data cleared successfully! ${result.deleted_count} records deleted.`);
+                    } else {
+                        throw new Error('Failed to clear data');
+                    }
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    this.showError('Failed to clear historical data');
+                }
+            }
+
+            updateSymbolStatus(symbol, status, recordCount = null) {
+                this.downloadStatus[symbol] = {
+                    status: status,
+                    timestamp: new Date().toLocaleString(),
+                    records: recordCount !== null ? recordCount : (status === 'completed' ? 'Unknown' : '0')
+                };
+                this.updateSymbolTable();
+            }
+
+            // Generate clickable symbol link for TradingView charts
+            generateClickableSymbol(symbol) {
+                const cleanSymbol = symbol.replace('NSE:', '').replace('-EQ', '');
+                const chartSymbol = `NSE:${cleanSymbol}`;
+                const chartUrl = `https://in.tradingview.com/chart/?symbol=${chartSymbol}`;
+                
+                return `<span class="symbol-clickable" 
+                              style="cursor: pointer; transition: color 0.2s ease; color: #007bff; text-decoration: underline;"
+                              title="Click to view ${cleanSymbol} chart"
+                              onmouseover="this.style.color='#0056b3'"
+                              onmouseout="this.style.color='#007bff'"
+                              onclick="window.open('${chartUrl}', '_blank', 'noopener')">${cleanSymbol}</span>`;
+            }
+
+            updateSymbolTable() {
+                const tbody = document.getElementById('symbolTable');
+                tbody.innerHTML = '';
+
+                this.symbols.forEach(stock => {
+                    const existingRecords = stock.hist_record_count || 0;
+                    const status = this.downloadStatus[stock.symbol] || { 
+                        status: existingRecords > 0 ? 'completed' : 'pending', 
+                        records: existingRecords, 
+                        timestamp: existingRecords > 0 ? 'Existing Data' : '-' 
+                    };
+                    const row = document.createElement('tr');
+                    
+                    let statusBadge = '';
+                    switch (status.status) {
+                        case 'pending':
+                            statusBadge = '<span class="status-badge status-pending">Pending</span>';
+                            break;
+                        case 'downloading':
+                            statusBadge = '<span class="status-badge status-downloading"><i class="fas fa-spinner fa-spin"></i> Downloading</span>';
+                            break;
+                        case 'completed':
+                            statusBadge = '<span class="status-badge status-completed">Completed</span>';
+                            break;
+                        case 'error':
+                            statusBadge = '<span class="status-badge status-error">Error</span>';
+                            break;
+                    }
+
+                    // Always show download button for each symbol (allow redownload/update)
+                    const downloadButton = `<button class="btn btn-sm btn-info" onclick="manager.downloadSingleSymbol('${stock.symbol}')" title="Download/Update historical data">
+                                               <i class="fas fa-download"></i>
+                                           </button>`;
+
+                    row.innerHTML = `
+                        <td>${this.generateClickableSymbol(stock.symbol)}</td>
+                        <td>${statusBadge}</td>
+                        <td><strong>${status.records}</strong> records</td>
+                        <td>${status.timestamp}</td>
+                        <td>${downloadButton}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            async downloadSingleSymbol(symbol) {
+                try {
+                    this.updateSymbolStatus(symbol, 'downloading');
+                    const result = await this.downloadSymbolData(symbol);
+                    const days = parseInt(document.getElementById('daysInput').value) || 365;
+                    const recordCount = result.records_saved || days;
+                    this.updateSymbolStatus(symbol, 'completed', recordCount);
+                    this.showSuccess(`Downloaded ${recordCount} records for ${symbol}`);
+                } catch (error) {
+                    this.updateSymbolStatus(symbol, 'error');
+                    this.showError(`Failed to download ${symbol}`);
+                }
+                this.updateCounters();
+            }
+
+            updateProgress(percentage, completed, failed, remaining) {
+                const progressBar = document.getElementById('overallProgress');
+                const progressText = document.getElementById('progressText');
+                
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = Math.round(percentage) + '%';
+                
+                document.getElementById('downloadedSymbols').textContent = completed;
+                document.getElementById('failedSymbols').textContent = failed;
+                document.getElementById('remainingSymbols').textContent = remaining;
+            }
+
+            updateCounters() {
+                const total = this.symbols.length;
+                const completed = Object.values(this.downloadStatus).filter(s => s.status === 'completed').length;
+                const failed = Object.values(this.downloadStatus).filter(s => s.status === 'error').length;
+                const remaining = total - completed - failed;
+
+                document.getElementById('totalSymbols').textContent = total;
+                document.getElementById('downloadedSymbols').textContent = completed;
+                document.getElementById('failedSymbols').textContent = failed;
+                document.getElementById('remainingSymbols').textContent = remaining;
+            }
+
+            showSuccess(message) {
+                this.showAlert(message, 'success');
+            }
+
+            showError(message) {
+                this.showAlert(message, 'danger');
+            }
+
+            showAlert(message, type) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                const container = document.querySelector('.container');
+                container.insertBefore(alertDiv, container.firstChild);
+
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize the manager
+        let manager;
+        document.addEventListener('DOMContentLoaded', () => {
+            manager = new HistData365Manager();
+        });
+    </script>
+    
+    <!-- Clear All Data Button at Bottom -->
+    <div class="container mb-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <h6 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h6>
+                        <p class="text-muted small">This action will permanently delete all historical data</p>
+                        <button id="clearAllBtn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Clear All Historical Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

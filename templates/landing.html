@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MG F&O Stocks Dashboard - Professional Market Analysis</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 25%, #f5f7fa 50%, #c3cfe2 75%, #f5f7fa 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(230, 240, 255, 0.95) 0%, rgba(210, 230, 250, 0.92) 50%, rgba(190, 220, 250, 0.90) 100%);
+            padding: 100px 0;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0066cc, #0052a3, #003d7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #0066cc;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            line-height: 1.6;
+        }
+
+        .hero-description-highlight {
+            background: linear-gradient(135deg, #0066cc, #0052a3, #003d7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .hero-feature {
+            color: #0066cc;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .hero-feature:hover {
+            color: #0052a3;
+            transition: color 0.3s ease;
+        }
+
+        .flash-message {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: flash 2s ease-in-out infinite alternate;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .flash-message:hover {
+            background: linear-gradient(135deg, #ff8c42, #ffab5e);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        @keyframes flash {
+            0% {
+                box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+                transform: scale(1);
+            }
+            100% {
+                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+                transform: scale(1.02);
+            }
+        }
+
+        .cta-button, .btn-primary, .btn-outline-primary, .btn-outline-info {
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            border: 2px solid #007bff !important;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: white !important;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .cta-button:hover, .btn-primary:hover, .btn-outline-primary:hover, .btn-outline-info:hover {
+            background: linear-gradient(135deg, #0056b3, #003d82) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+            color: white !important;
+            text-decoration: none;
+            border-color: #0056b3 !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+            border: 2px solid #6c757d !important;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: white !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268, #4e555b) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.5);
+            border-color: #5a6268 !important;
+        }
+
+        .features-section {
+            padding: 80px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            height: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 102, 204, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.15);
+        }
+
+        /* Advanced Technical Analysis 5 cards per row on desktop */
+        @media (min-width: 992px) {
+            .features-section .col-lg {
+                flex: 0 0 20% !important;
+                max-width: 20% !important;
+            }
+        }
+
+        /* 2 cards per row on mobile */
+        @media (max-width: 991px) {
+            .features-section .col-6 {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #555;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .feature-list li:before {
+            content: "•";
+            color: #0066cc;
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 60px 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0066cc;
+            display: block;
+            line-height: 1.5;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #555;
+            margin-top: 0.5rem;
+        }
+
+        .technical-section {
+            padding: 80px 0;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .tech-item:hover {
+            border-color: rgba(0, 102, 204, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 102, 204, 0.15);
+        }
+
+        .tech-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-description {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-toggler {
+            border-color: rgba(0, 123, 255, 0.5) !important;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 123, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        }
+
+        .navbar-brand-custom {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0066cc !important;
+        }
+
+        .navbar-subtitle-custom {
+            font-size: 0.9rem;
+            color: #0066cc !important;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #007bff;
+            text-shadow: 
+                2px 2px 0px rgba(100, 180, 255, 0.5),
+                3px 3px 0px rgba(80, 160, 255, 0.4),
+                4px 4px 0px rgba(60, 140, 255, 0.3),
+                5px 5px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .platform-section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #007bff;
+            font-family: 'Segoe UI', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
+            letter-spacing: -0.5px;
+            text-shadow: none;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-section {
+            padding: 80px 0;
+            background: rgba(245, 247, 250, 0.5);
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 250, 255, 0.90) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 102, 204, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 102, 204, 0.2);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid #0066cc;
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.2);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pricing-badge.silver {
+            background: linear-gradient(135deg, #b8b8b8, #e0e0e0);
+            color: #333;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .pricing-badge.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .pricing-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .pricing-validity {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-price {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .original-price {
+            color: #999;
+            font-size: 1.2rem;
+            text-decoration: line-through;
+            margin-bottom: 0.25rem;
+        }
+
+        .discount-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+        }
+
+        .price-currency {
+            font-size: 1.5rem;
+            color: #0066cc;
+            vertical-align: top;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #0066cc;
+            line-height: 1;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            color: #555;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features i {
+            color: #28a745;
+            margin-right: 10px;
+            font-size: 0.85rem;
+        }
+
+        .pricing-button {
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            border: 2px solid #007bff !important;
+            color: white !important;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: auto;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .pricing-button:hover {
+            background: linear-gradient(135deg, #0056b3, #003d82) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+            border-color: #0056b3 !important;
+        }
+
+        .pricing-card.featured .pricing-button {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            border-color: #28a745 !important;
+        }
+
+        .pricing-card.featured .pricing-button:hover {
+            background: linear-gradient(135deg, #20c997, #17a589) !important;
+            border-color: #20c997 !important;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 80px 0 15px 0;
+                margin-top: 0;
+            }
+
+            .pricing-section {
+                padding: 25px 0;
+            }
+
+            .pricing-card {
+                margin-bottom: 1rem;
+                padding: 1rem;
+            }
+
+            .pricing-title {
+                font-size: 1.2rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .pricing-validity {
+                font-size: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .pricing-price {
+                margin-bottom: 0.75rem;
+            }
+
+            .price-amount {
+                font-size: 1.8rem;
+            }
+
+            .price-currency {
+                font-size: 1.2rem;
+            }
+
+            .original-price {
+                font-size: 0.85rem;
+                margin-bottom: 0.15rem;
+            }
+
+            .discount-badge {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+                margin-bottom: 0.3rem;
+            }
+
+            .pricing-features {
+                margin: 0 0 1rem 0;
+            }
+
+            .pricing-features li {
+                font-size: 0.7rem;
+                padding: 0.3rem 0;
+                line-height: 1.2;
+            }
+
+            .pricing-features i {
+                font-size: 0.7rem;
+                margin-right: 6px;
+            }
+
+            .pricing-button {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+
+            .pricing-badge {
+                font-size: 0.65rem;
+                padding: 4px 10px;
+                top: -10px;
+                right: 15px;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+
+            .hero-description {
+                font-size: 0.75rem;
+                margin-bottom: 1rem;
+                line-height: 1.3;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.8rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
+            }
+
+            .stat-number {
+                font-size: 1.2rem;
+            }
+
+            .stat-item {
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
+                line-height: 1.2;
+            }
+
+            .stats-section {
+                padding: 20px 0;
+            }
+
+            .feature-description {
+                font-size: 0.75rem;
+            }
+
+            .cta-button, .btn-primary, .btn-outline-primary, .btn-outline-info, .btn-secondary {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+
+            .navbar-brand-custom {
+                font-size: 1rem;
+            }
+
+            .navbar-subtitle-custom {
+                font-size: 0.7rem;
+            }
+
+            .mobile-nav-buttons {
+                flex-direction: column;
+                width: 100%;
+                gap: 5px;
+            }
+
+            .mobile-nav-buttons .btn {
+                width: 100%;
+                margin: 0;
+                font-size: 0.85rem;
+                padding: 10px 15px;
+            }
+
+            .features-section {
+                padding: 25px 0;
+            }
+
+            .technical-section {
+                padding: 25px 0;
+            }
+
+            .feature-card {
+                margin-bottom: 1rem;
+                padding: 1.2rem;
+            }
+
+            .feature-icon {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .feature-title {
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .feature-list li {
+                margin-bottom: 4px;
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+
+            .tech-item {
+                padding: 1rem;
+            }
+
+            .tech-title {
+                font-size: 1rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .tech-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .hero-description-highlight {
+                font-size: 0.78rem;
+                font-weight: 700;
+            }
+
+            .hero-feature {
+                font-size: 0.76rem;
+                font-weight: 600;
+            }
+
+            .flash-message {
+                font-size: 0.85rem;
+                padding: 8px 16px;
+                margin: 8px 0;
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+        /* 3D Popup Cards with Shadow */
+        .platform-card {
+            position: relative;
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+            border-radius: 15px;
+            padding: 20px;
+            height: 100%;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.5),
+                0 6px 6px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.3),
+                inset 0 2px 5px rgba(255, 255, 255, 0.05);
+            transform: perspective(1000px) translateZ(0);
+        }
+
+        .platform-card:hover {
+            transform: perspective(1000px) translateZ(30px) translateY(-10px);
+            box-shadow: 
+                0 25px 50px rgba(77, 166, 255, 0.4),
+                0 15px 30px rgba(0, 0, 0, 0.6),
+                0 5px 15px rgba(77, 166, 255, 0.3),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.3),
+                inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('landing') }}" style="text-decoration: none;">
+                <img src="{{ url_for('static', filename='images/mg_logo.png') }}" alt="MG Logo" style="height: 45px; width: auto; margin-right: 15px;">
+                <div>
+                    <div class="navbar-brand-custom">MG F&O Stocks Dashboard</div>
+                    <div class="navbar-subtitle-custom">Be your own analyst.</div>
+                </div>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto d-flex flex-lg-row flex-column mobile-nav-buttons align-items-center">
+                    <a href="#pricing" class="btn btn-outline-info me-lg-2">Pricing Plans</a>
+                    {% if current_user.is_authenticated %}
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown me-lg-2">
+                            <button class="btn btn-outline-dark d-flex align-items-center" type="button" id="userNavDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-color: rgba(0,0,0,0.3);">
+                                {% if current_user.profile_image_url %}
+                                <img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #0066cc;">
+                                {% else %}
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background-color: #0066cc; border: 2px solid #0052a3;">
+                                    <i class="fas fa-user" style="font-size: 16px; color: white;"></i>
+                                </div>
+                                {% endif %}
+                                <span>{{ current_user.username }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userNavDropdown">
+                                <li><h6 class="dropdown-header">{{ current_user.email }}</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('account') }}"><i class="fas fa-user-circle me-2"></i>My Account</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}"><i class="fas fa-chart-line me-2"></i>Dashboard</a></li>
+                                {% if current_user.is_admin() %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin_panel') }}"><i class="fas fa-user-shield me-2"></i>Admin Panel</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('google_auth.google_logout') }}" style="margin: 0;">
+                                        <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="/google_login" class="btn btn-outline-primary me-lg-2">
+                            <i class="fab fa-google me-2"></i>Login with Google
+                        </a>
+                        <a href="#pricing" class="btn btn-primary">Get Started</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">MG F&O Stocks Dashboard</h1>
+            <p class="hero-subtitle">Be your own analyst.</p>
+            <p class="hero-description">
+                <span class="hero-description-highlight">Professional-grade real-time market analysis platform</span> featuring 
+                <span class="hero-feature">Volume Profile analysis</span> for intraday analysis, 
+                <span class="hero-feature">100-day charts</span> for all stocks with support/resistance levels, 
+                <span class="hero-feature">instant high/low alerts</span>, 
+                <span class="hero-feature">virtual analysis capabilities</span>, 
+                <span class="hero-feature">RVOL Alerts</span>, 
+                and comprehensive technical analysis tools designed for serious analysts and professionals.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/login" class="cta-button" id="get-started">
+                    <i class="fas fa-rocket me-2"></i>Start Your Analysis Journey
+                </a>
+                <a href="#" class="flash-message" onclick="selectPlan('free_trial', 0, '3 days'); return false;">
+                    <i class="fas fa-gift me-2"></i>Try 3 Days Free Trial
+                </a>
+                <a href="#pricing" class="cta-button">
+                    <i class="fas fa-crown me-2"></i>Subscribe To Premium Plan
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- App Screenshots Section -->
+    <section class="features-section" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 250, 255, 0.95) 100%); padding: 30px 0;">
+        <div class="container">
+            <h2 class="platform-section-title">See Our Platform in Action</h2>
+            <p class="section-subtitle">Real-time market analysis tools with professional-grade features</p>
+
+            <div class="row g-2">
+                <!-- Index Analysis -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-chart-bar me-2"></i>Index Analysis Charts
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/index_analysis.png') }}" alt="Index Analysis" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            Visual analysis of 20+ indices with % Change, % From Open, and % From High metrics
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Price Action Cards -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-layer-group me-2"></i>Price Action Cards
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/price_action_cards.png') }}" alt="Price Action Cards" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            10 cards tracking intraday recoveries, top losers, gap ups/downs, and volatility leaders
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Volume Profile -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-chart-area me-2"></i>Volume Profile & Support/Resistance
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/volume_profile.png') }}" alt="Volume Profile Charts" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            100-day charts with volume profile analysis, support/resistance levels, and VWAP
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- MG Heatmap -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-th me-2"></i>MG Heatmap
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/heatmap.png') }}" alt="MG Heatmap" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            Real-time heatmap visualization showing market sentiment with color-coded stock performance
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pivot Level Stocks Scan -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-search-dollar me-2"></i>Pivot Level Stocks Scan
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/levelscan.png') }}" alt="Level Scan" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            Advanced level scanner showing breakout/resistance/support positions for all F&O stocks
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 5Day Line Chart -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-chart-line me-2"></i>5-Day Line Chart
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/linechart.png') }}" alt="5-Day Line Chart" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            Clean 5-day trend visualization for quick momentum analysis and pattern recognition
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 5Day Volume Profile -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-chart-bar me-2"></i>5-Day Volume Profile
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/volume_5day.png') }}" alt="5-Day Volume Profile" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            5-day volume profile with VPOC, VAH, and VAL levels for intraday trading decisions
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CPR Levels F&O Scan -->
+                <div class="col-lg-3 col-6 mb-2">
+                    <div class="platform-card">
+                        <h4 style="color: #0066cc; margin-bottom: 15px; font-size: 0.95rem;">
+                            <i class="fas fa-compass me-2"></i>CPR Levels F&O Scan
+                        </h4>
+                        <img src="{{ url_for('static', filename='images/cpr_scan.png') }}" alt="CPR Levels F&O Scan" style="width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                        <p style="color: #555; margin-top: 15px; font-size: 0.95rem;">
+                            Real-time CPR analysis with color-coded range indicators and support/resistance levels
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+   
+    </section>
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <h2 class="section-title">Choose Your Plan</h2>
+            <p class="section-subtitle">Start with a 3-day free trial. Limited time offer - 50% OFF on all plans!</p>
+            
+            <div class="row justify-content-center">
+                <!-- Free Trial Plan -->
+                {% if plans and 'free_trial' in plans %}
+                <div class="col-lg-3 col-md-6 col-6 mb-4">
+                    <div class="pricing-card">
+                        <h3 class="pricing-title">{{ plans['free_trial'].display_name }}</h3>
+                        <div class="pricing-validity">Valid for {{ plans['free_trial'].validity_display }}</div>
+                        <div class="pricing-price">
+                            <span class="price-currency">₹</span>
+                            <span class="price-amount">{{ "{:,}".format(plans['free_trial'].price) }}</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check-circle"></i> Instant alerts of New High/Low</li>
+                            <li><i class="fas fa-check-circle"></i> Volume Profile Levels</li>
+                            <li><i class="fas fa-check-circle"></i> 100 days EOD Charts with Support & Resistance</li>
+                            <li><i class="fas fa-check-circle"></i> Market Sentiments Through Visual Index Bar Charts</li>
+                            <li><i class="fas fa-check-circle"></i> 10 Cards of Price Action - Intraday Reversals etc</li>
+                            <li><i class="fas fa-check-circle"></i> RVOL Live Volume for Precise Stocks Selection</li>
+                            <li><i class="fas fa-check-circle"></i> AI Score Analysis with Technical Indicators</li>
+                            <li><i class="fas fa-check-circle"></i> MG Heatmap View</li>
+                            <li><i class="fas fa-check-circle"></i> Tradingview Charts with single click on stock</li>
+                        </ul>
+                        <button class="pricing-button" onclick="selectPlan('free_trial', {{ plans['free_trial'].price * 100 }}, '{{ plans['free_trial'].validity_display }}')">Select</button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Monthly Plan -->
+                {% if plans and 'monthly' in plans %}
+                <div class="col-lg-3 col-md-6 col-6 mb-4">
+                    <div class="pricing-card">
+                        <h3 class="pricing-title">{{ plans['monthly'].display_name }}</h3>
+                        <div class="pricing-validity">Valid for {{ plans['monthly'].validity_display }}</div>
+                        <div class="pricing-price">
+                            {% if plans['monthly'].strike_price %}
+                            <div class="original-price">₹{{ "{:,}".format(plans['monthly'].strike_price) }}</div>
+                            {% endif %}
+                            {% if plans['monthly'].discount_percent > 0 %}
+                            <div class="discount-badge">{{ plans['monthly'].discount_percent }}% OFF</div>
+                            {% endif %}
+                            <div><span class="price-currency">₹</span><span class="price-amount">{{ "{:,}".format(plans['monthly'].price) }}</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check-circle"></i> Instant alerts of New High/Low</li>
+                            <li><i class="fas fa-check-circle"></i> Volume Profile Levels</li>
+                            <li><i class="fas fa-check-circle"></i> 100 days EOD Charts with Support & Resistance</li>
+                            <li><i class="fas fa-check-circle"></i> Market Sentiments Through Visual Index Bar Charts</li>
+                            <li><i class="fas fa-check-circle"></i> 10 Cards of Price Action - Intraday Reversals etc</li>
+                            <li><i class="fas fa-check-circle"></i> RVOL Live Volume for Precise Stocks Selection</li>
+                            <li><i class="fas fa-check-circle"></i> AI Score Analysis with Technical Indicators</li>
+                            <li><i class="fas fa-check-circle"></i> MG Heatmap View</li>
+                            <li><i class="fas fa-check-circle"></i> Tradingview Charts with single click on stock</li>
+                        </ul>
+                        <button class="pricing-button" onclick="selectPlan('monthly', {{ plans['monthly'].price * 100 }}, '{{ plans['monthly'].validity_display }}')">Select</button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quarterly Plan -->
+                {% if plans and 'quarterly' in plans %}
+                <div class="col-lg-3 col-md-6 col-6 mb-4">
+                    <div class="pricing-card">
+                        <div class="pricing-badge silver">Best Value</div>
+                        <h3 class="pricing-title">{{ plans['quarterly'].display_name }}</h3>
+                        <div class="pricing-validity">Valid for {{ plans['quarterly'].validity_display }}</div>
+                        <div class="pricing-price">
+                            {% if plans['quarterly'].strike_price %}
+                            <div class="original-price">₹{{ "{:,}".format(plans['quarterly'].strike_price) }}</div>
+                            {% endif %}
+                            {% if plans['quarterly'].discount_percent > 0 %}
+                            <div class="discount-badge">{{ plans['quarterly'].discount_percent }}% OFF</div>
+                            {% endif %}
+                            <div><span class="price-currency">₹</span><span class="price-amount">{{ "{:,}".format(plans['quarterly'].price) }}</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check-circle"></i> Instant alerts of New High/Low</li>
+                            <li><i class="fas fa-check-circle"></i> Volume Profile Levels</li>
+                            <li><i class="fas fa-check-circle"></i> 100 days EOD Charts with Support & Resistance</li>
+                            <li><i class="fas fa-check-circle"></i> Market Sentiments Through Visual Index Bar Charts</li>
+                            <li><i class="fas fa-check-circle"></i> 10 Cards of Price Action - Intraday Reversals etc</li>
+                            <li><i class="fas fa-check-circle"></i> RVOL Live Volume for Precise Stocks Selection</li>
+                            <li><i class="fas fa-check-circle"></i> AI Score Analysis with Technical Indicators</li>
+                            <li><i class="fas fa-check-circle"></i> MG Heatmap View</li>
+                            <li><i class="fas fa-check-circle"></i> Tradingview Charts with single click on stock</li>
+                        </ul>
+                        <button class="pricing-button" onclick="selectPlan('quarterly', {{ plans['quarterly'].price * 100 }}, '{{ plans['quarterly'].validity_display }}')">Select</button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Half Yearly Plan -->
+                {% if plans and 'half_yearly' in plans %}
+                <div class="col-lg-3 col-md-6 col-6 mb-4">
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge gold">Best Value</div>
+                        <h3 class="pricing-title">{{ plans['half_yearly'].display_name }}</h3>
+                        <div class="pricing-validity">Valid for {{ plans['half_yearly'].validity_display }}</div>
+                        <div class="pricing-price">
+                            {% if plans['half_yearly'].strike_price %}
+                            <div class="original-price">₹{{ "{:,}".format(plans['half_yearly'].strike_price) }}</div>
+                            {% endif %}
+                            {% if plans['half_yearly'].discount_percent > 0 %}
+                            <div class="discount-badge">{{ plans['half_yearly'].discount_percent }}% OFF</div>
+                            {% endif %}
+                            <div><span class="price-currency">₹</span><span class="price-amount">{{ "{:,}".format(plans['half_yearly'].price) }}</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check-circle"></i> Instant alerts of New High/Low</li>
+                            <li><i class="fas fa-check-circle"></i> Volume Profile Levels</li>
+                            <li><i class="fas fa-check-circle"></i> 100 days EOD Charts with Support & Resistance</li>
+                            <li><i class="fas fa-check-circle"></i> Market Sentiments Through Visual Index Bar Charts</li>
+                            <li><i class="fas fa-check-circle"></i> 10 Cards of Price Action - Intraday Reversals etc</li>
+                            <li><i class="fas fa-check-circle"></i> RVOL Live Volume for Precise Stocks Selection</li>
+                            <li><i class="fas fa-check-circle"></i> AI Score Analysis with Technical Indicators</li>
+                            <li><i class="fas fa-check-circle"></i> MG Heatmap View</li>
+                            <li><i class="fas fa-check-circle"></i> Tradingview Charts with single click on stock</li>
+                        </ul>
+                        <button class="pricing-button" onclick="selectPlan('half_yearly', {{ plans['half_yearly'].price * 100 }}, '{{ plans['half_yearly'].validity_display }}')">Select</button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-4">
+                <p style="color: #555; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle me-2"></i>Add terms and conditions
+                </p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Advanced Technical Analysis</h2>
+            <p class="section-subtitle">Professional-grade calculations used by institutional analysts</p>
+
+            <div class="row">
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <h3 class="feature-title">CPR Levels F&O Scan</h3>
+                        <ul class="feature-list">
+                            <li>Real-time CPR (Central Pivot Range) analysis</li>
+                            <li>Live tracking of all F&O stocks with pivot levels</li>
+                            <li>Color-coded range indicators (Narrow, Wide)</li>
+                            <li>Support and Resistance levels (R1-R3, S1-S3)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Real-Time RVOL Analysis</h3>
+                        <ul class="feature-list">
+                            <li>Advanced Relative Volume calculations with color-coded visualization</li>
+                            <li>Track volume spikes and market momentum with precision</li>
+                            <li>Color categorization: Red (≥2.0x), Yellow (1.5-2.0x), Green (0.7-1.5x), Blue (<0.7x)</li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                        <h3 class="feature-title">Live Market Streaming</h3>
+                        <ul class="feature-list">
+                            <li>Real-time WebSocket data streaming</li>
+                            <li>All F&O stocks coverage</li>
+                            <li>20+ major indices (NIFTY 50, SENSEX, BANK NIFTY)</li>
+                            <li>Sub-second data updates</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-analytics"></i>
+                        </div>
+                        <h3 class="feature-title">Market Overview Dashboard</h3>
+                        <ul class="feature-list">
+                            <li>Live index tracking</li>
+                            <li>F&O movement analysis</li>
+                            <li>9 analytical cards with market insights</li>
+                            <li>Gainers, losers, recovery patterns tracking</li>
+                            <li>Market sentiment indicators</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-area"></i>
+                        </div>
+                        <h3 class="feature-title">One Click Chart Analysis</h3>
+                        <ul class="feature-list">
+                            <li>One-click TradingView chart access</li>
+                            <li>Professional charting tools</li>
+                            <li>Advanced technical indicators</li>
+                            <li>Seamless dashboard integration</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="feature-title">Volume Profile for Intraday</h3>
+                        <ul class="feature-list">
+                            <li>Advanced Volume Profile analysis with VPOC identification</li>
+                            <li>Value Area High (VAH) and Value Area Low (VAL) levels</li>
+                            <li>Intraday volume distribution visualization</li>
+                            <li>High Volume Nodes and Low Volume Nodes mapping</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">100 Day Charts of All Stocks</h3>
+                        <ul class="feature-list">
+                            <li>Comprehensive 100-day candlestick charts for all F&O stocks</li>
+                            <li>Unique Support and Resistance levels for each stock</li>
+                            <li>Volume profile levels with VWAP overlay</li>
+                            <li>Mobile-optimized chart interface</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3 class="feature-title">Instant High & Low Alerts</h3>
+                        <ul class="feature-list">
+                            <li>Real-time alerts for new Intraday highs and lows</li>
+                            <li>Break level notifications (PDH, PDL, WKH, WKL)</li>
+                            <li>Instant push notifications during market hours</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3 class="feature-title">Virtual Analysis</h3>
+                        <ul class="feature-list">
+                            <li>Practice analysis with virtual portfolios</li>
+                            <li>Test your analysis skills without real risk</li>
+                            <li>Track performance of your stock analysis</li>
+                            <li>Build confidence in market analysis</li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <h3 class="feature-title">RVOL Alerts</h3>
+                        <ul class="feature-list">
+                            <li>Real-time Relative Volume spike alerts</li>
+                            <li>Customizable volume threshold notifications</li>
+                            <li>Unusual volume activity detection</li>
+                            <li>Market momentum change alerts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Responsive Design</h3>
+                        <ul class="feature-list">
+                            <li>Fully responsive design</li>
+                            <li>Desktop, tablet, and mobile compatibility</li>
+                            <li>Optimized performance on all screen sizes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="feature-title">AI Score Analysis</h3>
+                        <ul class="feature-list">
+                            <li>Advanced AI Score ranging from -15 to +15</li>
+                            <li>Combines RSI, MACD, Stochastic, and ADX indicators</li>
+                            <li>Color-coded circular gauge visualization</li>
+                            <li>Real-time technical strength assessment for all F&O stocks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Technical Indicators Dashboard</h3>
+                        <ul class="feature-list">
+                            <li>Real-time LTP (Last Traded Price) for all F&O stocks</li>
+                            <li>Live RVOL (Relative Volume) with color coding</li>
+                            <li>WebSocket updates every 500ms for instant data</li>
+                            <li>Synchronized data broadcast to all users</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-th"></i>
+                        </div>
+                        <h3 class="feature-title">MG Heatmap View</h3>
+                        <ul class="feature-list">
+                            <li>Visual heatmap of all F&O stocks</li>
+                            <li>Color-coded performance metrics</li>
+                            <li>Quick market sentiment visualization</li>
+                            <li>Instant identification of market movers</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg col-6" style="flex: 0 0 20%; max-width: 20%;">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">5-Day Line Charts</h3>
+                        <ul class="feature-list">
+                            <li>Clean 5-day price trend visualization</li>
+                            <li>Momentum analysis at a glance</li>
+                            <li>Pattern recognition support</li>
+                            <li>All F&O stocks coverage</li>
+                        </ul>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </section>
+
+    <!-- What We Offer vs Don't Offer Section -->
+    <section style="background: rgba(245, 250, 255, 0.9); padding: 80px 0; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+        <div class="container">
+            <h2 class="section-title">Our Approach to Market Analysis</h2>
+            <p class="section-subtitle">Clear transparency about what we provide and what we don't</p>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="feature-card" style="border: 1px solid rgba(220, 53, 69, 0.3); background: rgba(220, 53, 69, 0.05);">
+                        <h3 style="color: #dc3545; font-size: 1.5rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-times-circle me-2"></i>What We Don't Provide
+                        </h3>
+                        <div style="color: #555;">
+                            <div style="margin-bottom: 1rem;">
+                                <strong style="color: #ff6b6b;">No Open Interest Analysis</strong><br>
+                                <span style="font-size: 0.9rem;">We do not use open-interest metrics; analysis is based on price and actual volume data.</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong style="color: #ff6b6b;">No Lagging Indicators</strong><br>
+                                <span style="font-size: 0.9rem;">We avoid tools that only reflect past movement and focus on current market readings.</span>
+                            </div>
+                            <div>
+                                <strong style="color: #ff6b6b;">No Predictions</strong><br>
+                                <span style="font-size: 0.9rem;">We don't provide forecasts; only factual market data and rule-based metrics.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="feature-card" style="border: 1px solid rgba(40, 167, 69, 0.3); background: rgba(40, 167, 69, 0.05);">
+                        <h3 style="color: #28a745; font-size: 1.5rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-check-circle me-2"></i>What We Provide
+                        </h3>
+                        <div style="color: #555;">
+                            <div style="margin-bottom: 1rem;">
+                                <strong style="color: #4caf50;">Actual Volume Data</strong><br>
+                                <span style="font-size: 0.9rem;">High-quality metrics based on actual volume data and price action analysis.</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong style="color: #4caf50;">Real Sentiment Analytics</strong><br>
+                                <span style="font-size: 0.9rem;">Live sentiment scores from market activity and real-time reversal pattern tracking.</span>
+                            </div>
+                            <div>
+                                <strong style="color: #4caf50;">Real-time Level Tracking</strong><br>
+                                <span style="font-size: 0.9rem;">Continuous support/resistance level monitoring with immediate updates when levels are crossed.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="hero-section" style="padding: 60px 0;">
+        <div class="container">
+            <h2 class="hero-title" style="font-size: 2.5rem;">Ready to Elevate Your Analysis?</h2>
+            <p class="hero-description" style="margin-bottom: 2rem;">
+                Join professional analysts and institutions who rely on MG F&O Stocks Dashboard for comprehensive market insights.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="#pricing" class="cta-button">
+                    <i class="fas fa-credit-card me-2"></i>Choose Your Plan
+                </a>
+                <a href="/login" class="cta-button">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: rgba(255, 255, 255, 0.95); padding: 40px 0; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 style="color: #0066cc; margin-bottom: 1rem;">MG F&O Stocks Dashboard</h5>
+                    <p style="color: #555; margin-bottom: 1rem;">
+                        Professional analysis platform for serious market participants.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3" style="font-size: 0.9rem;">
+                        <a href="{{ url_for('legal') }}" style="color: #0066cc; text-decoration: none;">Terms</a>
+                        <a href="{{ url_for('legal') }}" style="color: #0066cc; text-decoration: none;">Refund</a>
+                        <a href="{{ url_for('legal') }}" style="color: #0066cc; text-decoration: none;">Policy</a>
+                        <a href="{{ url_for('legal') }}" style="color: #0066cc; text-decoration: none;">About</a>
+                        <a href="{{ url_for('legal') }}" style="color: #0066cc; text-decoration: none;">Contact</a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <p style="color: #888; margin-bottom: 0;">
+                        © 2025 MG Dashboard. All Rights Reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Coupon Code Modal -->
+    <div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 250, 255, 0.95) 100%); border: 1px solid rgba(0, 102, 204, 0.3);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+                    <h5 class="modal-title" id="couponModalLabel" style="color: #0066cc;">
+                        <i class="fas fa-ticket-alt me-2"></i>Apply Coupon Code
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" style="color: #0066cc;">Enter Coupon Code (Optional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="couponInput" placeholder="e.g., SAVE20" style="background: white; border: 1px solid #ccc; color: #333;">
+                            <button class="btn btn-outline-info" type="button" id="applyCouponBtn">Apply</button>
+                        </div>
+                        <div id="couponMessage" class="mt-2"></div>
+                    </div>
+                    <div id="priceBreakdown" style="background: rgba(0, 102, 204, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px; display: none;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: #555;">Plan Price:</span>
+                            <span id="originalPriceDisplay" style="color: #333;">₹0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display: none;">
+                            <span style="color: #28a745;">Discount (<span id="discountPercent">0</span>%):</span>
+                            <span id="discountAmount" style="color: #28a745;">-₹0</span>
+                        </div>
+                        <div class="d-flex justify-content-between" style="border-top: 1px solid rgba(0, 0, 0, 0.2); padding-top: 10px; margin-top: 10px;">
+                            <strong style="color: #0066cc;">Final Amount:</strong>
+                            <strong id="finalPriceDisplay" style="color: #0066cc; font-size: 1.3rem;">₹0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0, 0, 0, 0.1);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="proceedPaymentBtn" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                        <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Razorpay Checkout -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- Interactive effects and Payment Integration -->
+    <script>
+        // Add navbar background effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+            }
+        });
+
+        // Check if user returned from Google login with payment intent
+        window.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#payment')) {
+                const params = new URLSearchParams(hash.substring(hash.indexOf('?')));
+                const plan = params.get('plan');
+                const amount = params.get('amount');
+                const validity = params.get('validity');
+                
+                if (plan && amount && validity) {
+                    // Show coupon modal first before payment
+                    setTimeout(() => {
+                        currentPlanSelection = { planName: plan, amount: parseInt(amount), validity };
+                        showCouponModal(plan, parseInt(amount), validity);
+                    }, 500);
+                }
+            }
+        });
+
+        // Store current plan selection
+        let currentPlanSelection = null;
+        let appliedCoupon = null;
+
+        // Razorpay Payment Integration with Google Sign-Up
+        function selectPlan(planName, amount, validity) {
+            if (amount === 0) {
+                // Free trial - redirect to Google signup with plan params
+                window.location.href = `/google_login?plan=${planName}&amount=${amount}&validity=${encodeURIComponent(validity)}`;
+                return;
+            }
+
+            // Check if user is logged in by making a quick check
+            fetch('/check_auth')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        // User is already logged in, show coupon modal
+                        currentPlanSelection = { planName, amount, validity };
+                        showCouponModal(planName, amount, validity);
+                    } else {
+                        // User not logged in, redirect to Google login with plan params
+                        window.location.href = `/google_login?plan=${planName}&amount=${amount}&validity=${encodeURIComponent(validity)}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Auth check failed:', error);
+                    // On error, redirect to Google login to be safe
+                    window.location.href = `/google_login?plan=${planName}&amount=${amount}&validity=${encodeURIComponent(validity)}`;
+                });
+        }
+
+        // Show coupon modal
+        function showCouponModal(planName, amount, validity) {
+            // Reset modal state
+            document.getElementById('couponInput').value = '';
+            document.getElementById('couponMessage').innerHTML = '';
+            document.getElementById('priceBreakdown').style.display = 'block';
+            document.getElementById('discountRow').style.display = 'none';
+            appliedCoupon = null;
+            
+            // Display original price
+            const priceInRupees = amount / 100;
+            document.getElementById('originalPriceDisplay').textContent = `₹${priceInRupees.toLocaleString()}`;
+            document.getElementById('finalPriceDisplay').textContent = `₹${priceInRupees.toLocaleString()}`;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('couponModal'));
+            modal.show();
+        }
+
+        // Apply coupon button click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('applyCouponBtn').addEventListener('click', validateCoupon);
+            document.getElementById('proceedPaymentBtn').addEventListener('click', proceedToPayment);
+            
+            // Allow Enter key to apply coupon
+            document.getElementById('couponInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    validateCoupon();
+                }
+            });
+        });
+
+        // Validate coupon code
+        function validateCoupon() {
+            const couponCode = document.getElementById('couponInput').value.trim().toUpperCase();
+            const messageDiv = document.getElementById('couponMessage');
+            
+            if (!couponCode) {
+                messageDiv.innerHTML = '<small style="color: #ffc107;">Please enter a coupon code</small>';
+                return;
+            }
+            
+            // Show loading
+            messageDiv.innerHTML = '<small style="color: #17a2b8;"><i class="fas fa-spinner fa-spin me-2"></i>Validating...</small>';
+            
+            // Call backend to validate coupon
+            fetch('/validate-coupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    coupon_code: couponCode,
+                    plan_amount: currentPlanSelection.amount
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.valid) {
+                    appliedCoupon = data;
+                    messageDiv.innerHTML = `<small style="color: #28a745;"><i class="fas fa-check-circle me-2"></i>${data.message}</small>`;
+                    
+                    // Show discount breakdown
+                    const originalPrice = currentPlanSelection.amount / 100;
+                    const discountAmount = data.discount_amount / 100;
+                    const finalPrice = data.final_amount / 100;
+                    
+                    document.getElementById('discountPercent').textContent = data.discount_percent || Math.round((discountAmount / originalPrice) * 100);
+                    document.getElementById('discountAmount').textContent = `-₹${discountAmount.toLocaleString()}`;
+                    document.getElementById('finalPriceDisplay').textContent = `₹${finalPrice.toLocaleString()}`;
+                    document.getElementById('discountRow').style.display = 'flex';
+                } else {
+                    appliedCoupon = null;
+                    messageDiv.innerHTML = `<small style="color: #dc3545;"><i class="fas fa-times-circle me-2"></i>${data.message}</small>`;
+                    document.getElementById('discountRow').style.display = 'none';
+                    
+                    // Reset to original price
+                    const originalPrice = currentPlanSelection.amount / 100;
+                    document.getElementById('finalPriceDisplay').textContent = `₹${originalPrice.toLocaleString()}`;
+                }
+            })
+            .catch(error => {
+                console.error('Coupon validation error:', error);
+                messageDiv.innerHTML = '<small style="color: #dc3545;"><i class="fas fa-exclamation-circle me-2"></i>Error validating coupon</small>';
+            });
+        }
+
+        // Proceed to payment with coupon applied
+        function proceedToPayment() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
+            modal.hide();
+            
+            // Use discounted amount if coupon is applied
+            const finalAmount = appliedCoupon ? appliedCoupon.final_amount : currentPlanSelection.amount;
+            const couponCode = appliedCoupon ? appliedCoupon.coupon_code : null;
+            
+            // Special handling for 100% discount (free subscription)
+            if (finalAmount === 0) {
+                activateFreeSubscription(currentPlanSelection.planName, currentPlanSelection.validity, couponCode);
+            } else {
+                initiatePayment(currentPlanSelection.planName, finalAmount, currentPlanSelection.validity, couponCode);
+            }
+        }
+
+        // Activate free subscription (100% discount)
+        function activateFreeSubscription(planName, validity, couponCode) {
+            fetch('/activate-free-subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    plan: planName,
+                    validity: validity,
+                    coupon_code: couponCode
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('🎉 Subscription activated successfully! Enjoy your free access.');
+                    window.location.href = '/account?success=1';
+                } else {
+                    alert('Error activating subscription: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while activating your subscription.');
+            });
+        }
+
+        // Separate function to initiate Razorpay payment
+        function initiatePayment(planName, amount, validity, couponCode = null) {
+            // Razorpay payment options
+            const options = {
+                key: '{{ razorpay_key_id }}',
+                amount: amount, // Amount in paise (₹1,299 = 129900 paise)
+                currency: 'INR',
+                name: 'MG F&O Stocks Dashboard',
+                description: `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan - ${validity}`,
+                image: 'https://mglivescan.replit.app/static/logo.png',
+                handler: function (response) {
+                    // Payment success
+                    alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+                    
+                    // Send payment details to backend
+                    fetch('/process-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payment_id: response.razorpay_payment_id,
+                            plan: planName,
+                            amount: amount,
+                            validity: validity,
+                            coupon_code: couponCode
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/account?success=1';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Payment recorded but there was an error. Please contact support.');
+                    });
+                },
+                prefill: {
+                    name: '',
+                    email: '',
+                    contact: ''
+                },
+                notes: {
+                    plan: planName,
+                    validity: validity
+                },
+                theme: {
+                    color: '#4da6ff'
+                },
+                modal: {
+                    ondismiss: function() {
+                        console.log('Payment cancelled');
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        }
+    </script>
+
+</body>
+</html>

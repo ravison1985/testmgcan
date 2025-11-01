@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MG Heatmap - F&O Stocks</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 25%, #2a2d3e 50%, #1a1f2e 75%, #0f1419 100%);
+            min-height: 100vh;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(17, 24, 39, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10000;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        .heatmap-container {
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .search-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .search-input {
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px solid rgba(100, 116, 139, 0.3);
+            color: #ffffff !important;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(17, 24, 39, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            color: #ffffff !important;
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 20px;
+        }
+        
+        .stock-card {
+            background: linear-gradient(145deg, rgba(17, 24, 39, 0.85), rgba(30, 41, 59, 0.75));
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 20px;
+            padding: 10px 12px;
+            border: 1px solid;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .stock-row-1 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stock-row-2 {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 4px;
+        }
+        
+        .separator {
+            color: rgba(156, 163, 175, 0.5);
+            font-size: 0.8rem;
+            font-weight: 300;
+            margin: 0 2px;
+        }
+        
+        :root[data-theme="light"] .separator {
+            color: rgba(100, 116, 139, 0.6);
+        }
+        
+        .stock-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .stock-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, currentColor, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        
+        .stock-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stock-card:hover::after {
+            opacity: 0.08;
+        }
+        
+        .stock-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 
+                        0 0 40px currentColor,
+                        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+            border-color: currentColor;
+        }
+        
+        .stock-card.positive {
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+        }
+        
+        .stock-card.positive:hover {
+            border-color: #22c55e;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 
+                        0 0 40px rgba(34, 197, 94, 0.3),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        }
+        
+        .stock-card.negative {
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        
+        .stock-card.negative:hover {
+            border-color: #ef4444;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 
+                        0 0 40px rgba(239, 68, 68, 0.3),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        }
+        
+        .stock-card.neutral {
+            border-color: rgba(100, 116, 139, 0.4);
+            color: #94a3b8;
+        }
+        
+        .stock-card.neutral:hover {
+            border-color: #94a3b8;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 
+                        0 0 40px rgba(148, 163, 184, 0.3),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        }
+        
+        .stock-card.rapid-move {
+            animation: pulse-glow 2s ease-in-out infinite;
+            border-width: 2px;
+        }
+        
+        .stock-card.rapid-move.positive {
+            border-color: #22c55e;
+        }
+        
+        .stock-card.rapid-move.negative {
+            border-color: #ef4444;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                            0 0 20px currentColor,
+                            inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                            0 0 40px currentColor,
+                            0 0 60px currentColor,
+                            inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        .badge-rapid {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+            animation: badge-pulse 1.5s ease-in-out infinite;
+        }
+        
+        .badge-high-vol {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            animation: badge-pulse 1.5s ease-in-out infinite;
+            font-size: 0.35rem;
+            padding: 0px 2px;
+            line-height: 1;
+        }
+        
+        .stock-card.high-volume {
+            border: 3px solid #3b82f6;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                        0 0 30px rgba(59, 130, 246, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        .stock-card.high-volume:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 
+                        0 0 50px rgba(59, 130, 246, 0.5),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        }
+        
+        .stock-card.near-high {
+            border-width: 3px;
+            border-color: currentColor;
+        }
+        
+        .stock-card.near-high.positive {
+            border-color: #22c55e;
+        }
+        
+        .stock-card.near-high.negative {
+            border-color: #ef4444;
+        }
+        
+        .stock-card.max-dark-border {
+            border-width: 4px;
+            border-color: currentColor;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                        0 0 30px currentColor,
+                        inset 0 2px 4px rgba(255, 255, 255, 0.15);
+        }
+        
+        .stock-card.max-dark-border.positive {
+            border-color: #10b981;
+        }
+        
+        .stock-card.max-dark-border.negative {
+            border-color: #dc2626;
+        }
+        
+        @keyframes badge-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .stock-symbol {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+        
+        .indicator-badges {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        
+        .indicator-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-o-h {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+        }
+        
+        .badge-o-l {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+        }
+        
+        .stock-ltp {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        
+        .stock-change {
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        
+        .stock-change i {
+            font-size: 0.65rem;
+        }
+        
+        .stock-metrics {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+        
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        
+        .metric-label {
+            color: #9ca3af;
+            font-size: 0.6rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: #fff;
+        }
+        
+        .metric-value.positive {
+            color: #22c55e;
+        }
+        
+        .metric-value.negative {
+            color: #ef4444;
+        }
+        
+        .rvol-extreme {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+        
+        .rvol-high {
+            color: #f97316 !important;
+            font-weight: 700;
+        }
+        
+        .rvol-medium {
+            color: #fbbf24 !important;
+            font-weight: 600;
+        }
+        
+        .rvol-low {
+            color: #ffffff !important;
+            font-weight: 500;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .stats-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .help-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+        
+        .modal {
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 16px;
+            color: #fff;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(100, 116, 139, 0.3);
+        }
+        
+        .feature-section {
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            color: #3b82f6;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feature-item {
+            margin-bottom: 12px;
+            padding-left: 20px;
+        }
+        
+        .feature-item strong {
+            color: #22c55e;
+        }
+        
+        .badge-example {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .heatmap-grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 4px;
+            }
+            
+            .stock-card {
+                padding: 8px;
+                border-radius: 12px;
+                gap: 6px;
+            }
+            
+            .stock-row-1 {
+                gap: 6px;
+            }
+            
+            .stock-row-2 {
+                gap: 4px;
+                padding-left: 2px;
+            }
+            
+            .stock-symbol {
+                font-size: 0.65rem;
+            }
+            
+            .stock-ltp {
+                font-size: 0.7rem;
+            }
+            
+            .stock-change {
+                font-size: 0.6rem;
+            }
+            
+            .metric-label {
+                font-size: 0.52rem;
+            }
+            
+            .metric-value {
+                font-size: 0.6rem;
+            }
+            
+            .stock-metrics {
+                gap: 4px;
+            }
+            
+            .metric {
+                gap: 2px;
+            }
+            
+            .separator {
+                font-size: 0.65rem;
+            }
+            
+            .indicator-badge {
+                font-size: 0.45rem;
+                padding: 1px 3px;
+            }
+            
+            .badge-high-vol {
+                font-size: 0.3rem;
+                padding: 0px 1px;
+                line-height: 1;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+            
+            .stat-value {
+                font-size: 0.75rem;
+            }
+            
+            .stats-bar {
+                gap: 15px;
+                padding: 8px 15px;
+            }
+        }
+        
+        /* Hamburger Menu Styles */
+        .hamburger-icon {
+            width: 20px;
+            height: 15px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .hamburger-icon span {
+            display: block;
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 1px;
+            opacity: 1;
+            left: 0;
+            transition: .25s ease-in-out;
+        }
+        
+        .hamburger-icon span:nth-child(1) { top: 0px; }
+        .hamburger-icon span:nth-child(2) { top: 6px; }
+        .hamburger-icon span:nth-child(3) { top: 12px; }
+        
+        .mobile-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(20, 25, 35, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            min-width: 200px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .mobile-menu-dropdown.show { display: block; }
+        
+        .mobile-menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+        
+        .mobile-menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        .mobile-menu-item:last-child { border-bottom: none; }
+        
+        .mobile-menu-divider {
+            border-top: 1px solid #444;
+            margin: 4px 0;
+        }
+        
+        .mobile-menu-header {
+            padding: 8px 16px;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile-menu-item .badge { float: right; }
+        
+        .navbar-logo {
+            height: 35px;
+            width: 35px;
+        }
+        
+        .navbar-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            line-height: 1.1;
+            color: #4da6ff !important;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            border-radius: 8px;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 193, 7, 0.25);
+            border-color: #ffc107;
+            transform: scale(1.05);
+        }
+        
+        /* LIGHT THEME STYLES */
+        :root[data-theme="light"] body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #dee2e6 50%, #e9ecef 75%, #f8f9fa 100%) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .navbar-title {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .theme-toggle {
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.3) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .search-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        :root[data-theme="light"] .search-input {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input:focus {
+            background: #fff !important;
+            border-color: #0d6efd !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input::placeholder {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stock-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.9)) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(0, 0, 0, 0.02) !important;
+        }
+        
+        :root[data-theme="light"] .stock-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 
+                        0 0 20px currentColor,
+                        inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        :root[data-theme="light"] .stock-symbol {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .stock-ltp {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .metric-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stats-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        :root[data-theme="light"] .stat-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stat-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .help-btn {
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.3) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .help-btn:hover {
+            background: rgba(13, 110, 253, 0.2) !important;
+            border-color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .modal-content {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.95)) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .modal-footer {
+            border-top-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .feature-title {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item {
+            color: #000 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-header {
+            color: #000 !important;
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-bottom: 1px solid rgba(13, 110, 253, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-divider {
+            border-top: 1px solid #dee2e6 !important;
+        }
+        
+        :root[data-theme="light"] .hamburger-icon span {
+            background: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar .btn-outline-warning,
+        :root[data-theme="light"] .navbar .btn-outline-info {
+            border: none !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .btn-close {
+            filter: invert(1);
+        }
+        
+        /* Desktop Navigation Strip Styling */
+        .desktop-nav-strip {
+            position: relative;
+            z-index: 1020;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-strip-btn {
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+        
+        .nav-strip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+        
+        .nav-strip-btn.btn-outline-primary:hover {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #4da6ff;
+        }
+        
+        .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #5cb85c;
+        }
+        
+        .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        /* Light Theme Navigation Strip */
+        :root[data-theme="light"] .desktop-nav-strip {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.95)) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn {
+            border-color: rgba(13, 110, 253, 0.4) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success {
+            border-color: rgba(25, 135, 84, 0.4) !important;
+            color: #198754 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning {
+            border-color: rgba(255, 193, 7, 0.6) !important;
+            color: #f59e0b !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning.active {
+            background-color: rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger {
+            border-color: rgba(220, 53, 69, 0.4) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.2) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- High/Low Alert Container -->
+    <div id="alertContainer" class="alert-container">
+        <!-- Dynamic alerts will be inserted here -->
+    </div>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-1">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center flex-grow-0" href="{{ url_for('dashboard') }}" style="margin-right: 0;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="MG Logo" class="navbar-logo me-2">
+                <div class="navbar-title">MG Heatmap</div>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <div class="me-3 d-flex align-items-center" title="WebSocket Status">
+                    <i class="fas fa-circle" style="font-size: 10px; color: #6c757d;"></i>
+                </div>
+                
+                <button class="btn btn-sm theme-toggle me-3" onclick="toggleTheme()" title="Toggle Theme" id="themeToggleBtn">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <button class="btn btn-sm btn-outline-warning me-3 d-flex align-items-center" onclick="toggleAlerts()" title="Toggle Alerts" id="alertToggleBtn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                
+                <button class="btn btn-sm btn-outline-info me-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#userGuideModal" title="User Guide">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                
+                <div class="me-3">
+                    {% if current_user.profile_image_url %}
+                    <img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #4da6ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button">
+                    {% else %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #4da6ff; border: 2px solid #66b3ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button">
+                        <i class="fas fa-user" style="font-size: 16px; color: white;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div style="position: relative;" class="d-md-none">
+                    <button class="btn btn-outline-light btn-sm" type="button" id="mobileMenuToggle" style="border: none; padding: 4px 8px;">
+                        <div class="hamburger-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                    <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+                        <div class="mobile-menu-header d-flex align-items-center mb-2" style="padding: 12px; background: rgba(77, 166, 255, 0.1); border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                            {% if current_user.profile_image_url %}
+                            <img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid #4da6ff;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: #4da6ff; border: 2px solid #66b3ff;">
+                                <i class="fas fa-user" style="font-size: 18px; color: white;"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: bold; font-size: 0.9rem;">{{ current_user.username }}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">{{ current_user.email }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('account') }}" class="mobile-menu-item">
+                            <i class="fas fa-user-circle me-2"></i>Account
+                        </a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('dashboard') }}" class="mobile-menu-item">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('all_charts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>100D-Levels
+                        </a>
+                        <a href="{{ url_for('mgheatmap') }}" class="mobile-menu-item">
+                            <i class="fas fa-th me-2"></i>MG Heatmap
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-line me-2"></i>5D Line Charts
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('volume_profile') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>Volume Profile
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="mobile-menu-item">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Navigation Strip (Hidden on Mobile) -->
+    <div class="desktop-nav-strip d-none d-md-block" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.9)); border-bottom: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+        <div class="container-fluid px-3 py-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center justify-content-center">
+                <!-- Dashboard Page Sections -->
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#market-overview'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Market
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#niftyTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-table me-1"></i>F&O
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#camarillaTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-layer-group me-1"></i>Camarilla
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#cprTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-crosshairs me-1"></i>CPR
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#fibonacciTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Fibonacci
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#levels-scan'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-search me-1"></i>Levels
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#rvol-analysis'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-bar me-1"></i>RVOL
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#price-action'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-arrows-alt me-1"></i>Price Action
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(77, 166, 255, 0.3); margin: 0 0.5rem;"></div>
+                
+                <!-- Other Pages -->
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('all_charts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>100D-Levels
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn active" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background-color: rgba(255, 193, 7, 0.2);">
+                    <i class="fas fa-th me-1"></i>MG Heatmap
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mg_linecharts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>5D Charts
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('volume_profile') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>Volume
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('technical_indicators_page') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Indicators
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                {% if current_user.is_admin() %}
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(220, 53, 69, 0.3); margin: 0 0.5rem;"></div>
+                
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('live_chart') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-candlestick me-1"></i>Live
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('admin_panel') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-user-shield me-1"></i>Admin
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="heatmap-container">
+        <div class="search-bar">
+            <div class="input-group">
+                <span class="input-group-text" style="background: rgba(17, 24, 39, 0.6); border: 2px solid rgba(100, 116, 139, 0.3); border-right: none;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" 
+                       class="form-control search-input" 
+                       id="stockSearch" 
+                       placeholder="Search stocks by symbol (e.g., RELIANCE, TCS, INFY...)"
+                       style="border-left: none;">
+            </div>
+        </div>
+
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <div class="stat-label">Total Stocks:</div>
+                <div class="stat-value" id="totalStocks">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Gainers:</div>
+                <div class="stat-value text-success" id="gainersCount">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Losers:</div>
+                <div class="stat-value text-danger" id="losersCount">-</div>
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div class="heatmap-grid" id="heatmapGrid" style="display: none;">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let refreshInterval;
+        let allStocks = [];
+        let priceHistory = {}; // Track price history for 5-min movements
+        let rapidMoveStocks = new Set(); // Track stocks with rapid movements
+
+        function trackPriceMovement(symbol, ltp) {
+            const now = Date.now();
+            
+            if (!priceHistory[symbol]) {
+                priceHistory[symbol] = [];
+            }
+            
+            // Add current price with timestamp
+            priceHistory[symbol].push({ price: ltp, timestamp: now });
+            
+            // Keep only last 6 minutes of data (to ensure we have 5 min window)
+            const sixMinutesAgo = now - (6 * 60 * 1000);
+            priceHistory[symbol] = priceHistory[symbol].filter(p => p.timestamp > sixMinutesAgo);
+            
+            // Check if we have data from 5 minutes ago
+            const fiveMinutesAgo = now - (5 * 60 * 1000);
+            const oldPrices = priceHistory[symbol].filter(p => p.timestamp <= fiveMinutesAgo);
+            
+            if (oldPrices.length > 0) {
+                const oldPrice = oldPrices[oldPrices.length - 1].price;
+                const priceChange = ((ltp - oldPrice) / oldPrice) * 100;
+                
+                if (Math.abs(priceChange) >= 1) {
+                    rapidMoveStocks.add(symbol);
+                    // Remove from rapid move set after 2 minutes
+                    setTimeout(() => {
+                        rapidMoveStocks.delete(symbol);
+                        // Re-render to remove the indicator
+                        filterAndRenderStocks();
+                    }, 2 * 60 * 1000);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        let retryCount = 0;
+        const MAX_RETRIES = 10; // Try for up to 10 seconds
+        
+        function fetchHeatmapData() {
+            fetch('/api/heatmap-data')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        retryCount = 0; // Reset retry counter on success
+                        allStocks = result.data;
+                        
+                        // Track price movements for each stock
+                        allStocks.forEach(stock => {
+                            trackPriceMovement(stock.symbol, stock.ltp);
+                        });
+                        
+                        filterAndRenderStocks();
+                        updateStats(allStocks);
+                    } else if (result.status === 'disconnected' && retryCount < MAX_RETRIES) {
+                        // WebSocket not connected yet, retry after 1 second
+                        retryCount++;
+                        console.log(`WebSocket not connected, retrying... (${retryCount}/${MAX_RETRIES})`);
+                        setTimeout(fetchHeatmapData, 1000);
+                    } else {
+                        console.error('Error fetching heatmap data:', result.message);
+                        showError(result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Failed to fetch data');
+                });
+        }
+
+        function filterAndRenderStocks() {
+            const searchTerm = document.getElementById('stockSearch').value.toUpperCase();
+            let filteredStocks = searchTerm 
+                ? allStocks.filter(stock => stock.symbol.toUpperCase().includes(searchTerm))
+                : allStocks;
+            
+            // Sort by RVOL in descending order (highest RVOL first)
+            filteredStocks = filteredStocks.sort((a, b) => b.rvol - a.rvol);
+            
+            renderHeatmap(filteredStocks);
+        }
+
+        function renderHeatmap(stocks) {
+            const grid = document.getElementById('heatmapGrid');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            grid.innerHTML = '';
+            
+            if (stocks.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center text-muted py-5">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <p class="fs-5">No stocks found matching your search</p>
+                    </div>
+                `;
+            } else {
+                stocks.forEach(stock => {
+                    const card = createStockCard(stock);
+                    grid.appendChild(card);
+                });
+            }
+            
+            spinner.style.display = 'none';
+            grid.style.display = 'grid';
+        }
+
+        function getRvolColorClass(rvol) {
+            if (rvol > 3) return 'rvol-extreme';
+            if (rvol >= 2) return 'rvol-high';
+            if (rvol >= 1) return 'rvol-medium';
+            return 'rvol-low';
+        }
+
+        function createStockCard(stock) {
+            const card = document.createElement('div');
+            const cardClass = stock.change_percent > 0 ? 'positive' : (stock.change_percent < 0 ? 'negative' : 'neutral');
+            const isRapidMove = rapidMoveStocks.has(stock.symbol);
+            const isHighVolume = stock.rvol > 2;
+            // Darker border for two conditions:
+            // 1. Strong stocks: close to high AND far from low (pct_from_low > 1 && pct_from_high > -1)
+            // 2. Fallen stocks: fell more than 1% from high (pct_from_high <= -1)
+            const isNearHigh = (stock.pct_from_low > 1 && stock.pct_from_high > -1) || stock.pct_from_high <= -1;
+            
+            // Max dark border for extreme conditions (EITHER):
+            // 1. More than 2% from low (pct_from_low > 2) OR
+            // 2. More than 2% from high (pct_from_high < -2)
+            const isMaxDark = stock.pct_from_low > 2 || stock.pct_from_high < -2;
+            
+            card.className = `stock-card ${cardClass} ${isRapidMove ? 'rapid-move' : ''} ${isHighVolume ? 'high-volume' : ''} ${isMaxDark ? 'max-dark-border' : (isNearHigh ? 'near-high' : '')}`;
+            
+            const changeSign = stock.change_percent > 0 ? '+' : '';
+            const changeIcon = stock.change_percent > 0 ? 'fa-arrow-up' : (stock.change_percent < 0 ? 'fa-arrow-down' : 'fa-minus');
+            const indicators = [];
+            if (stock.o_equals_h) indicators.push('<span class="indicator-badge badge-o-h">O=H</span>');
+            if (stock.o_equals_l) indicators.push('<span class="indicator-badge badge-o-l">O=L</span>');
+            if (isRapidMove) indicators.push('<span class="indicator-badge badge-rapid">⚡ 1%+ 5Min</span>');
+            if (isHighVolume) indicators.push('<span class="indicator-badge badge-high-vol">🔥 High Vol</span>');
+            
+            // Add TradingView chart link (like dashboard stocks)
+            const cleanSymbol = stock.symbol.replace('NSE:', '').replace('-EQ', '');
+            const chartSymbol = `NSE:${cleanSymbol.replace('-', '_')}`;
+            const chartUrl = `https://in.tradingview.com/chart/?symbol=${chartSymbol}`;
+            
+            card.innerHTML = `
+                <div class="stock-row-1">
+                    <div class="stock-symbol">${stock.symbol}</div>
+                    ${indicators.length > 0 ? '<span class="separator">|</span>' : ''}
+                    <div class="indicator-badges">${indicators.join('')}</div>
+                    ${indicators.length > 0 ? '<span class="separator">|</span>' : ''}
+                    <div class="stock-ltp">₹${stock.ltp.toFixed(2)}</div>
+                    <span class="separator">|</span>
+                    <div class="stock-change">
+                        <i class="fas ${changeIcon}"></i>
+                        ${changeSign}${stock.change_percent.toFixed(2)}%
+                    </div>
+                </div>
+                <div class="stock-row-2">
+                    <div class="stock-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Open:</span>
+                            <span class="metric-value ${stock.pct_from_open >= 0 ? 'positive' : 'negative'}">
+                                ${stock.pct_from_open >= 0 ? '+' : ''}${stock.pct_from_open.toFixed(2)}%
+                            </span>
+                        </div>
+                        <span class="separator">|</span>
+                        <div class="metric">
+                            <span class="metric-label">High:</span>
+                            <span class="metric-value ${stock.pct_from_high >= 0 ? 'positive' : 'negative'}">
+                                ${stock.pct_from_high >= 0 ? '+' : ''}${stock.pct_from_high.toFixed(2)}%
+                            </span>
+                        </div>
+                        <span class="separator">|</span>
+                        <div class="metric">
+                            <span class="metric-label">Low:</span>
+                            <span class="metric-value ${stock.pct_from_low >= 0 ? 'positive' : 'negative'}">
+                                ${stock.pct_from_low >= 0 ? '+' : ''}${stock.pct_from_low.toFixed(2)}%
+                            </span>
+                        </div>
+                        <span class="separator">|</span>
+                        <div class="metric">
+                            <span class="metric-label">RVOL:</span>
+                            <span class="metric-value ${getRvolColorClass(stock.rvol)}">${stock.rvol.toFixed(2)}x</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Open TradingView chart on click
+            card.onclick = () => window.open(chartUrl, '_blank');
+            
+            return card;
+        }
+
+        function updateStats(stocks) {
+            const gainers = stocks.filter(s => s.change_percent > 0).length;
+            const losers = stocks.filter(s => s.change_percent < 0).length;
+            
+            document.getElementById('totalStocks').textContent = stocks.length;
+            document.getElementById('gainersCount').textContent = gainers;
+            document.getElementById('losersCount').textContent = losers;
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('heatmapGrid');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            spinner.style.display = 'none';
+            grid.style.display = 'block';
+            grid.innerHTML = `
+                <div class="col-12 text-center text-danger py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <p class="fs-5">${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="refreshData()">Retry</button>
+                </div>
+            `;
+        }
+
+        function refreshData() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+            document.getElementById('heatmapGrid').style.display = 'none';
+            fetchHeatmapData();
+        }
+
+        document.getElementById('stockSearch').addEventListener('input', filterAndRenderStocks);
+        
+        // Handle window resize to re-render with correct card limits
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                filterAndRenderStocks();
+            }, 250); // Debounce resize events
+        });
+
+        fetchHeatmapData();
+        refreshInterval = setInterval(fetchHeatmapData, 1000);
+    </script>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">
+                        <i class="fas fa-book-open me-2"></i>MG Heatmap - User Guide
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-palette"></i>
+                            Color Coding
+                        </div>
+                        <div class="feature-item">
+                            <strong>Green Cards:</strong> Stocks that are gaining (price is up)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Red Cards:</strong> Stocks that are losing (price is down)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Gray Cards:</strong> Stocks with no change (flat)
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-border-style"></i>
+                            Special Borders
+                        </div>
+                        <div class="feature-item">
+                            <strong>Regular Thick Border (3px):</strong> Shows on stocks with notable movements:
+                            <br>• <strong>Strong stocks near highs:</strong> Less than 1% below high AND more than 1% above low
+                            <br>• <strong>Stocks that fell:</strong> More than 1% below the day's high
+                        </div>
+                        <div class="feature-item">
+                            <strong>MAX Dark Border (4px + glow):</strong> Shows on stocks with EXTREME movements:
+                            <br>• More than 2% above the low OR
+                            <br>• More than 2% below the high
+                            <br>This highlights very strong or very weak stocks!
+                        </div>
+                        <div class="feature-item">
+                            <strong>Blue Border (3px):</strong> High volume stock (RVOL > 2x). More trading activity than usual.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-tags"></i>
+                            Indicator Badges
+                        </div>
+                        <div class="feature-item">
+                            <strong>O=H</strong> (Green badge): Opening price equals the day's high. Stock opened at its highest point.
+                        </div>
+                        <div class="feature-item">
+                            <strong>O=L</strong> (Red badge): Opening price equals the day's low. Stock opened at its lowest point.
+                        </div>
+                        <div class="feature-item">
+                            <strong>⚡ 1%+ 5Min</strong> (Yellow badge): Stock moved more than 1% in the last 5 minutes. Fast price movement!
+                        </div>
+                        <div class="feature-item">
+                            <strong>🔥 High Vol</strong> (Blue badge): Stock has high relative volume (RVOL > 2x). More than double the usual trading volume.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-chart-line"></i>
+                            Price Metrics
+                        </div>
+                        <div class="feature-item">
+                            <strong>LTP:</strong> Last Traded Price - the current price of the stock
+                        </div>
+                        <div class="feature-item">
+                            <strong>Change:</strong> How much the price changed today (in rupees and percentage)
+                        </div>
+                        <div class="feature-item">
+                            <strong>% Open:</strong> How far the current price is from the opening price
+                        </div>
+                        <div class="feature-item">
+                            <strong>% High:</strong> How far the current price is from today's highest price (negative means below high)
+                        </div>
+                        <div class="feature-item">
+                            <strong>% Low:</strong> How far the current price is from today's lowest price (positive means above low)
+                        </div>
+                        <div class="feature-item">
+                            <strong>RVOL:</strong> Relative Volume - compares today's trading volume to the average. Higher means more interest in the stock today.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-fire"></i>
+                            RVOL Colors
+                        </div>
+                        <div class="feature-item">
+                            <strong style="color: #3b82f6;">Blue Gradient (>3x):</strong> Extreme volume - very high trading activity
+                        </div>
+                        <div class="feature-item">
+                            <strong style="color: #f97316;">Orange (2-3x):</strong> High volume - strong trading activity
+                        </div>
+                        <div class="feature-item">
+                            <strong style="color: #fbbf24;">Yellow (1-2x):</strong> Medium volume - normal to above average
+                        </div>
+                        <div class="feature-item">
+                            <strong style="color: #ffffff;">White (<1x):</strong> Low volume - below average trading
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-search"></i>
+                            Search & Stats
+                        </div>
+                        <div class="feature-item">
+                            <strong>Search Bar:</strong> Type any stock symbol (e.g., RELIANCE, TCS) to quickly find and filter stocks
+                        </div>
+                        <div class="feature-item">
+                            <strong>Stats Bar:</strong> Shows total stocks, number of gainers (green), and losers (red)
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-sync-alt"></i>
+                            Live Updates
+                        </div>
+                        <div class="feature-item">
+                            The heatmap automatically refreshes every 5 seconds with live market data, so you're always seeing the latest prices and movements!
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuDropdown = document.getElementById('mobileMenuDropdown');
+            
+            if (mobileMenuToggle && mobileMenuDropdown) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    mobileMenuDropdown.classList.toggle('show');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuToggle.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                        mobileMenuDropdown.classList.remove('show');
+                    }
+                });
+            }
+        });
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const root = document.documentElement;
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update icon
+            if (themeToggleBtn) {
+                const icon = themeToggleBtn.querySelector('i');
+                icon.className = newTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const root = document.documentElement;
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            
+            root.setAttribute('data-theme', savedTheme);
+            
+            if (themeToggleBtn) {
+                const icon = themeToggleBtn.querySelector('i');
+                icon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+
+        // Alert Toggle Functionality
+        let alertsVisible = localStorage.getItem('alertsVisible') !== 'false';
+
+        function toggleAlerts() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (!alertContainer) {
+                console.error('❌ Alert container not found!');
+                return;
+            }
+
+            alertsVisible = !alertsVisible;
+            localStorage.setItem('alertsVisible', alertsVisible.toString());
+
+            if (alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+                console.log('✅ ALERTS SHOWN');
+            } else {
+                alertContainer.classList.remove('show');
+                if (button) {
+                    button.classList.remove('active');
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }
+                console.log('❌ ALERTS HIDDEN');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (alertContainer && alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+            }
+        });
+    </script>
+
+    <!-- User Guide Modal -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background: linear-gradient(135deg, #1a1f2e 0%, #2a2d3e 100%); color: #ffffff; border: 1px solid rgba(77, 166, 255, 0.3);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                    <h5 class="modal-title"><i class="fas fa-book-open me-2 text-info"></i>MG Heatmap User Guide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-info"><i class="fas fa-info-circle me-2"></i>Overview</h6>
+                    <p>MG Heatmap visualizes all F&O stocks performance with color-coded heatmap showing intraday percentage changes at a glance.</p>
+                    <h6 class="text-info mt-3"><i class="fas fa-star me-2"></i>Key Features</h6>
+                    <ul>
+                        <li><strong>Color-Coded Heatmap:</strong> Green (positive), Red (negative) with intensity based on % change</li>
+                        <li><strong>Real-time Updates:</strong> Live price and percentage updates via WebSocket</li>
+                        <li><strong>Grid Layout:</strong> All stocks displayed in responsive grid format</li>
+                        <li><strong>Quick Visual Analysis:</strong> Instantly identify market leaders and laggards</li>
+                    </ul>
+                    <h6 class="text-info mt-3"><i class="fas fa-palette me-2"></i>Color Coding</h6>
+                    <ul>
+                        <li><strong>Dark Green:</strong> Strong gainers (>2% up)</li>
+                        <li><strong>Light Green:</strong> Moderate gainers (0-2% up)</li>
+                        <li><strong>Light Red:</strong> Moderate losers (0-2% down)</li>
+                        <li><strong>Dark Red:</strong> Strong losers (>2% down)</li>
+                    </ul>
+                    <h6 class="text-info mt-3"><i class="fas fa-link me-2"></i>Quick Navigation</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-home me-1"></i>Dashboard</a>
+                        <a href="{{ url_for('all_charts') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-area me-1"></i>100D Levels</a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-line me-1"></i>5D Line Charts</a>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(77, 166, 255, 0.3);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

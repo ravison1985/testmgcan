@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Fibonacci Levels Database</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .table-responsive {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+        .level-value {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .fib-level {
+            color: #fd7e14;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_panel') }}" class="text-decoration-none">Admin Panel</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_database') }}" class="text-decoration-none">Database</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Fibonacci Levels</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0"><i class="fas fa-chart-area me-2"></i>Fibonacci Levels Database</h1>
+            <a href="{{ url_for('admin_database') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Database
+            </a>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="stat-card">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h4 class="mb-0">{{ total_records }}</h4>
+                    <small>Total Records</small>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="mb-0">{{ (records|length) }}</h4>
+                    <small>Current Page</small>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="mb-0">{{ total_pages }}</h4>
+                    <small>Total Pages</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Controls -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" name="search" value="{{ search }}" 
+                                   placeholder="Search by symbol...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="per_page" class="form-select">
+                            <option value="25" {% if per_page == 25 %}selected{% endif %}>25 per page</option>
+                            <option value="50" {% if per_page == 50 %}selected{% endif %}>50 per page</option>
+                            <option value="100" {% if per_page == 100 %}selected{% endif %}>100 per page</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>Fibonacci Levels Data
+                    {% if search %}
+                        <span class="badge bg-primary ms-2">Filtered by: {{ search }}</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Date</th>
+                                <th>Prev Close</th>
+                                <th class="fib-level">Pivot Point</th>
+                                <th class="fib-level">R1 (61.8%)</th>
+                                <th class="fib-level">R2 (123.6%)</th>
+                                <th class="fib-level">R3 (161.8%)</th>
+                                <th class="fib-level">S1 (61.8%)</th>
+                                <th class="fib-level">S2 (123.6%)</th>
+                                <th class="fib-level">S3 (161.8%)</th>
+                                <th class="fib-level">Level 38.2%</th>
+                                <th class="fib-level">Level 50%</th>
+                                <th>Current LTP</th>
+                                <th>Break Level</th>
+                                <th>Trend</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ record.symbol }}</span></td>
+                                <td>{{ record.date.strftime('%Y-%m-%d') if record.date else 'N/A' }}</td>
+                                <td class="level-value">₹{{ "%.2f"|format(record.prev_close) if record.prev_close else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.pp) if record.pp else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.r1_61) if record.r1_61 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.r2_123) if record.r2_123 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.r3_161) if record.r3_161 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.s1_61) if record.s1_61 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.s2_123) if record.s2_123 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.s3_161) if record.s3_161 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.level_38) if record.level_38 else 'N/A' }}</td>
+                                <td class="level-value fib-level">₹{{ "%.2f"|format(record.level_50) if record.level_50 else 'N/A' }}</td>
+                                <td class="level-value">₹{{ "%.2f"|format(record.current_ltp) if record.current_ltp else 'N/A' }}</td>
+                                <td><span class="badge {% if record.break_level == 'Above' %}bg-success{% elif record.break_level == 'Below' %}bg-danger{% else %}bg-secondary{% endif %}">{{ record.break_level or 'N/A' }}</span></td>
+                                <td><span class="badge {% if record.trend_direction == 'Bullish' %}bg-success{% elif record.trend_direction == 'Bearish' %}bg-danger{% else %}bg-secondary{% endif %}">{{ record.trend_direction or 'N/A' }}</span></td>
+                                <td><small class="text-muted">{{ record.created_at.strftime('%m/%d %H:%M') if record.created_at else 'N/A' }}</small></td>
+                                <td><small class="text-muted">{{ record.updated_at.strftime('%m/%d %H:%M') if record.updated_at else 'N/A' }}</small></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="17" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <br>No fibonacci levels found{% if search %} for "{{ search }}"{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <nav aria-label="Table pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_fibonacci_levels', page=page-1, per_page=per_page, search=search) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in range(1, total_pages + 1) %}
+                {% if page_num == page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= page - 1 and page_num <= page + 1) %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_fibonacci_levels', page=page_num, per_page=per_page, search=search) }}">{{ page_num }}</a>
+                </li>
+                {% elif page_num == 4 or page_num == total_pages - 3 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_fibonacci_levels', page=page+1, per_page=per_page, search=search) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

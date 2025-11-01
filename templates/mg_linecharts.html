@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MG 5D Line Charts - F&O Stocks</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        html {
+            overflow-x: hidden;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 25%, #2a2d3e 50%, #1a1f2e 75%, #0f1419 100%);
+            min-height: 100vh;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .navbar {
+            background: rgba(17, 24, 39, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10000;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        
+        .charts-container {
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .search-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .search-input {
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px solid rgba(100, 116, 139, 0.3);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(17, 24, 39, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .chart-card {
+            background: linear-gradient(145deg, rgba(17, 24, 39, 0.85), rgba(30, 41, 59, 0.75));
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+        }
+        
+        .chart-card.break-high {
+            animation: pulse-glow-green 2s ease-in-out infinite;
+            border-width: 2px;
+            border-color: #22c55e;
+        }
+        
+        .chart-card.break-low {
+            animation: pulse-glow-red 2s ease-in-out infinite;
+            border-width: 2px;
+            border-color: #ef4444;
+        }
+        
+        @keyframes pulse-glow-green {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                            0 0 20px rgba(34, 197, 94, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                            0 0 40px rgba(34, 197, 94, 0.6),
+                            0 0 60px rgba(34, 197, 94, 0.4);
+            }
+        }
+        
+        @keyframes pulse-glow-red {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                            0 0 20px rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 
+                            0 0 40px rgba(239, 68, 68, 0.6),
+                            0 0 60px rgba(239, 68, 68, 0.4);
+            }
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        
+        .stock-symbol {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.3px;
+        }
+        
+        .stock-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        .move-badge {
+            font-size: 0.5rem;
+            font-weight: 600;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            margin-left: 4px;
+        }
+        
+        .move-badge.big-move {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .chart-price-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .ltp-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .pct-change {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .pct-change.positive {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .pct-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 80px;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .stats-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 30px;
+        }
+        
+        .indices-section {
+            background: rgba(30, 35, 50, 0.9);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .indices-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #9ca3af;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .indices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .index-card {
+            background: linear-gradient(145deg, rgba(17, 24, 39, 0.85), rgba(30, 41, 59, 0.75));
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .index-card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+        }
+        
+        @media (max-width: 1024px) {
+            .indices-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            
+            .index-card {
+                padding: 6px;
+                border-radius: 12px;
+            }
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        /* Tablet and below */
+        @media (max-width: 1024px) {
+            .charts-container {
+                padding: 15px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .chart-card {
+                padding: 8px;
+                border-radius: 12px;
+            }
+            
+            .stock-symbol {
+                font-size: 0.6rem;
+            }
+            
+            .stock-badge {
+                font-size: 0.55rem;
+                padding: 2px 5px;
+            }
+            
+            .move-badge {
+                font-size: 0.45rem;
+                padding: 1px 3px;
+            }
+            
+            .ltp-value {
+                font-size: 0.7rem;
+            }
+            
+            .pct-change {
+                font-size: 0.55rem;
+                padding: 2px 5px;
+            }
+            
+            .chart-wrapper {
+                height: 60px;
+            }
+            
+            .chart-header {
+                margin-bottom: 5px;
+                padding-bottom: 5px;
+            }
+            
+            .chart-price-info {
+                margin-bottom: 5px;
+            }
+            
+            .search-input {
+                font-size: 0.8rem;
+            }
+            
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            
+            .stat-value {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Mobile phones */
+        @media (max-width: 768px) {
+            .charts-container {
+                padding: 4px;
+            }
+            
+            /* Navbar */
+            .navbar {
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            .navbar-brand {
+                font-size: 0.85rem !important;
+                white-space: nowrap;
+            }
+            
+            .navbar-brand i {
+                font-size: 0.8rem;
+                margin-right: 4px !important;
+            }
+            
+            /* Search Bar */
+            .search-bar {
+                padding: 6px 8px;
+                margin-bottom: 12px;
+                border-radius: 8px;
+            }
+            
+            .search-input {
+                font-size: 0.7rem;
+                padding: 6px 8px;
+            }
+            
+            .search-input::placeholder {
+                font-size: 0.65rem;
+            }
+            
+            .input-group-text {
+                padding: 6px 8px !important;
+            }
+            
+            .input-group-text i {
+                font-size: 0.75rem;
+            }
+            
+            /* Stats Bar */
+            .stats-bar {
+                padding: 6px 10px;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-bottom: 12px;
+            }
+            
+            .stat-item {
+                gap: 4px;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+                white-space: nowrap;
+            }
+            
+            .stat-value {
+                font-size: 0.75rem;
+            }
+            
+            /* Indices Section */
+            .indices-section {
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 10px;
+            }
+            
+            .indices-title {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+            }
+            
+            .indices-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px;
+            }
+            
+            .index-card {
+                padding: 8px;
+                border-radius: 10px;
+            }
+            
+            /* Ensure index cards show symbol and prices properly */
+            .index-card .stock-symbol {
+                font-size: 0.65rem;
+            }
+            
+            .index-card .ltp-value {
+                font-size: 0.75rem;
+            }
+            
+            .index-card .pct-change {
+                font-size: 0.55rem;
+            }
+            
+            /* Stock Charts */
+            .charts-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+            }
+            
+            .chart-card {
+                padding: 6px;
+                border-radius: 10px;
+                min-width: 0;
+            }
+            
+            .chart-header {
+                margin-bottom: 4px;
+                padding-bottom: 4px;
+            }
+            
+            .stock-symbol {
+                font-size: 0.7rem;
+                letter-spacing: 0.2px;
+            }
+            
+            .stock-badge {
+                font-size: 0.55rem;
+                padding: 2px 4px;
+                border-radius: 3px;
+            }
+            
+            .chart-price-info {
+                margin-bottom: 6px;
+            }
+            
+            .ltp-value {
+                font-size: 0.75rem;
+            }
+            
+            .pct-change {
+                font-size: 0.55rem;
+                padding: 2px 5px;
+                border-radius: 3px;
+            }
+            
+            .chart-wrapper {
+                height: 70px;
+            }
+        }
+        
+        /* Small mobile phones */
+        @media (max-width: 480px) {
+            .charts-container {
+                padding: 3px;
+            }
+            
+            .navbar-brand {
+                font-size: 0.75rem !important;
+            }
+            
+            .navbar-brand i {
+                font-size: 0.7rem;
+                margin-right: 3px !important;
+            }
+            
+            .search-bar {
+                padding: 5px 6px;
+                margin-bottom: 10px;
+            }
+            
+            .search-input {
+                font-size: 0.65rem;
+                padding: 5px 6px;
+            }
+            
+            .search-input::placeholder {
+                font-size: 0.6rem;
+            }
+            
+            .stats-bar {
+                padding: 5px 8px;
+                gap: 8px;
+            }
+            
+            .stat-label {
+                font-size: 0.6rem;
+            }
+            
+            .stat-value {
+                font-size: 0.7rem;
+            }
+            
+            .indices-section {
+                padding: 8px;
+                margin-bottom: 12px;
+            }
+            
+            .indices-title {
+                font-size: 0.7rem;
+                margin-bottom: 6px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 3px;
+            }
+            
+            .indices-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 6px;
+            }
+            
+            .chart-card, .index-card {
+                padding: 5px;
+                border-radius: 8px;
+                min-width: 0;
+            }
+            
+            .stock-symbol {
+                font-size: 0.65rem;
+            }
+            
+            .stock-badge {
+                font-size: 0.5rem;
+                padding: 1px 4px;
+            }
+            
+            .ltp-value {
+                font-size: 0.7rem;
+            }
+            
+            .pct-change {
+                font-size: 0.5rem;
+                padding: 1px 4px;
+            }
+            
+            .chart-wrapper {
+                height: 60px;
+            }
+        }
+        
+        .help-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+        
+        .modal {
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 16px;
+            color: #fff;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        
+        .feature-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feature-item {
+            margin-bottom: 10px;
+            padding-left: 8px;
+            line-height: 1.6;
+            color: #e5e7eb;
+        }
+        
+        .feature-item strong {
+            color: #fff;
+        }
+        
+        /* Hamburger Menu Styles */
+        .hamburger-icon {width: 20px; height: 15px; position: relative; cursor: pointer;}
+        .hamburger-icon span {display: block; position: absolute; height: 2px; width: 100%; background: #ffffff; border-radius: 1px; opacity: 1; left: 0; transition: .25s ease-in-out;}
+        .hamburger-icon span:nth-child(1) { top: 0px; }
+        .hamburger-icon span:nth-child(2) { top: 6px; }
+        .hamburger-icon span:nth-child(3) { top: 12px; }
+        .mobile-menu-dropdown {position: absolute; top: 100%; right: 0; background: rgba(20, 25, 35, 0.95); border: 1px solid #444; border-radius: 8px; min-width: 200px; z-index: 9999; display: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);}
+        .mobile-menu-dropdown.show { display: block; }
+        .mobile-menu-item {display: block; padding: 12px 16px; color: #ffffff; text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background-color 0.2s ease;}
+        .mobile-menu-item:hover {background-color: rgba(255, 255, 255, 0.1); color: #ffffff; text-decoration: none;}
+        .mobile-menu-item:last-child { border-bottom: none; }
+        .mobile-menu-divider {border-top: 1px solid #444; margin: 4px 0;}
+        .mobile-menu-header {padding: 8px 16px; color: #6c757d; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.1);}
+        .mobile-menu-item .badge { float: right; }
+        .navbar-logo {height: 35px; width: 35px;}
+        .navbar-title {font-size: 0.9rem; font-weight: bold; line-height: 1.1; color: #4da6ff !important;}
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            border-radius: 8px;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 193, 7, 0.25);
+            border-color: #ffc107;
+            transform: scale(1.05);
+        }
+        
+        /* LIGHT THEME STYLES */
+        :root[data-theme="light"] body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #dee2e6 50%, #e9ecef 75%, #f8f9fa 100%) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .navbar-title {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .theme-toggle {
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.3) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .search-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        :root[data-theme="light"] .search-input {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input:focus {
+            background: #fff !important;
+            border-color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .search-input::placeholder {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .input-group-text {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .stats-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        :root[data-theme="light"] .stat-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stat-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .indices-section {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .indices-title {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .index-card {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .index-symbol {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .chart-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .stock-symbol {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .chart-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .ltp-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item {
+            color: #000 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-header {
+            color: #000 !important;
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-bottom: 1px solid rgba(13, 110, 253, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-divider {
+            border-top: 1px solid #dee2e6 !important;
+        }
+        
+        :root[data-theme="light"] .hamburger-icon span {
+            background: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar .btn-outline-warning,
+        :root[data-theme="light"] .navbar .btn-outline-info {
+            border: none !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .modal-content {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.95)) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .modal-body {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .btn-close {
+            filter: invert(1);
+        }
+        
+        :root[data-theme="light"] .loading-text {
+            color: #000 !important;
+        }
+        
+        /* Desktop Navigation Strip Styling */
+        .desktop-nav-strip {
+            position: relative;
+            z-index: 1020;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-strip-btn {
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+        
+        .nav-strip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+        
+        .nav-strip-btn.btn-outline-primary:hover {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #4da6ff;
+        }
+        
+        .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #5cb85c;
+        }
+        
+        .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        /* Light Theme Navigation Strip */
+        :root[data-theme="light"] .desktop-nav-strip {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.95)) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn {
+            border-color: rgba(13, 110, 253, 0.4) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success {
+            border-color: rgba(25, 135, 84, 0.4) !important;
+            color: #198754 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning {
+            border-color: rgba(255, 193, 7, 0.6) !important;
+            color: #f59e0b !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning.active {
+            background-color: rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger {
+            border-color: rgba(220, 53, 69, 0.4) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.2) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- High/Low Alert Container -->
+    <div id="alertContainer" class="alert-container">
+        <!-- Dynamic alerts will be inserted here -->
+    </div>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-1">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center flex-grow-0" href="{{ url_for('dashboard') }}" style="margin-right: 0;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="MG Logo" class="navbar-logo me-2">
+                <div class="navbar-title">MG 5D Line Charts</div>
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <div class="me-3 d-flex align-items-center" title="WebSocket Status"><i class="fas fa-circle" style="font-size: 10px; color: #6c757d;"></i></div>
+                <button class="btn btn-sm theme-toggle me-3" onclick="toggleTheme()" title="Toggle Theme" id="themeToggleBtn"><i class="fas fa-moon"></i></button>
+                <button class="btn btn-sm btn-outline-warning me-3 d-flex align-items-center" onclick="toggleAlerts()" title="Toggle Alerts" id="alertToggleBtn"><i class="fas fa-bell"></i></button>
+                <button class="btn btn-sm btn-outline-info me-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#userGuideModal" title="User Guide"><i class="fas fa-question-circle"></i></button>
+                <div class="me-3">
+                    {% if current_user.profile_image_url %}
+                    <img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #4da6ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button">
+                    {% else %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #4da6ff; border: 2px solid #66b3ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button"><i class="fas fa-user" style="font-size: 16px; color: white;"></i></div>
+                    {% endif %}
+                </div>
+                <div style="position: relative;" class="d-md-none">
+                    <button class="btn btn-outline-light btn-sm" type="button" id="mobileMenuToggle" style="border: none; padding: 4px 8px;"><div class="hamburger-icon"><span></span><span></span><span></span></div></button>
+                    <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+                        <div class="mobile-menu-header d-flex align-items-center mb-2" style="padding: 12px; background: rgba(77, 166, 255, 0.1); border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                            {% if current_user.profile_image_url %}<img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid #4da6ff;">{% else %}<div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: #4da6ff; border: 2px solid #66b3ff;"><i class="fas fa-user" style="font-size: 18px; color: white;"></i></div>{% endif %}<div><div style="font-weight: bold; font-size: 0.9rem;">{{ current_user.username }}</div><div style="font-size: 0.75rem; opacity: 0.8;">{{ current_user.email }}</div></div>
+                        </div>
+                        <a href="{{ url_for('account') }}" class="mobile-menu-item"><i class="fas fa-user-circle me-2"></i>Account</a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('dashboard') }}" class="mobile-menu-item"><i class="fas fa-home me-2"></i>Dashboard</a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('all_charts') }}" class="mobile-menu-item"><i class="fas fa-chart-area me-2"></i>100D-Levels</a>
+                        <a href="{{ url_for('mgheatmap') }}" class="mobile-menu-item"><i class="fas fa-th me-2"></i>MG Heatmap<span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span></a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="mobile-menu-item"><i class="fas fa-chart-line me-2"></i>5D Line Charts<span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span></a>
+                        <a href="{{ url_for('volume_profile') }}" class="mobile-menu-item"><i class="fas fa-chart-area me-2"></i>Volume Profile</a>
+                        <a href="{{ url_for('logout') }}" class="mobile-menu-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Navigation Strip (Hidden on Mobile) -->
+    <div class="desktop-nav-strip d-none d-md-block" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.9)); border-bottom: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+        <div class="container-fluid px-3 py-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center justify-content-center">
+                <!-- Dashboard Page Sections -->
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#market-overview'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Market
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#niftyTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-table me-1"></i>F&O
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#camarillaTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-layer-group me-1"></i>Camarilla
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#cprTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-crosshairs me-1"></i>CPR
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#fibonacciTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Fibonacci
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#levels-scan'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-search me-1"></i>Levels
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#rvol-analysis'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-bar me-1"></i>RVOL
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#price-action'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-arrows-alt me-1"></i>Price Action
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(77, 166, 255, 0.3); margin: 0 0.5rem;"></div>
+                
+                <!-- Other Pages -->
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('all_charts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>100D-Levels
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mgheatmap') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-th me-1"></i>MG Heatmap
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn active" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background-color: rgba(255, 193, 7, 0.2);">
+                    <i class="fas fa-chart-line me-1"></i>5D Charts
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('volume_profile') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>Volume
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('technical_indicators_page') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Indicators
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                {% if current_user.is_admin() %}
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(220, 53, 69, 0.3); margin: 0 0.5rem;"></div>
+                
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('live_chart') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-candlestick me-1"></i>Live
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('admin_panel') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-user-shield me-1"></i>Admin
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-container">
+        <div class="search-bar">
+            <div class="input-group">
+                <span class="input-group-text" style="background: rgba(17, 24, 39, 0.6); border: 2px solid rgba(100, 116, 139, 0.3); border-right: none;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" 
+                       class="form-control search-input" 
+                       id="stockSearch" 
+                       placeholder="Search stocks by symbol (e.g., RELIANCE, TCS, INFY...)"
+                       style="border-left: none;">
+            </div>
+        </div>
+
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <div class="stat-label">Total Stocks:</div>
+                <div class="stat-value" id="totalStocks">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">5D Gainers:</div>
+                <div class="stat-value text-success" id="gainersCount">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">5D Losers:</div>
+                <div class="stat-value text-danger" id="losersCount">-</div>
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div class="charts-grid" id="chartsGrid" style="display: none;">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.querySelector('#themeToggleBtn i');
+            if (newTheme === 'light') {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+        
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const icon = document.querySelector('#themeToggleBtn i');
+            if (savedTheme === 'light') {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        });
+    
+        let allStocks = [];
+        let charts = {};
+        let stock5DRanges = {}; // Store 5D high/low for each stock
+        let breakingStocks = new Set(); // Track stocks breaking 5D ranges
+
+        function fetchLineChartData() {
+            fetch('/api/linechart-data', {
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        allStocks = result.data;
+                        filterAndRenderCharts();
+                        updateStats(allStocks);
+                    } else {
+                        console.error('Error fetching 5D line chart data:', result.message);
+                        showError(result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Failed to fetch data');
+                });
+        }
+
+        function filterAndRenderCharts() {
+            const searchTerm = document.getElementById('stockSearch').value.toUpperCase();
+            const filteredStocks = searchTerm 
+                ? allStocks.filter(stock => stock.symbol.toUpperCase().includes(searchTerm))
+                : allStocks;
+            
+            renderCharts(filteredStocks);
+        }
+
+        function renderCharts(stocks) {
+            const grid = document.getElementById('chartsGrid');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+            
+            grid.innerHTML = '';
+            
+            if (stocks.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center text-muted py-5">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <p class="fs-5">No stocks found matching your search</p>
+                    </div>
+                `;
+            } else {
+                stocks.forEach(stock => {
+                    const card = createChartCard(stock);
+                    grid.appendChild(card);
+                });
+            }
+            
+            spinner.style.display = 'none';
+            grid.style.display = 'grid';
+        }
+
+        function createChartCard(stock) {
+            const card = document.createElement('div');
+            card.className = 'chart-card';
+            card.dataset.symbol = stock.symbol;
+            
+            const pctClass = stock.pct_change_5d > 0 ? 'positive' : (stock.pct_change_5d < 0 ? 'negative' : '');
+            const pctSign = stock.pct_change_5d > 0 ? '+' : '';
+            
+            const chartId = `chart-${stock.symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
+            
+            // Calculate and store 5D high and low
+            if (stock.history && stock.history.length > 0) {
+                const closes = stock.history.map(h => h.close);
+                const high5d = Math.max(...closes);
+                const low5d = Math.min(...closes);
+                stock5DRanges[stock.symbol] = { high: high5d, low: low5d };
+                
+                // Check if current LTP breaks 5D high or low
+                if (stock.ltp > high5d) {
+                    card.classList.add('break-high');
+                    breakingStocks.add(stock.symbol);
+                } else if (stock.ltp < low5d) {
+                    card.classList.add('break-low');
+                    breakingStocks.add(stock.symbol);
+                }
+            }
+            
+            // Determine move badge
+            const absPct = Math.abs(stock.pct_change_5d);
+            let moveBadge = '';
+            if (absPct > 10) {
+                moveBadge = '<span class="move-badge big-move">Big Move</span>';
+            } else if (absPct > 5) {
+                moveBadge = '<span class="move-badge">Mid Move</span>';
+            }
+            
+            card.innerHTML = `
+                <div class="chart-header">
+                    <div class="stock-symbol">${stock.symbol}</div>
+                    <div>
+                        <span class="stock-badge">5D</span>${moveBadge}
+                    </div>
+                </div>
+                <div class="chart-price-info">
+                    <div class="ltp-value" data-symbol="${stock.symbol}">₹${stock.ltp.toFixed(2)}</div>
+                    <div class="pct-change ${pctClass}">${pctSign}${stock.pct_change_5d.toFixed(2)}%</div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="${chartId}"></canvas>
+                </div>
+            `;
+            
+            // Create chart after card is added to DOM
+            setTimeout(() => {
+                createLineChart(chartId, stock);
+            }, 0);
+            
+            return card;
+        }
+
+        function createLineChart(canvasId, stock) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) {
+                console.error(`Canvas not found for ${canvasId}`);
+                return;
+            }
+            
+            // Validate history data
+            if (!stock.history || !Array.isArray(stock.history) || stock.history.length === 0) {
+                console.error(`No history data for ${stock.symbol}:`, stock);
+                return;
+            }
+            
+            const history = stock.history;
+            const dates = history.map(h => {
+                const date = new Date(h.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            const closes = history.map(h => h.close);
+            
+            // Find high and low indices in the 5-day period
+            const maxPrice = Math.max(...closes);
+            const minPrice = Math.min(...closes);
+            const highIndex = closes.indexOf(maxPrice);
+            const lowIndex = closes.indexOf(minPrice);
+            
+            // Add current LTP as the last point
+            const displayDates = [...dates, 'Now'];
+            const displayPrices = [...closes, stock.ltp];
+            
+            // Create point radius array - highlight high and low
+            const pointRadiusArray = displayPrices.map((price, idx) => {
+                if (idx === highIndex) return 4; // High point
+                if (idx === lowIndex) return 4; // Low point
+                return 0; // Normal points
+            });
+            
+            // Create point colors array - green for high, red for low
+            const pointColorArray = displayPrices.map((price, idx) => {
+                if (idx === highIndex) return '#22c55e'; // Green for high
+                if (idx === lowIndex) return '#ef4444'; // Red for low
+                return 'transparent';
+            });
+            
+            // Determine line color based on overall change
+            const lineColor = stock.pct_change_5d > 0 ? '#22c55e' : (stock.pct_change_5d < 0 ? '#ef4444' : '#94a3b8');
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: displayDates,
+                    datasets: [{
+                        data: displayPrices,
+                        borderColor: lineColor,
+                        backgroundColor: `${lineColor}20`,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: pointRadiusArray,
+                        pointBackgroundColor: pointColorArray,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: lineColor,
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: lineColor,
+                            borderWidth: 1,
+                            padding: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const price = context.parsed.y.toFixed(2);
+                                    const idx = context.dataIndex;
+                                    
+                                    // Add High/Low labels
+                                    if (idx === highIndex) {
+                                        return '🟢 High: ₹' + price;
+                                    } else if (idx === lowIndex) {
+                                        return '🔴 Low: ₹' + price;
+                                    }
+                                    return '₹' + price;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function updateStats(stocks) {
+            const gainers = stocks.filter(s => s.pct_change_5d > 0).length;
+            const losers = stocks.filter(s => s.pct_change_5d < 0).length;
+            
+            document.getElementById('totalStocks').textContent = stocks.length;
+            document.getElementById('gainersCount').textContent = gainers;
+            document.getElementById('losersCount').textContent = losers;
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('chartsGrid');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            spinner.style.display = 'none';
+            grid.style.display = 'block';
+            grid.innerHTML = `
+                <div class="col-12 text-center text-danger py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <p class="fs-5">${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="refreshData()">Retry</button>
+                </div>
+            `;
+        }
+
+        function refreshData() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+            document.getElementById('chartsGrid').style.display = 'none';
+            fetchLineChartData();
+        }
+
+        document.getElementById('stockSearch').addEventListener('input', filterAndRenderCharts);
+
+        // Live price update system
+        let stocksMap = {}; // Map for quick lookups by symbol
+        
+        function startLivePriceUpdates() {
+            // Poll for live price updates every 1 second
+            setInterval(fetchLiveData, 1000);
+        }
+        
+        function fetchLiveData() {
+            fetch('/api/data', {
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return null; // Silently skip on error
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result && result.status === 'success' && result.messages && result.messages.length > 0) {
+                        updateChartsWithLiveData(result.messages);
+                    }
+                })
+                .catch(error => {
+                    // Silently skip errors to prevent chart collapse
+                });
+        }
+        
+        function updateChartsWithLiveData(liveData) {
+            liveData.forEach(update => {
+                const symbol = update.symbol;
+                const newLtp = update.ltp;
+                
+                // Find the stock in our data
+                const stockIndex = allStocks.findIndex(s => s.symbol === symbol);
+                if (stockIndex !== -1) {
+                    const stock = allStocks[stockIndex];
+                    
+                    // Update LTP
+                    stock.ltp = newLtp;
+                    
+                    // Recalculate 5-day % change
+                    if (stock.history && stock.history.length > 0) {
+                        const oldestClose = stock.history[0].close;
+                        stock.pct_change_5d = ((newLtp - oldestClose) / oldestClose) * 100;
+                    }
+                    
+                    // Update the chart if it exists
+                    const chartId = `chart-${symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
+                    if (charts[chartId]) {
+                        updateChartData(chartId, stock);
+                        updateCardInfo(symbol, stock);
+                    }
+                }
+            });
+        }
+        
+        function updateChartData(chartId, stock) {
+            const chart = charts[chartId];
+            if (!chart) return;
+            
+            // Update the last data point (current LTP)
+            const dataset = chart.data.datasets[0];
+            const lastIndex = dataset.data.length - 1;
+            dataset.data[lastIndex] = stock.ltp;
+            
+            // Recalculate high/low points if needed
+            const closes = stock.history.map(h => h.close);
+            const allPrices = [...closes, stock.ltp];
+            const maxPrice = Math.max(...allPrices);
+            const minPrice = Math.min(...allPrices);
+            const highIndex = allPrices.indexOf(maxPrice);
+            const lowIndex = allPrices.indexOf(minPrice);
+            
+            // Update point styles
+            dataset.pointRadius = allPrices.map((price, idx) => {
+                if (idx === highIndex || idx === lowIndex) return 4;
+                return 0;
+            });
+            
+            dataset.pointBackgroundColor = allPrices.map((price, idx) => {
+                if (idx === highIndex) return '#22c55e';
+                if (idx === lowIndex) return '#ef4444';
+                return 'transparent';
+            });
+            
+            // Update line color based on new % change
+            const lineColor = stock.pct_change_5d > 0 ? '#22c55e' : (stock.pct_change_5d < 0 ? '#ef4444' : '#94a3b8');
+            dataset.borderColor = lineColor;
+            dataset.backgroundColor = `${lineColor}20`;
+            dataset.pointHoverBackgroundColor = lineColor;
+            
+            chart.update('none'); // Update without animation for smoother experience
+        }
+        
+        function updateCardInfo(symbol, stock) {
+            const pctClass = stock.pct_change_5d > 0 ? 'positive' : (stock.pct_change_5d < 0 ? 'negative' : '');
+            const pctSign = stock.pct_change_5d > 0 ? '+' : '';
+            
+            // Find the card element
+            const chartId = `chart-${symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            
+            const card = canvas.closest('.chart-card');
+            if (!card) return;
+            
+            // Update LTP
+            const ltpElement = card.querySelector('.ltp-value');
+            if (ltpElement) {
+                ltpElement.textContent = `₹${stock.ltp.toFixed(2)}`;
+            }
+            
+            // Update % change
+            const pctElement = card.querySelector('.pct-change');
+            if (pctElement) {
+                pctElement.className = `pct-change ${pctClass}`;
+                pctElement.textContent = `${pctSign}${stock.pct_change_5d.toFixed(2)}%`;
+            }
+            
+            // Update move badge dynamically based on new percentage
+            const chartHeader = card.querySelector('.chart-header');
+            if (chartHeader) {
+                const absPct = Math.abs(stock.pct_change_5d);
+                let moveBadge = '';
+                
+                if (absPct > 10) {
+                    moveBadge = '<span class="move-badge big-move">Big Move</span>';
+                } else if (absPct > 5) {
+                    moveBadge = '<span class="move-badge">Mid Move</span>';
+                }
+                
+                // Remove existing move badges
+                const existingBadges = chartHeader.querySelectorAll('.move-badge');
+                existingBadges.forEach(badge => badge.remove());
+                
+                // Add new badge if applicable
+                if (moveBadge) {
+                    const badgeContainer = chartHeader.querySelector('div:last-child');
+                    if (badgeContainer) {
+                        badgeContainer.insertAdjacentHTML('beforeend', moveBadge);
+                    }
+                }
+            }
+            
+            // Check if LTP breaks 5D high or low
+            const ranges = stock5DRanges[symbol];
+            if (ranges) {
+                const wasBreaking = breakingStocks.has(symbol);
+                
+                // Remove existing break classes
+                card.classList.remove('break-high', 'break-low');
+                
+                if (stock.ltp > ranges.high) {
+                    // Breaking above 5D high
+                    card.classList.add('break-high');
+                    if (!wasBreaking) {
+                        breakingStocks.add(symbol);
+                        // Auto-remove flash after 2 minutes
+                        setTimeout(() => {
+                            breakingStocks.delete(symbol);
+                            card.classList.remove('break-high');
+                        }, 2 * 60 * 1000);
+                    }
+                } else if (stock.ltp < ranges.low) {
+                    // Breaking below 5D low
+                    card.classList.add('break-low');
+                    if (!wasBreaking) {
+                        breakingStocks.add(symbol);
+                        // Auto-remove flash after 2 minutes
+                        setTimeout(() => {
+                            breakingStocks.delete(symbol);
+                            card.classList.remove('break-low');
+                        }, 2 * 60 * 1000);
+                    }
+                } else {
+                    // Not breaking - remove from set
+                    breakingStocks.delete(symbol);
+                }
+            }
+        }
+
+        // Initial fetch
+        fetchLineChartData();
+        
+        // Start live updates after initial data loads
+        setTimeout(() => {
+            startLivePriceUpdates();
+            console.log('📊 Live price updates started for 5D line charts');
+        }, 2000);
+    </script>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">
+                        <i class="fas fa-book-open me-2"></i>MG 5D Line Charts - User Guide
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-chart-line"></i>
+                            What are 5D Line Charts?
+                        </div>
+                        <div class="feature-item">
+                            <strong>5D Charts:</strong> Show the price movement of each stock over the last 5 trading days as a line chart. This helps you quickly see trends and patterns.
+                        </div>
+                        <div class="feature-item">
+                            <strong>Real-Time Updates:</strong> Charts update every few seconds with live price data during market hours.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-palette"></i>
+                            Color Coding
+                        </div>
+                        <div class="feature-item">
+                            <strong>Green Cards:</strong> Stocks that gained over the 5-day period (5D percentage is positive)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Red Cards:</strong> Stocks that lost over the 5-day period (5D percentage is negative)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Line Color:</strong> Chart line matches the card color (green for gains, red for losses)
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-bolt"></i>
+                            Flash Animations (Breaking High/Low)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Green Flashing Border:</strong> Stock price just broke above its 5-day high! This means it's at the strongest point in 5 days.
+                        </div>
+                        <div class="feature-item">
+                            <strong>Red Flashing Border:</strong> Stock price just broke below its 5-day low! This means it's at the weakest point in 5 days.
+                        </div>
+                        <div class="feature-item">
+                            <strong>Auto-Remove:</strong> Flash animation automatically stops after 2 minutes to keep the view clean.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-tags"></i>
+                            Move Badges
+                        </div>
+                        <div class="feature-item">
+                            <strong>5D Badge:</strong> Shows the percentage change over the 5-day period
+                        </div>
+                        <div class="feature-item">
+                            <strong>Mid Move:</strong> Stock moved between 2% and 5% in 5 days (moderate movement)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Big Move:</strong> Stock moved more than 5% in 5 days (significant movement)
+                        </div>
+                        <div class="feature-item">
+                            <strong>Live Updates:</strong> Badges update in real-time as prices change during market hours
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-info-circle"></i>
+                            Card Information
+                        </div>
+                        <div class="feature-item">
+                            <strong>Symbol:</strong> Stock trading symbol (e.g., RELIANCE, TCS, INFY)
+                        </div>
+                        <div class="feature-item">
+                            <strong>LTP:</strong> Last Traded Price - the current price of the stock
+                        </div>
+                        <div class="feature-item">
+                            <strong>% Change:</strong> Percentage change in price today
+                        </div>
+                        <div class="feature-item">
+                            <strong>5D Line Chart:</strong> Visual representation of price movement over 5 days
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-search"></i>
+                            Search & Stats
+                        </div>
+                        <div class="feature-item">
+                            <strong>Search Bar:</strong> Type any stock symbol (e.g., RELIANCE, TCS, INFY) to quickly find and filter stocks
+                        </div>
+                        <div class="feature-item">
+                            <strong>Total Stocks:</strong> Total number of F&O stocks displayed
+                        </div>
+                        <div class="feature-item">
+                            <strong>5D Gainers:</strong> Number of stocks that gained over the 5-day period (green cards)
+                        </div>
+                        <div class="feature-item">
+                            <strong>5D Losers:</strong> Number of stocks that lost over the 5-day period (red cards)
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Quick Tips
+                        </div>
+                        <div class="feature-item">
+                            • Watch for <strong>green flashing cards</strong> - they're breaking 5-day highs (momentum)
+                        </div>
+                        <div class="feature-item">
+                            • <strong>Big Move badges</strong> indicate significant 5-day price movements (>5%)
+                        </div>
+                        <div class="feature-item">
+                            • Use the <strong>search</strong> to quickly find your favorite stocks
+                        </div>
+                        <div class="feature-item">
+                            • Charts update live during market hours, so you see real-time trends
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuDropdown = document.getElementById('mobileMenuDropdown');
+            
+            if (mobileMenuToggle && mobileMenuDropdown) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    mobileMenuDropdown.classList.toggle('show');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuToggle.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                        mobileMenuDropdown.classList.remove('show');
+                    }
+                });
+            }
+        });
+
+        // Alert Toggle Functionality
+        let alertsVisible = localStorage.getItem('alertsVisible') !== 'false';
+
+        function toggleAlerts() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (!alertContainer) {
+                console.error('❌ Alert container not found!');
+                return;
+            }
+
+            alertsVisible = !alertsVisible;
+            localStorage.setItem('alertsVisible', alertsVisible.toString());
+
+            if (alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+                console.log('✅ ALERTS SHOWN');
+            } else {
+                alertContainer.classList.remove('show');
+                if (button) {
+                    button.classList.remove('active');
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }
+                console.log('❌ ALERTS HIDDEN');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (alertContainer && alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+            }
+        });
+    </script>
+
+    <!-- User Guide Modal -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background: linear-gradient(135deg, #1a1f2e 0%, #2a2d3e 100%); color: #ffffff; border: 1px solid rgba(77, 166, 255, 0.3);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                    <h5 class="modal-title"><i class="fas fa-book-open me-2 text-info"></i>MG 5D Line Charts User Guide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-info"><i class="fas fa-info-circle me-2"></i>Overview</h6>
+                    <p>MG 5D Line Charts display 5-day price movement patterns for all F&O stocks with mini line charts showing recent price trends and key technical levels.</p>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-star me-2"></i>Key Features</h6>
+                    <ul>
+                        <li><strong>5-Day Line Charts:</strong> Visual representation of price movement over last 5 trading days</li>
+                        <li><strong>Live LTP Updates:</strong> Real-time Last Traded Price updates via WebSocket</li>
+                        <li><strong>Percentage Change:</strong> Intraday % change with color-coded indicators</li>
+                        <li><strong>High/Low Markers:</strong> Visual indicators for 5-day high and low breaks</li>
+                        <li><strong>Index Tracking:</strong> Quick view of major indices (NIFTY, BANK NIFTY, etc.)</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-chart-line me-2"></i>Understanding the Charts</h6>
+                    <ul>
+                        <li><strong>Line Color:</strong> Blue line shows price progression over 5 days</li>
+                        <li><strong>Green Badge:</strong> Stock is showing positive % change today</li>
+                        <li><strong>Red Badge:</strong> Stock is showing negative % change today</li>
+                        <li><strong>Glowing Border (Green):</strong> Stock broke above 5-day high - bullish signal</li>
+                        <li><strong>Glowing Border (Red):</strong> Stock broke below 5-day low - bearish signal</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-crosshairs me-2"></i>Visual Indicators</h6>
+                    <ul>
+                        <li><strong>Pulsing Animation:</strong> Indicates a 5-day high or low breakout in progress</li>
+                        <li><strong>Move Badge:</strong> Shows significant intraday movement (>1.5%)</li>
+                        <li><strong>Big Move Badge:</strong> Highlights major moves (>3%) requiring attention</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-lightbulb me-2"></i>How to Use</h6>
+                    <ul>
+                        <li><strong>Quick Scan:</strong> Rapidly identify trending stocks by chart patterns</li>
+                        <li><strong>Breakout Detection:</strong> Look for glowing borders to spot breakouts</li>
+                        <li><strong>Search Function:</strong> Type symbol name to filter specific stocks</li>
+                        <li><strong>Indices Section:</strong> Monitor overall market direction before trading</li>
+                        <li><strong>Pattern Recognition:</strong> Identify uptrends, downtrends, and consolidations</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-link me-2"></i>Quick Navigation</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-home me-1"></i>Dashboard</a>
+                        <a href="{{ url_for('all_charts') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-area me-1"></i>100D Levels</a>
+                        <a href="{{ url_for('mgheatmap') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-th me-1"></i>MG Heatmap</a>
+                        <a href="{{ url_for('volume_profile') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-bar me-1"></i>Volume Profile</a>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(77, 166, 255, 0.3);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

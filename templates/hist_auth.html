@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fyers Historical Data Authentication</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center bg-warning text-dark">
+                        <h1 class="card-title mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Fyers Historical Data Authentication
+                        </h1>
+                        <p class="card-subtitle mt-2 opacity-75">365-day historical data access</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Authentication Status -->
+                        <div id="authStatus" class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Please authenticate with Fyers API to access 365-day historical market data.
+                        </div>
+
+                        <!-- Authentication Methods -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-key me-2"></i>
+                                            Generate Auth Code
+                                        </h5>
+                                        <p class="card-text small">Generate authentication URL and get auth code from Fyers for historical data</p>
+                                        <button id="generateAuthBtn" class="btn btn-warning w-100">
+                                            <i class="fas fa-external-link-alt me-2"></i>
+                                            Generate Auth URL
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-token me-2"></i>
+                                            Direct Token Entry
+                                        </h5>
+                                        <p class="card-text small">Enter your existing historical data access token directly</p>
+                                        <button id="showTokenInputBtn" class="btn btn-secondary w-100">
+                                            <i class="fas fa-edit me-2"></i>
+                                            Enter Token
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auth Code Input -->
+                        <div id="authCodeSection" class="mt-4" style="display: none;">
+                            <h5 class="mb-3">
+                                <i class="fas fa-code me-2"></i>
+                                Enter Authentication Code
+                            </h5>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <i class="fas fa-key"></i>
+                                </span>
+                                <input type="text" class="form-control" id="authCodeInput" 
+                                       placeholder="Enter auth code from redirect URL">
+                                <button class="btn btn-warning" type="button" id="submitAuthCodeBtn">
+                                    <i class="fas fa-check me-2"></i>
+                                    Authenticate
+                                </button>
+                            </div>
+                            <div class="alert alert-warning small" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Copy the 'code' parameter from the URL after Fyers authentication
+                            </div>
+                        </div>
+
+                        <!-- Token Input -->
+                        <div id="tokenSection" class="mt-4" style="display: none;">
+                            <h5 class="mb-3">
+                                <i class="fas fa-token me-2"></i>
+                                Enter Access Token
+                            </h5>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <i class="fas fa-token"></i>
+                                </span>
+                                <input type="text" class="form-control" id="tokenInput" 
+                                       placeholder="Enter your Fyers historical data access token">
+                                <button class="btn btn-warning" type="button" id="submitTokenBtn">
+                                    <i class="fas fa-check me-2"></i>
+                                    Authenticate
+                                </button>
+                            </div>
+                            <div class="alert alert-info small" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Format: CLIENT_ID:JWT_TOKEN (e.g., 6TUI4EJIGS-100:eyJhbGc...)
+                            </div>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Processing historical data authentication...</p>
+                        </div>
+
+                        <!-- API Information -->
+                        <div class="mt-4 p-3 bg-dark rounded">
+                            <h6 class="text-light mb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Historical Data API Configuration
+                            </h6>
+                            <div class="row text-light small">
+                                <div class="col-sm-6">
+                                    <strong>Client ID:</strong> 6TUI4EJIGS-100
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Token Validity:</strong> 365 days
+                                </div>
+                            </div>
+                            <div class="row text-light small mt-2">
+                                <div class="col-sm-12">
+                                    <strong>Redirect URI:</strong> https://www.ashravi.online
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Back to Admin Panel -->
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class FyersHistAuth {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // Generate Auth URL button
+                document.getElementById('generateAuthBtn').addEventListener('click', () => {
+                    this.generateAuthUrl();
+                });
+
+                // Show token input button
+                document.getElementById('showTokenInputBtn').addEventListener('click', () => {
+                    this.showTokenInput();
+                });
+
+                // Submit auth code button
+                document.getElementById('submitAuthCodeBtn').addEventListener('click', () => {
+                    this.submitAuthCode();
+                });
+
+                // Submit token button
+                document.getElementById('submitTokenBtn').addEventListener('click', () => {
+                    this.submitToken();
+                });
+
+                // Enter key handlers
+                document.getElementById('authCodeInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.submitAuthCode();
+                    }
+                });
+
+                document.getElementById('tokenInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.submitToken();
+                    }
+                });
+            }
+
+            async generateAuthUrl() {
+                try {
+                    this.showLoading(true);
+                    this.showStatus('info', 'Generating historical data authentication URL...', false);
+
+                    const response = await fetch('/generate_hist_auth_url');
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        // Open auth URL in new tab
+                        window.open(result.auth_url, '_blank');
+                        
+                        this.showStatus('success', 'Authentication URL opened in new tab. Complete login and copy the auth code from the redirect URL.');
+                        this.showAuthCodeInput();
+                    } else {
+                        this.showStatus('danger', `Error: ${result.message}`);
+                    }
+                } catch (error) {
+                    this.showStatus('danger', `Network error: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            showAuthCodeInput() {
+                document.getElementById('authCodeSection').style.display = 'block';
+                document.getElementById('tokenSection').style.display = 'none';
+                document.getElementById('authCodeInput').focus();
+            }
+
+            showTokenInput() {
+                document.getElementById('tokenSection').style.display = 'block';
+                document.getElementById('authCodeSection').style.display = 'none';
+                document.getElementById('tokenInput').focus();
+            }
+
+            async submitAuthCode() {
+                const authCode = document.getElementById('authCodeInput').value.trim();
+                
+                if (!authCode) {
+                    this.showStatus('danger', 'Please enter the auth code');
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    this.showStatus('info', 'Authenticating with historical data API...', false);
+
+                    const response = await fetch('/authenticate_hist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ auth_code: authCode })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        this.showStatus('success', result.message);
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url;
+                        }, 1500);
+                    } else {
+                        this.showStatus('danger', `Error: ${result.message}`);
+                    }
+                } catch (error) {
+                    this.showStatus('danger', `Network error: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async submitToken() {
+                const token = document.getElementById('tokenInput').value.trim();
+                
+                if (!token) {
+                    this.showStatus('danger', 'Please enter the access token');
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    this.showStatus('info', 'Authenticating with historical data token...', false);
+
+                    const response = await fetch('/authenticate_hist_token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ access_token: token })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        this.showStatus('success', result.message);
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url;
+                        }, 1500);
+                    } else {
+                        this.showStatus('danger', `Error: ${result.message}`);
+                    }
+                } catch (error) {
+                    this.showStatus('danger', `Network error: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            showStatus(type, message, autohide = true) {
+                const statusDiv = document.getElementById('authStatus');
+                statusDiv.className = `alert alert-${type}`;
+                statusDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>${message}`;
+                
+                if (autohide && type === 'success') {
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            showLoading(show) {
+                document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Initialize the authentication handler
+        const fyersHistAuth = new FyersHistAuth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MG F&O Dashboard - Legal & Info Documents</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 25%, #2a2d3e 50%, #1a1f2e 75%, #0f1419 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-custom {
+            background: rgba(10, 15, 20, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar-brand-custom {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4da6ff !important;
+        }
+        
+        .navbar-subtitle-custom {
+            font-size: 0.9rem;
+            color: #66b3ff !important;
+            opacity: 0.9;
+        }
+        
+        .content-section {
+            padding: 100px 0 60px 0;
+        }
+        
+        .legal-section {
+            background: rgba(10, 15, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .legal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4da6ff;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(77, 166, 255, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        .legal-content {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #4da6ff, #66b3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .contact-info {
+            background: rgba(77, 166, 255, 0.1);
+            border-left: 4px solid #4da6ff;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .contact-link {
+            color: #66b3ff;
+            text-decoration: none;
+        }
+        
+        .contact-link:hover {
+            color: #4da6ff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="https://www.marketguldasta.com/" style="text-decoration: none;" target="_blank" rel="noopener noreferrer">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="MG Logo" style="height: 40px; width: 40px;" class="me-2">
+                <div>
+                    <div class="navbar-brand-custom">MG F&O Stocks Dashboard</div>
+                    <div class="navbar-subtitle-custom">Be your own analyst.</div>
+                </div>
+            </a>
+            <div class="ms-auto">
+                <a href="https://www.marketguldasta.com/" class="btn btn-outline-primary me-2" target="_blank" rel="noopener noreferrer">← Back to Home</a>
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Section -->
+    <section class="content-section">
+        <div class="container">
+            <h1 class="page-title">MG F&O Dashboard - Legal & Info Documents</h1>
+            
+            <!-- Terms & Conditions -->
+            <div class="legal-section" id="terms">
+                <h2 class="legal-title">
+                    <i class="fas fa-file-contract me-2"></i>Terms & Conditions
+                </h2>
+                <div class="legal-content">
+                    <p>Welcome to MG F&O Dashboard. By accessing or using our services, you agree to comply with and be bound by these terms. You must use the platform for lawful purposes only. Unauthorized usage, redistribution, or resale of our services is prohibited. We reserve the right to update or modify these terms at any time without prior notice.</p>
+                </div>
+            </div>
+            
+            <!-- Refund Policy -->
+            <div class="legal-section" id="refund">
+                <h2 class="legal-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>Refund Policy
+                </h2>
+                <div class="legal-content">
+                    <p>We strive to provide high-quality services. Subscriptions once purchased are generally non-refundable. In case of duplicate payments or technical issues leading to non-delivery of services, refunds may be processed at our discretion. Users must raise refund requests within 7 working days by contacting support.</p>
+                </div>
+            </div>
+            
+            <!-- Privacy Policy -->
+            <div class="legal-section" id="policy">
+                <h2 class="legal-title">
+                    <i class="fas fa-shield-alt me-2"></i>Privacy Policy
+                </h2>
+                <div class="legal-content">
+                    <p>We value your privacy. Any personal data shared with us is used strictly for account management and service delivery. We do not sell, rent, or share your data with third parties without consent, except where required by law. Our platform may use cookies and analytics tools to enhance user experience.</p>
+                </div>
+            </div>
+            
+            <!-- About Us -->
+            <div class="legal-section" id="about">
+                <h2 class="legal-title">
+                    <i class="fas fa-info-circle me-2"></i>About Us
+                </h2>
+                <div class="legal-content">
+                    <p>MG F&O Dashboard is designed to empower traders and investors with real-time intraday insights. We focus on delivery volume, sentiment analytics, and live pivot tracking instead of lagging indicators. Our mission is to help active decision-makers become independent intraday self-analysts.</p>
+                </div>
+            </div>
+            
+            <!-- Contact Us -->
+            <div class="legal-section" id="contact">
+                <h2 class="legal-title">
+                    <i class="fas fa-envelope me-2"></i>Contact Us
+                </h2>
+                <div class="legal-content">
+                    <p>For inquiries, support, or feedback, please reach out to us:</p>
+                    
+                    <div class="contact-info">
+                        <h4 style="color: #4da6ff; margin-bottom: 1rem;">Aarvi Enterprise</h4>
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-envelope me-2"></i>
+                            <strong>Email:</strong> <a href="mailto:marketguldasta@gmail.com" class="contact-link">marketguldasta@gmail.com</a>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-phone me-2"></i>
+                            <strong>Phone:</strong> <a href="tel:+919049536966" class="contact-link">+91-9049536966</a>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <strong>Address:</strong> D502, Malpani Saffron, Nashik-422010, Maharashtra, India
+                        </div>
+                        <div>
+                            <i class="fas fa-globe me-2"></i>
+                            <strong>Website:</strong> <a href="https://www.marketguldasta.com/terms" target="_blank" rel="noopener noreferrer" class="contact-link">www.marketguldasta.com/terms</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: rgba(10, 15, 20, 0.95); padding: 40px 0; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 style="color: #4da6ff; margin-bottom: 1rem;">MG F&O Stocks Dashboard</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                        Professional analysis platform for serious market participants.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3" style="font-size: 0.9rem;">
+                        <a href="https://www.marketguldasta.com/terms" style="color: #66b3ff; text-decoration: none;" target="_blank" rel="noopener noreferrer">Terms</a>
+                        <a href="https://www.marketguldasta.com/terms" style="color: #66b3ff; text-decoration: none;" target="_blank" rel="noopener noreferrer">Refund</a>
+                        <a href="https://www.marketguldasta.com/terms" style="color: #66b3ff; text-decoration: none;" target="_blank" rel="noopener noreferrer">Policy</a>
+                        <a href="https://www.marketguldasta.com/terms" style="color: #66b3ff; text-decoration: none;" target="_blank" rel="noopener noreferrer">About</a>
+                        <a href="https://www.marketguldasta.com/terms" style="color: #66b3ff; text-decoration: none;" target="_blank" rel="noopener noreferrer">Contact</a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <p style="color: rgba(255, 255, 255, 0.5); margin-bottom: 0;">
+                        © 2025 MG Dashboard. All Rights Reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Smooth scrolling -->
+    <script>
+        // Add smooth scrolling behavior
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(10, 15, 20, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(10, 15, 20, 0.95)';
+            }
+        });
+    </script>
+</body>
+</html>

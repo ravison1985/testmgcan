@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Indicators - MG Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 25%, #2a2d3e 50%, #1a1f2e 75%, #0f1419 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .navbar {
+            background: #0a0f14 !important;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .navbar-brand {
+            color: #4da6ff !important;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .category-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0f14 100%);
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0f14 100%);
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-overbought .category-header {
+            border-left: 4px solid #dc3545;
+        }
+
+        .category-oversold .category-header {
+            border-left: 4px solid #28a745;
+        }
+
+        .category-neutral .category-header {
+            border-left: 4px solid #ffc107;
+        }
+
+        .indicators-table {
+            width: 100%;
+            background: transparent;
+        }
+
+        .indicators-table thead {
+            background: rgba(77, 166, 255, 0.1);
+        }
+
+        .indicators-table th {
+            color: #4da6ff;
+            font-weight: 600;
+            padding: 6px 4px;
+            border-bottom: 2px solid rgba(77, 166, 255, 0.3);
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .indicators-table td {
+            padding: 3px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.7rem;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        .indicators-table tbody tr:hover {
+            background: rgba(77, 166, 255, 0.1);
+        }
+
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .status-overbought {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .status-oversold {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .status-neutral {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-bullish {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .status-bearish {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        /* Range color badges - Bullish (green) to Bearish (red) gradient */
+        /* Darkest Green - Most bullish (Above R3/R4/R5) */
+        .range-darkest-green {
+            background: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #00cc00;
+        }
+
+        /* Medium Green - Bullish (R2-R3, R3-R4) */
+        .range-medium-green {
+            background: rgba(34, 139, 34, 0.4);
+            color: #7fff00;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #32cd32;
+        }
+
+        /* Light Green - Slight bullish (R1-R2, TC-R1) */
+        .range-light-green {
+            background: rgba(50, 205, 50, 0.3);
+            color: #90ee90;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #50c878;
+        }
+
+        /* Yellow/Orange - Neutral (at pivot/CPR) */
+        .range-yellow-orange {
+            background: rgba(255, 165, 0, 0.3);
+            color: #ffa500;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #ff8c00;
+        }
+
+        /* Light Red - Slight bearish (BC-S1, S1-S2) */
+        .range-light-red {
+            background: rgba(255, 99, 71, 0.3);
+            color: #ff6347;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #ff4500;
+        }
+
+        /* Medium Red - Bearish (S2-S3, S3-S4) */
+        .range-medium-red {
+            background: rgba(178, 34, 34, 0.4);
+            color: #ff4444;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #dc143c;
+        }
+
+        /* Darkest Red - Most bearish (Below S3/S4/S5) */
+        .range-darkest-red {
+            background: rgba(139, 0, 0, 0.5);
+            color: #ff0000;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: 1px solid #8b0000;
+        }
+
+        .highlight-extreme {
+            font-weight: bold;
+            color: #ffd700 !important;
+        }
+
+        .positive-value {
+            color: #28a745;
+        }
+
+        .negative-value {
+            color: #dc3545;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.1), rgba(77, 166, 255, 0.05));
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4da6ff;
+        }
+
+        .stats-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .gauge-card {
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.1), rgba(77, 166, 255, 0.05));
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .gauge-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto 10px;
+        }
+
+        .gauge-svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .gauge-fill {
+            transition: stroke-dashoffset 0.8s ease, stroke 0.3s ease;
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4da6ff;
+        }
+
+        .gauge-status {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .stock-mini-gauge {
+            width: 35px;
+            height: 35px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .stock-mini-gauge svg {
+            transform: rotate(-90deg);
+        }
+
+        .stock-gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        /* Smaller font size for CPR Range, Cam Range, Fib Range, and Rank Status columns */
+        .indicators-table td:nth-child(6),
+        .indicators-table td:nth-child(7),
+        .indicators-table td:nth-child(8),
+        .indicators-table td:nth-child(18) {
+            font-size: 0.65rem;
+        }
+
+        @media (max-width: 768px) {
+            .indicators-table {
+                font-size: 0.75rem;
+            }
+
+            .indicators-table th,
+            .indicators-table td {
+                padding: 6px 4px;
+            }
+
+            .category-section {
+                padding: 10px;
+            }
+
+            /* Mobile stats cards - single row */
+            #statsRow .col-md-3 {
+                flex: 0 0 25%;
+                max-width: 25%;
+            }
+
+            .stats-card {
+                padding: 8px 4px;
+            }
+
+            .stats-value {
+                font-size: 1.2rem;
+            }
+
+            .stats-label {
+                font-size: 0.65rem;
+                line-height: 1.2;
+            }
+        }
+
+        /* Mobile scrollbar */
+        @media (max-width: 768px) {
+            .table-responsive::-webkit-scrollbar {
+                height: 3px;
+            }
+
+            .table-responsive::-webkit-scrollbar-track {
+                background: #1a1f2e;
+            }
+
+            .table-responsive::-webkit-scrollbar-thumb {
+                background: #4da6ff;
+                border-radius: 3px;
+            }
+        }
+
+        /* Search Bar Styles */
+        .search-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-input {
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px solid rgba(100, 116, 139, 0.3);
+            color: #ffffff !important;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(17, 24, 39, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            color: #ffffff !important;
+        }
+
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            border-radius: 8px;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 193, 7, 0.25);
+            border-color: #ffc107;
+            transform: scale(1.05);
+        }
+
+        /* LIGHT THEME STYLES */
+        :root[data-theme="light"] body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #dee2e6 50%, #e9ecef 75%, #f8f9fa 100%) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .navbar-brand {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .theme-toggle {
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.3) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .btn-outline-light {
+            border-color: #0d6efd !important;
+            color: #0d6efd !important;
+            background: transparent !important;
+        }
+        
+        :root[data-theme="light"] .btn-outline-light:hover {
+            background: #0d6efd !important;
+            color: #fff !important;
+        }
+        
+        :root[data-theme="light"] .search-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        :root[data-theme="light"] .search-input {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input:focus {
+            background: #fff !important;
+            border-color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .search-input::placeholder {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .input-group-text {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #6c757d !important;
+        }
+        
+        /* Timeframe subtitle in light theme */
+        :root[data-theme="light"] h5 {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .text-muted {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stats-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .stats-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .indicator-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .symbol-text {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .ltp-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .indicator-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .indicator-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .loading-text {
+            color: #000 !important;
+        }
+        
+        /* TABLE SECTIONS AND CONTENT */
+        :root[data-theme="light"] .category-section {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .category-header {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-bottom-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .category-header h4 {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .category-header h4 span {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .table-dark {
+            background-color: transparent !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .table-dark thead {
+            background: rgba(13, 110, 253, 0.08) !important;
+        }
+        
+        :root[data-theme="light"] .table-dark th {
+            color: #0d6efd !important;
+            border-bottom-color: rgba(13, 110, 253, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .table-dark td {
+            color: #000 !important;
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .table-dark tbody tr {
+            background: transparent !important;
+        }
+        
+        :root[data-theme="light"] .table-dark tbody tr:hover {
+            background: rgba(13, 110, 253, 0.05) !important;
+        }
+        
+        /* Range badges in light theme */
+        :root[data-theme="light"] .range-darkest-green {
+            background: rgba(0, 100, 0, 0.15) !important;
+            color: #006400 !important;
+            border-color: #006400 !important;
+        }
+        
+        :root[data-theme="light"] .range-medium-green {
+            background: rgba(34, 139, 34, 0.15) !important;
+            color: #228b22 !important;
+            border-color: #228b22 !important;
+        }
+        
+        :root[data-theme="light"] .range-light-green {
+            background: rgba(50, 205, 50, 0.15) !important;
+            color: #32cd32 !important;
+            border-color: #32cd32 !important;
+        }
+        
+        :root[data-theme="light"] .range-yellow-orange {
+            background: rgba(255, 165, 0, 0.15) !important;
+            color: #ff8c00 !important;
+            border-color: #ff8c00 !important;
+        }
+        
+        :root[data-theme="light"] .range-light-red {
+            background: rgba(255, 99, 71, 0.15) !important;
+            color: #dc3545 !important;
+            border-color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .range-medium-red {
+            background: rgba(178, 34, 34, 0.15) !important;
+            color: #b22222 !important;
+            border-color: #b22222 !important;
+        }
+        
+        :root[data-theme="light"] .range-darkest-red {
+            background: rgba(139, 0, 0, 0.15) !important;
+            color: #8b0000 !important;
+            border-color: #8b0000 !important;
+        }
+        
+        /* Status badges */
+        :root[data-theme="light"] .status-overbought {
+            background: rgba(220, 53, 69, 0.15) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .status-oversold {
+            background: rgba(40, 167, 69, 0.15) !important;
+            color: #28a745 !important;
+        }
+        
+        :root[data-theme="light"] .status-neutral {
+            background: rgba(255, 193, 7, 0.15) !important;
+            color: #ff8c00 !important;
+        }
+        
+        :root[data-theme="light"] .status-bullish {
+            background: rgba(40, 167, 69, 0.15) !important;
+            color: #28a745 !important;
+        }
+        
+        :root[data-theme="light"] .status-bearish {
+            background: rgba(220, 53, 69, 0.15) !important;
+            color: #dc3545 !important;
+        }
+        
+        /* FORCE OVERRIDE ALL TABLE STYLING IN LIGHT THEME */
+        :root[data-theme="light"] .table-dark,
+        :root[data-theme="light"] .table-dark > :not(caption) > * > * {
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table tbody td {
+            color: #000 !important;
+            background-color: transparent !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table tbody tr {
+            background-color: #fff !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table tbody tr:nth-of-type(odd) {
+            background-color: #f8f9fa !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table tbody tr td:first-child {
+            color: #000 !important;
+            font-weight: 600;
+        }
+        
+        /* Override Bootstrap table-dark borders */
+        :root[data-theme="light"] .table-dark > :not(caption) > * > * {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Positive and negative values in light theme */
+        :root[data-theme="light"] .positive-value {
+            color: #28a745 !important;
+        }
+        
+        :root[data-theme="light"] .negative-value {
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .highlight-extreme {
+            color: #ff8c00 !important;
+            font-weight: bold;
+        }
+        
+        /* AI Score gauge values in tables */
+        :root[data-theme="light"] .stock-mini-gauge .gauge-value {
+            color: #000 !important;
+        }
+        
+        /* Rank status text */
+        :root[data-theme="light"] .text-success,
+        :root[data-theme="light"] .text-danger,
+        :root[data-theme="light"] .text-warning,
+        :root[data-theme="light"] .text-info {
+            opacity: 1 !important;
+        }
+        
+        /* Keep colored text for indicators in light theme */
+        :root[data-theme="light"] .indicators-table .text-success {
+            color: #28a745 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table .text-danger {
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table .text-warning {
+            color: #ffc107 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table .text-info {
+            color: #17a2b8 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table .positive-value {
+            color: #28a745 !important;
+        }
+        
+        :root[data-theme="light"] .indicators-table .negative-value {
+            color: #dc3545 !important;
+        }
+        
+        /* Keep badge colors */
+        :root[data-theme="light"] .indicators-table .status-overbought,
+        :root[data-theme="light"] .indicators-table .status-oversold,
+        :root[data-theme="light"] .indicators-table .status-neutral,
+        :root[data-theme="light"] .indicators-table .status-bullish,
+        :root[data-theme="light"] .indicators-table .status-bearish,
+        :root[data-theme="light"] .indicators-table .range-darkest-green,
+        :root[data-theme="light"] .indicators-table .range-medium-green,
+        :root[data-theme="light"] .indicators-table .range-light-green,
+        :root[data-theme="light"] .indicators-table .range-yellow-orange,
+        :root[data-theme="light"] .indicators-table .range-light-red,
+        :root[data-theme="light"] .indicators-table .range-medium-red,
+        :root[data-theme="light"] .indicators-table .range-darkest-red {
+            color: inherit !important;
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu-container {
+            position: relative;
+        }
+
+        .mobile-menu-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .mobile-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(20, 25, 35, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            min-width: 250px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-dropdown.show {
+            display: block;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        .mobile-menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .mobile-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu-divider {
+            border-top: 1px solid #444;
+            margin: 4px 0;
+        }
+
+        .mobile-menu-header {
+            padding: 8px 16px;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu-item .badge {
+            float: right;
+        }
+
+        /* Light theme mobile menu */
+        :root[data-theme="light"] .mobile-menu-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-item {
+            color: #212529 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #000 !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-header {
+            color: #6c757d !important;
+            background: rgba(0, 0, 0, 0.03) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-divider {
+            border-top: 1px solid #dee2e6 !important;
+        }
+
+        /* Desktop Navigation Strip Styling */
+        .desktop-nav-strip {
+            position: relative;
+            z-index: 1020;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-strip-btn {
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+        
+        .nav-strip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+        
+        .nav-strip-btn.btn-outline-primary:hover {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #4da6ff;
+        }
+        
+        .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #5cb85c;
+        }
+        
+        .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        /* Light Theme Navigation Strip */
+        :root[data-theme="light"] .desktop-nav-strip {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.95)) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn {
+            border-color: rgba(13, 110, 253, 0.4) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success {
+            border-color: rgba(25, 135, 84, 0.4) !important;
+            color: #198754 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning {
+            border-color: rgba(255, 193, 7, 0.6) !important;
+            color: #f59e0b !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning.active {
+            background-color: rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger {
+            border-color: rgba(220, 53, 69, 0.4) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.2) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-1">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center flex-grow-0" href="{{ url_for('dashboard') }}" style="margin-right: 0;">
+                <i class="fas fa-chart-line me-2"></i>
+                <div class="navbar-title">Technical Indicators</div>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <!-- Theme Toggle -->
+                <button class="btn btn-sm theme-toggle me-2" onclick="toggleTheme()" title="Toggle Theme" id="themeToggleBtn">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <!-- Mobile Menu (Hamburger) -->
+                <div class="mobile-menu-container d-md-none">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+                        <!-- User Profile Section -->
+                        <div class="mobile-menu-header d-flex align-items-center mb-2">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Profile" class="rounded-circle me-2" style="width: 36px; height: 36px; border: 2px solid #66b3ff;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: #4da6ff; border: 2px solid #66b3ff;">
+                                <i class="fas fa-user" style="font-size: 18px; color: white;"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: bold; font-size: 0.9rem;">{{ current_user.username }}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">{{ current_user.email }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('account') }}" class="mobile-menu-item">
+                            <i class="fas fa-user-circle me-2"></i>Account
+                        </a>
+                        <div class="mobile-menu-divider"></div>
+                        <div class="mobile-menu-header">Pages</div>
+                        <a href="{{ url_for('dashboard') }}" class="mobile-menu-item">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                        <a href="{{ url_for('all_charts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>100D-Levels
+                        </a>
+                        <a href="{{ url_for('mgheatmap') }}" class="mobile-menu-item">
+                            <i class="fas fa-th me-2"></i>MG Heatmap
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-line me-2"></i>5D Line Charts
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('volume_profile') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>Volume Profile
+                        </a>
+                        <a href="{{ url_for('technical_indicators_page') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-line me-2"></i>Technical Indicators
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        {% if current_user.is_admin() %}
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('live_chart') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-candlestick me-2"></i>Live Chart
+                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>
+                        </a>
+                        <a href="{{ url_for('admin_panel') }}" class="mobile-menu-item">
+                            <i class="fas fa-user-shield me-2"></i>Admin Panel
+                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>
+                        </a>
+                        {% endif %}
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="mobile-menu-item">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Navigation Strip (Hidden on Mobile) -->
+    <div class="desktop-nav-strip d-none d-md-block" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.9)); border-bottom: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+        <div class="container-fluid px-3 py-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center justify-content-center">
+                <!-- Dashboard Page Sections -->
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#market-overview'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Market
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#niftyTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-table me-1"></i>F&O
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#camarillaTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-layer-group me-1"></i>Camarilla
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#cprTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-crosshairs me-1"></i>CPR
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#fibonacciTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Fibonacci
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#levels-scan'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-search me-1"></i>Levels
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#rvol-analysis'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-bar me-1"></i>RVOL
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#price-action'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-arrows-alt me-1"></i>Price Action
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(77, 166, 255, 0.3); margin: 0 0.5rem;"></div>
+                
+                <!-- Other Pages -->
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('all_charts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>100D-Levels
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mgheatmap') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-th me-1"></i>MG Heatmap
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mg_linecharts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>5D Charts
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('volume_profile') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>Volume
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn active" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background-color: rgba(255, 193, 7, 0.2);">
+                    <i class="fas fa-chart-line me-1"></i>Indicators
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                {% if current_user.is_admin() %}
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(220, 53, 69, 0.3); margin: 0 0.5rem;"></div>
+                
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('live_chart') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-candlestick me-1"></i>Live
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('admin_panel') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-user-shield me-1"></i>Admin
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const dropdown = document.getElementById('mobileMenuDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.querySelector('.mobile-menu-container');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (menu && !menu.contains(event.target)) {
+                document.getElementById('mobileMenuDropdown').classList.remove('show');
+            }
+        });
+    </script>
+
+    <div class="container-fluid mt-4">
+        <!-- Page Title with Timeframe -->
+        <div class="text-center mb-3">
+            <h5 class="mb-0" style="color: rgba(255,255,255,0.9); font-weight: 500;">
+                <i class="fas fa-calendar-day me-2"></i>Daily Timeframe
+            </h5>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">All technical indicators based on daily candle data</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <div class="input-group">
+                <span class="input-group-text" style="background: rgba(17, 24, 39, 0.6); border: 2px solid rgba(100, 116, 139, 0.3); border-right: none;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" 
+                       class="form-control search-input" 
+                       id="stockSearch" 
+                       placeholder="Search stocks by symbol (e.g., RELIANCE, TCS, INFY...)"
+                       style="border-left: none;">
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4" id="statsRow" style="display: none;">
+            <div class="col">
+                <div class="stats-card">
+                    <div class="stats-value text-danger" id="overboughtCount">0</div>
+                    <div class="stats-label">Overbought<br>(RSI > 70)</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card">
+                    <div class="stats-value text-success" id="slightBullishCount">0</div>
+                    <div class="stats-label">Slight Bullish<br>(RSI 60-70)</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card">
+                    <div class="stats-value text-warning" id="neutralCount">0</div>
+                    <div class="stats-label">Neutral<br>(RSI 40-60)</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card">
+                    <div class="stats-value text-danger" id="slightBearishCount">0</div>
+                    <div class="stats-label">Slight Bearish<br>(RSI 30-40)</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card">
+                    <div class="stats-value text-success" id="oversoldCount">0</div>
+                    <div class="stats-label">Oversold<br>(RSI < 30)</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="alert alert-warning text-center mb-3" style="display: none;" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="errorText">Error loading data. Retrying...</span>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Calculating technical indicators for all stocks...</p>
+        </div>
+
+        <!-- Overbought Section -->
+        <div id="overboughtSection" class="category-section category-overbought" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-arrow-up me-2"></i>1. Overbought (RSI > 70) <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">(Indicators calculated every 10 sec)</span></h4>
+                <span class="badge bg-danger" id="overboughtBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overboughtTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slight Bullish Section -->
+        <div id="slightBullishSection" class="category-section category-neutral" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-arrow-trend-up me-2"></i>2. Neutral to Slight Bullish (RSI 60-70) <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">(Indicators calculated every 10 sec)</span></h4>
+                <span class="badge bg-success" id="slightBullishBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slightBullishTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Neutral Section -->
+        <div id="neutralSection" class="category-section category-neutral" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-minus me-2"></i>3. Neutral (RSI 40-60) <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">(Indicators calculated every 10 sec)</span></h4>
+                <span class="badge bg-warning text-dark" id="neutralBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="neutralTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slight Bearish Section -->
+        <div id="slightBearishSection" class="category-section category-neutral" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-arrow-trend-down me-2"></i>4. Neutral to Slightly Bearish (RSI 30-40) <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">(Indicators calculated every 10 sec)</span></h4>
+                <span class="badge bg-danger" id="slightBearishBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slightBearishTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Oversold Section -->
+        <div id="oversoldSection" class="category-section category-oversold" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-arrow-down me-2"></i>5. Oversold (RSI < 30) <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">(Indicators calculated every 10 sec)</span></h4>
+                <span class="badge bg-success" id="oversoldBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="oversoldTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Neutral Section -->
+        <div id="neutralSection" class="category-section category-neutral" style="display: none;">
+            <div class="category-header">
+                <h4 class="mb-0"><i class="fas fa-minus me-2"></i>Neutral (RSI 30-70)</h4>
+                <span class="badge bg-warning text-dark" id="neutralBadge">0</span>
+            </div>
+            <div class="table-responsive">
+                <table class="indicators-table table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>AI Score</th>
+                            <th>LTP</th>
+                            <th>RVOL</th>
+                            <th>CPR Range</th>
+                            <th>Cam Range</th>
+                            <th>Fib Range</th>
+                            <th>RSI</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Histogram</th>
+                            <th>Stoch %K</th>
+                            <th>Stoch %D</th>
+                            <th>ADX</th>
+                            <th>DI+</th>
+                            <th>DI-</th>
+                            <th>Rank Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="neutralTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.querySelector('#themeToggleBtn i');
+            if (newTheme === 'light') {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+        
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const icon = document.querySelector('#themeToggleBtn i');
+            if (savedTheme === 'light') {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        });
+    
+        function loadIndicators() {
+            console.log('Loading technical indicators...');
+            // Hide error message on new attempt
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            return fetch('/api/technical-indicators-data')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Indicators data received:', data);
+                    if (data.status === 'success') {
+                        // Update stats for all 5 categories
+                        document.getElementById('overboughtCount').textContent = data.overbought.length;
+                        document.getElementById('slightBullishCount').textContent = data.slight_bullish.length;
+                        document.getElementById('neutralCount').textContent = data.neutral.length;
+                        document.getElementById('slightBearishCount').textContent = data.slight_bearish.length;
+                        document.getElementById('oversoldCount').textContent = data.oversold.length;
+                        document.getElementById('statsRow').style.display = 'flex';
+
+                        // Populate all 5 tables
+                        populateTable('overboughtTableBody', data.overbought, 'overboughtBadge', 'overboughtSection');
+                        populateTable('slightBullishTableBody', data.slight_bullish, 'slightBullishBadge', 'slightBullishSection');
+                        populateTable('neutralTableBody', data.neutral, 'neutralBadge', 'neutralSection');
+                        populateTable('slightBearishTableBody', data.slight_bearish, 'slightBearishBadge', 'slightBearishSection');
+                        populateTable('oversoldTableBody', data.oversold, 'oversoldBadge', 'oversoldSection');
+
+                        // Hide loading spinner and error
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        document.getElementById('errorMessage').style.display = 'none';
+                        
+                        return true; // Success
+                    }
+                    return false;
+                })
+                .catch(error => {
+                    console.error('Error loading indicators:', error);
+                    // Keep spinner content for retries, just hide it
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    // Show error state but allow retries
+                    const errorMsg = document.getElementById('errorMessage');
+                    if (errorMsg) {
+                        errorMsg.textContent = 'Error loading data. Retrying in 60 seconds...';
+                        errorMsg.style.display = 'block';
+                    }
+                    return false; // Failure
+                });
+        }
+
+
+        function populateTable(tbodyId, data, badgeId, sectionId) {
+            const tbody = document.getElementById(tbodyId);
+            const badge = document.getElementById(badgeId);
+            const section = document.getElementById(sectionId);
+
+            badge.textContent = data.length;
+
+            if (data.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            tbody.innerHTML = '';
+
+            data.forEach(stock => {
+                const row = document.createElement('tr');
+                
+                // Highlight extreme RSI values
+                const rsiClass = stock.rsi && (stock.rsi > 80 || stock.rsi < 20) ? 'highlight-extreme' : '';
+                const macdHistClass = stock.macd_histogram > 0 ? 'positive-value' : 'negative-value';
+                
+                // Determine badge classes for each indicator status
+                const rsiStatusClass = stock.rsi_status === 'Overbought' ? 'status-overbought' : 
+                                      stock.rsi_status === 'Oversold' ? 'status-oversold' : 'status-neutral';
+                const macdStatusClass = stock.macd_status === 'Bullish' ? 'status-bullish' : 'status-bearish';
+                const stochStatusClass = stock.stoch_status === 'Overbought' ? 'status-overbought' : 
+                                        stock.stoch_status === 'Oversold' ? 'status-oversold' : 'status-neutral';
+                const adxStatusClass = stock.adx_status && stock.adx_status.includes('Bullish') ? 'status-bullish' : 
+                                      stock.adx_status && stock.adx_status.includes('Bearish') ? 'status-bearish' : 'status-neutral';
+                
+                // Overall rank status badge (7 levels)
+                let rankStatusClass = 'status-neutral';
+                if (stock.rank_status === 'Very Strong Bullish' || stock.rank_status === 'Strong Bullish' || stock.rank_status === 'Bullish') {
+                    rankStatusClass = 'status-bullish';
+                } else if (stock.rank_status === 'Very Strong Bearish' || stock.rank_status === 'Strong Bearish' || stock.rank_status === 'Bearish') {
+                    rankStatusClass = 'status-bearish';
+                }
+                
+                // RVOL color coding based on value (parse the 'x' suffix)
+                let rvolClass = '';
+                if (stock.rvol && stock.rvol !== '-') {
+                    const rvolNum = parseFloat(stock.rvol.replace('x', ''));
+                    rvolClass = rvolNum >= 2.0 ? 'text-danger' : 
+                               rvolNum >= 1.5 ? 'text-warning' : 
+                               rvolNum >= 0.7 ? 'text-success' : 'text-info';
+                }
+                
+                // Range color coding - Darkest green (most bullish) to darkest red (most bearish)
+                const getRangeClass = (rangeText) => {
+                    if (!rangeText || rangeText === '-') return '';
+                    const text = rangeText.toLowerCase();
+                    
+                    // BULLISH SIDE (Above TC/Pivot) - Green shades, darker = higher/more bullish
+                    // Darkest Green - Above R3, R4, R5 (most bullish)
+                    if (text.includes('above r3') || text.includes('above r4') || text.includes('above r5') || 
+                        text === 'r4-r5' || text === 'r5-r4') {
+                        return 'range-darkest-green';
+                    }
+                    // Medium Green - R2-R3, R3-R4
+                    if (text === 'r2-r3' || text === 'r3-r2' || text === 'r3-r4' || text === 'r4-r3') {
+                        return 'range-medium-green';
+                    }
+                    // Light Green - R1-R2, TC-R1, PP-R1
+                    if (text === 'r1-r2' || text === 'r2-r1' || text === 'tc-r1' || text === 'r1-tc' || 
+                        text === 'pp-r1' || text === 'r1-pp' || text === 'p-r1' || text === 'r1-p') {
+                        return 'range-light-green';
+                    }
+                    
+                    // NEUTRAL - At pivot/CPR center
+                    if (text.includes('tc-bc') || text.includes('bc-tc') || text.includes('cpr') || 
+                        text === 'pp' || text === 's1-p' || text === 'p-s1') {
+                        return 'range-yellow-orange';
+                    }
+                    
+                    // BEARISH SIDE (Below TC/Pivot) - Red shades, darker = lower/more bearish
+                    // Light Red - BC-S1, S1-S2, S1-PP (closest to pivot)
+                    if (text === 'bc-s1' || text === 's1-bc' || text === 's1-s2' || text === 's2-s1' || 
+                        text === 's1-pp' || text === 'pp-s1' || text === 's1-p' || text === 'p-s1') {
+                        return 'range-light-red';
+                    }
+                    // Medium Red - S2-S3, S3-S4
+                    if (text === 's2-s3' || text === 's3-s2' || text === 's3-s4' || text === 's4-s3') {
+                        return 'range-medium-red';
+                    }
+                    // Darkest Red - Below S3, S4, S5 (most bearish)
+                    if (text.includes('below s3') || text.includes('below s4') || text.includes('below s5') || 
+                        text === 's4-s5' || text === 's5-s4') {
+                        return 'range-darkest-red';
+                    }
+                    
+                    return ''; // Default
+                };
+                
+                // Calculate composite score for gauge (range: -15 to +15)
+                let compositeScore = stock.rank_score || 0;
+                // Use absolute value for progression - higher magnitude = more fill
+                let gaugePercent = (Math.abs(compositeScore) / 15) * 100; // 0 to 100%
+                gaugePercent = Math.max(0, Math.min(100, gaugePercent));
+                
+                // Border color intensifies based on score value
+                let gaugeColor = '#888'; // Gray for 0
+                
+                // Positive scores - Light green to dark green (intensity increases)
+                if (compositeScore > 0) {
+                    const intensity = Math.min(compositeScore / 15, 1); // 0 to 1
+                    const green = Math.round(255 - (intensity * 155)); // 255 to 100 (light to dark green)
+                    gaugeColor = `rgb(0, ${green}, 0)`;
+                }
+                // Negative scores - Light red to dark red (intensity increases as score becomes more negative)
+                else if (compositeScore < 0) {
+                    const intensity = Math.min(Math.abs(compositeScore) / 15, 1); // 0 to 1
+                    const red = Math.round(255 - (intensity * 175)); // 255 to 80 (light to dark red)
+                    gaugeColor = `rgb(${red}, 0, 0)`;
+                }
+                
+                const gaugeHtml = `
+                    <div class="stock-mini-gauge">
+                        <svg width="35" height="35" viewBox="0 0 35 35">
+                            <circle cx="17.5" cy="17.5" r="14.5" fill="none" stroke="#2a3142" stroke-width="3.5"/>
+                            <circle cx="17.5" cy="17.5" r="14.5" fill="none" stroke="${gaugeColor}" stroke-width="3.5" 
+                                stroke-dasharray="91" stroke-dashoffset="${91 - (91 * gaugePercent / 100)}" stroke-linecap="round"/>
+                        </svg>
+                        <div class="stock-gauge-text" style="color: ${gaugeColor}">${compositeScore > 0 ? '+' : ''}${compositeScore}</div>
+                    </div>
+                `;
+                
+                row.innerHTML = `
+                    <td><strong>${stock.symbol}</strong></td>
+                    <td>${gaugeHtml}</td>
+                    <td>${stock.ltp || '-'}</td>
+                    <td class="${rvolClass}" style="font-weight: bold;">${stock.rvol || '-'}</td>
+                    <td><span class="${getRangeClass(stock.cpr_range)}">${stock.cpr_range || '-'}</span></td>
+                    <td><span class="${getRangeClass(stock.camarilla_range)}">${stock.camarilla_range || '-'}</span></td>
+                    <td><span class="${getRangeClass(stock.fibonacci_range)}">${stock.fibonacci_range || '-'}</span></td>
+                    <td class="${rsiClass}">
+                        ${stock.rsi || '-'}
+                        <br><span class="status-badge ${rsiStatusClass}" style="font-size: 0.65rem;">${stock.rsi_status || '-'}</span>
+                    </td>
+                    <td>
+                        ${stock.macd || '-'}
+                        <br><span class="status-badge ${macdStatusClass}" style="font-size: 0.65rem;">${stock.macd_status || '-'}</span>
+                    </td>
+                    <td>${stock.macd_signal || '-'}</td>
+                    <td class="${macdHistClass}">${stock.macd_histogram || '-'}</td>
+                    <td>
+                        ${stock.stoch_k || '-'}
+                        <br><span class="status-badge ${stochStatusClass}" style="font-size: 0.65rem;">${stock.stoch_status || '-'}</span>
+                    </td>
+                    <td>${stock.stoch_d || '-'}</td>
+                    <td>
+                        ${stock.adx || '-'}
+                        <br><span class="status-badge ${adxStatusClass}" style="font-size: 0.65rem;">${stock.adx_status || '-'}</span>
+                    </td>
+                    <td class="positive-value">${stock.di_plus || '-'}</td>
+                    <td class="negative-value">${stock.di_minus || '-'}</td>
+                    <td>
+                        <div style="text-align: center;">
+                            <span class="status-badge ${rankStatusClass}" style="font-size: 0.8rem; padding: 6px 12px;">
+                                ${stock.rank_status || '-'}
+                            </span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+
+        // WebSocket streaming - synchronized with dashboard at 500ms intervals
+        let pollingInterval = null;
+        let pollCount = 0;
+        let allIndicatorsData = null; // Store all data for filtering
+        
+        function startWebSocketPolling() {
+            // Clear any existing interval
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            console.log('🔄 Starting WebSocket polling at 500ms intervals...');
+            
+            // Poll WebSocket data at 500ms intervals (same as dashboard)
+            pollingInterval = setInterval(async () => {
+                pollCount++;
+                try {
+                    const response = await fetch('/api/technical-indicators-data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        updateIndicatorsDisplay(data);
+                        if (pollCount % 20 === 0) { // Log every 10 seconds (20 polls at 500ms each)
+                            console.log(`📊 Polling active: ${pollCount} updates received`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error polling WebSocket data:', error);
+                    // Don't stop polling on error, just log and continue
+                }
+            }, 500); // 500ms polling interval - synchronized with WebSocket speed
+            
+            console.log('✅ Polling interval started');
+        }
+
+        // Start WebSocket connection
+        async function startWebSocketConnection() {
+            try {
+                const response = await fetch('/start_websocket');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    console.log('WebSocket connected successfully');
+                    // Load initial data
+                    setTimeout(() => {
+                        loadIndicators().then(success => {
+                            if (success) {
+                                // Start real-time WebSocket polling
+                                startWebSocketPolling();
+                            }
+                        });
+                    }, 1000);
+                } else {
+                    console.warn('WebSocket connection failed, loading without live data');
+                    loadIndicators();
+                }
+            } catch (error) {
+                console.error('Error starting WebSocket:', error);
+                loadIndicators();
+            }
+        }
+        
+        // Filter and display data based on search term
+        function filterAndDisplayIndicators() {
+            if (!allIndicatorsData) return;
+            
+            const searchTerm = document.getElementById('stockSearch').value.toUpperCase().trim();
+            
+            // Filter each category
+            const filteredData = {
+                overbought: allIndicatorsData.overbought ? 
+                    allIndicatorsData.overbought.filter(s => s.symbol.toUpperCase().includes(searchTerm)) : [],
+                slight_bullish: allIndicatorsData.slight_bullish ? 
+                    allIndicatorsData.slight_bullish.filter(s => s.symbol.toUpperCase().includes(searchTerm)) : [],
+                neutral: allIndicatorsData.neutral ? 
+                    allIndicatorsData.neutral.filter(s => s.symbol.toUpperCase().includes(searchTerm)) : [],
+                slight_bearish: allIndicatorsData.slight_bearish ? 
+                    allIndicatorsData.slight_bearish.filter(s => s.symbol.toUpperCase().includes(searchTerm)) : [],
+                oversold: allIndicatorsData.oversold ? 
+                    allIndicatorsData.oversold.filter(s => s.symbol.toUpperCase().includes(searchTerm)) : []
+            };
+            
+            // Update display with filtered data
+            updateIndicatorsDisplay(filteredData);
+        }
+
+        // Update display with new data
+        function updateIndicatorsDisplay(data) {
+            // Store the complete data for filtering
+            if (!document.getElementById('stockSearch').value) {
+                allIndicatorsData = data;
+            }
+            
+            // Rebuild tables completely for live data updates
+            if (data.overbought) {
+                populateTable('overboughtTableBody', data.overbought, 'overboughtBadge', 'overboughtSection');
+            }
+            if (data.slight_bullish) {
+                populateTable('slightBullishTableBody', data.slight_bullish, 'slightBullishBadge', 'slightBullishSection');
+            }
+            if (data.neutral) {
+                populateTable('neutralTableBody', data.neutral, 'neutralBadge', 'neutralSection');
+            }
+            if (data.slight_bearish) {
+                populateTable('slightBearishTableBody', data.slight_bearish, 'slightBearishBadge', 'slightBearishSection');
+            }
+            if (data.oversold) {
+                populateTable('oversoldTableBody', data.oversold, 'oversoldBadge', 'oversoldSection');
+            }
+        }
+        
+        // Helper functions for status colors
+        function getRangeClass(range) {
+            const text = (range || '').toLowerCase();
+            // BULLISH SIDE (Above TC/Pivot) - Green shades
+            if (text.includes('above r3') || text.includes('above r4') || text.includes('above r5')) return 'range-darkest-green';
+            if (text === 'r2-r3' || text === 'r3-r2' || text === 'r3-r4' || text === 'r4-r3' || text === 'r4-r5' || text === 'r5-r4') return 'range-medium-green';
+            if (text === 'r1-r2' || text === 'r2-r1' || text === 'tc-r1' || text === 'r1-tc' || text === 'pp-r1' || text === 'r1-pp' || text === 'p-r1' || text === 'r1-p') return 'range-light-green';
+            // NEUTRAL
+            if (text.includes('tc-bc') || text.includes('bc-tc') || text.includes('cpr') || text === 'pp' || text === 's1-p' || text === 'p-s1') return 'range-yellow-orange';
+            // BEARISH SIDE (Below TC/Pivot) - Red shades
+            if (text === 'bc-s1' || text === 's1-bc' || text === 's1-s2' || text === 's2-s1' || text === 's1-pp' || text === 'pp-s1' || text === 's1-p' || text === 'p-s1') return 'range-light-red';
+            if (text === 's2-s3' || text === 's3-s2' || text === 's3-s4' || text === 's4-s3') return 'range-medium-red';
+            if (text.includes('below s3') || text.includes('below s4') || text.includes('below s5') || text === 's4-s5' || text === 's5-s4') return 'range-darkest-red';
+            return '';
+        }
+        
+        // Update individual category table with ALL real-time WebSocket data
+        function updateCategoryTable(category, stocks) {
+            const tbody = document.querySelector(`#${category}Section tbody`);
+            if (!tbody || !stocks || stocks.length === 0) return;
+            
+            // Update each row with new data
+            stocks.forEach((stock, index) => {
+                const existingRow = tbody.rows[index];
+                if (existingRow) {
+                    const cells = existingRow.cells;
+                    
+                    // Update AI Score gauge with border color intensity (cell 1)
+                    if (cells[1]) {
+                        const compositeScore = stock.rank_score || 0;
+                        const gaugePercent = (Math.abs(compositeScore) / 15) * 100;
+                        
+                        // Border color intensifies based on score value
+                        let gaugeColor = '#888';
+                        if (compositeScore > 0) {
+                            const intensity = Math.min(compositeScore / 15, 1);
+                            const green = Math.round(255 - (intensity * 155));
+                            gaugeColor = `rgb(0, ${green}, 0)`;
+                        } else if (compositeScore < 0) {
+                            const intensity = Math.min(Math.abs(compositeScore) / 15, 1);
+                            const red = Math.round(255 - (intensity * 175));
+                            gaugeColor = `rgb(${red}, 0, 0)`;
+                        }
+                        
+                        cells[1].innerHTML = `
+                            <div class="stock-mini-gauge">
+                                <svg width="35" height="35" viewBox="0 0 35 35">
+                                    <circle cx="17.5" cy="17.5" r="14.5" fill="none" stroke="#2a3142" stroke-width="3.5"/>
+                                    <circle cx="17.5" cy="17.5" r="14.5" fill="none" stroke="${gaugeColor}" stroke-width="3.5" 
+                                        stroke-dasharray="91" stroke-dashoffset="${91 - (91 * gaugePercent / 100)}" stroke-linecap="round"/>
+                                </svg>
+                                <div class="stock-gauge-text" style="color: ${gaugeColor}">${compositeScore > 0 ? '+' : ''}${compositeScore}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Update LTP (cell 2)
+                    if (cells[2]) cells[2].textContent = stock.ltp || '-';
+                    
+                    // Update RVOL (cell 3)
+                    const rvolClass = stock.rvol > 1.5 ? 'text-success' : stock.rvol < 0.8 ? 'text-danger' : '';
+                    if (cells[3]) cells[3].innerHTML = `<span class="${rvolClass}" style="font-weight: bold;">${stock.rvol || '-'}</span>`;
+                    
+                    // Update CPR Range (cell 4)
+                    if (cells[4]) cells[4].innerHTML = `<span class="${getRangeClass(stock.cpr_range)}">${stock.cpr_range || '-'}</span>`;
+                    
+                    // Update Cam Range (cell 5)
+                    if (cells[5]) cells[5].innerHTML = `<span class="${getRangeClass(stock.camarilla_range)}">${stock.camarilla_range || '-'}</span>`;
+                    
+                    // Update Fib Range (cell 6)
+                    if (cells[6]) cells[6].innerHTML = `<span class="${getRangeClass(stock.fibonacci_range)}">${stock.fibonacci_range || '-'}</span>`;
+                    
+                    // Update RSI (cell 7)
+                    const rsiClass = stock.rsi > 70 ? 'text-danger' : stock.rsi < 30 ? 'text-success' : '';
+                    const rsiStatusClass = stock.rsi_status === 'Overbought' ? 'status-overbought' : stock.rsi_status === 'Oversold' ? 'status-oversold' : 'status-neutral';
+                    if (cells[7]) cells[7].innerHTML = `<span class="${rsiClass}">${stock.rsi || '-'}</span><br><span class="status-badge ${rsiStatusClass}" style="font-size: 0.65rem;">${stock.rsi_status || '-'}</span>`;
+                    
+                    // Update MACD (cell 8)
+                    const macdStatusClass = stock.macd_status === 'Bullish' ? 'status-bullish' : stock.macd_status === 'Bearish' ? 'status-bearish' : 'status-neutral';
+                    if (cells[8]) cells[8].innerHTML = `${stock.macd || '-'}<br><span class="status-badge ${macdStatusClass}" style="font-size: 0.65rem;">${stock.macd_status || '-'}</span>`;
+                    
+                    // Update Signal (cell 9)
+                    if (cells[9]) cells[9].textContent = stock.macd_signal || '-';
+                    
+                    // Update Histogram (cell 10)
+                    const macdHistClass = stock.macd_histogram > 0 ? 'text-success' : stock.macd_histogram < 0 ? 'text-danger' : '';
+                    if (cells[10]) cells[10].innerHTML = `<span class="${macdHistClass}">${stock.macd_histogram || '-'}</span>`;
+                    
+                    // Update Stoch %K (cell 11)
+                    const stochStatusClass = stock.stoch_status === 'Overbought' ? 'status-overbought' : stock.stoch_status === 'Oversold' ? 'status-oversold' : 'status-neutral';
+                    if (cells[11]) cells[11].innerHTML = `${stock.stoch_k || '-'}<br><span class="status-badge ${stochStatusClass}" style="font-size: 0.65rem;">${stock.stoch_status || '-'}</span>`;
+                    
+                    // Update Stoch %D (cell 12)
+                    if (cells[12]) cells[12].textContent = stock.stoch_d || '-';
+                    
+                    // Update ADX (cell 13)
+                    const adxClass = stock.adx > 50 ? 'text-warning' : stock.adx < 25 ? 'text-secondary' : '';
+                    const adxStatusClass = stock.adx_status?.includes('Strong') ? 'status-strong' : 'status-weak';
+                    if (cells[13]) cells[13].innerHTML = `<span class="${adxClass}">${stock.adx || '-'}</span><br><span class="status-badge ${adxStatusClass}" style="font-size: 0.65rem;">${stock.adx_status || '-'}</span>`;
+                    
+                    // Update DI+ (cell 14)
+                    if (cells[14]) cells[14].textContent = stock.di_plus || '-';
+                    
+                    // Update DI- (cell 15)
+                    if (cells[15]) cells[15].textContent = stock.di_minus || '-';
+                    
+                    // Update Rank Status (cell 16)
+                    const rankClass = stock.rank_status?.includes('Bullish') ? 'text-success' : stock.rank_status?.includes('Bearish') ? 'text-danger' : 'text-warning';
+                    if (cells[16]) cells[16].innerHTML = `<span class="${rankClass}" style="font-weight: bold; font-size: 0.75rem;">${stock.rank_status || '-'}</span>`;
+                }
+            });
+        }
+
+        // Add search functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize WebSocket
+            startWebSocketConnection();
+            
+            // Add search event listener
+            const searchInput = document.getElementById('stockSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterAndDisplayIndicators);
+            }
+        });
+    </script>
+</body>
+</html>

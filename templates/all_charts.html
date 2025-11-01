@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Stocks Multi-Chart Analysis</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <!-- Bootstrap CSS - Dark Theme -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <style>
+        body {
+            background: #0a0f14;
+            color: #ffffff;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .charts-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+        }
+        
+        .chart-card {
+            background: rgba(10, 15, 20, 0.95);
+            border: 3px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 
+                inset 2px 2px 4px rgba(255, 255, 255, 0.05),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.8),
+                4px 4px 8px rgba(0, 0, 0, 0.6);
+            min-height: 380px;
+            position: relative;
+        }
+        
+        @media (max-width: 767px) {
+            .chart-card {
+                min-height: 350px;
+                padding: 12px;
+            }
+        }
+        
+        .chart-card h5 {
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #17a2b8;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        
+        .chart-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            color: #6c757d;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 240px;
+            width: 100%;
+            display: none;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 767px) {
+            .chart-container {
+                height: 280px;
+                margin: 0 -5px;
+                padding: 0 5px;
+            }
+        }
+        
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .chart-error {
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        
+        
+        .back-btn {
+            background: rgba(23, 162, 184, 0.2);
+            border: 2px solid #17a2b8;
+            color: #17a2b8;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+        }
+        
+        .form-control {
+            background-color: rgba(255,255,255,0.05) !important;
+            border-color: rgba(23, 162, 184, 0.3) !important;
+            color: white !important;
+        }
+        
+        .form-control:focus {
+            background-color: rgba(255,255,255,0.08) !important;
+            border-color: #17a2b8 !important;
+            color: white !important;
+            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25) !important;
+        }
+        
+        .input-group-text {
+            background-color: rgba(23, 162, 184, 0.15) !important;
+            border-color: rgba(23, 162, 184, 0.3) !important;
+            color: #17a2b8 !important;
+        }
+        
+        /* Mobile scrollbars - tiny with dark blue */
+        @media (max-width: 767.98px) {
+            *::-webkit-scrollbar {
+                width: 3px !important;
+                height: 3px !important;
+            }
+
+            *::-webkit-scrollbar-track {
+                background: #0a0f14 !important;
+                border-radius: 1px !important;
+            }
+
+            *::-webkit-scrollbar-thumb {
+                background: #1e3a5f !important;
+                border-radius: 1px !important;
+            }
+
+            *::-webkit-scrollbar-thumb:hover {
+                background: #2a4d7f !important;
+            }
+
+            /* Firefox scrollbar for mobile */
+            * {
+                scrollbar-width: thin !important;
+                scrollbar-color: #1e3a5f #0a0f14 !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .header-section h1 {
+                font-size: 1.25rem;
+            }
+            
+            .header-section p {
+                font-size: 0.8rem;
+            }
+            
+            .back-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu-container {
+            position: relative;
+        }
+
+        .mobile-menu-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .mobile-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(20, 25, 35, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            min-width: 250px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-dropdown.show {
+            display: block;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        .mobile-menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .mobile-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu-divider {
+            border-top: 1px solid #444;
+            margin: 4px 0;
+        }
+
+        .mobile-menu-header {
+            padding: 8px 16px;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu-item .badge {
+            float: right;
+        }
+
+        .navbar {
+            background: rgba(17, 24, 39, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #17a2b8 !important;
+        }
+
+        .navbar-logo {
+            height: 35px;
+            width: 35px;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            color: #17a2b8;
+        }
+
+        /* Light Theme Styles */
+        :root[data-theme="light"] {
+            color-scheme: light;
+        }
+
+        :root[data-theme="light"] body {
+            background: #f0f2f5;
+            color: #212529;
+        }
+
+        :root[data-theme="light"] .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        :root[data-theme="light"] .navbar-brand {
+            color: #0d6efd !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-toggle {
+            color: #212529;
+        }
+
+        :root[data-theme="light"] .theme-toggle {
+            color: #212529;
+        }
+
+        :root[data-theme="light"] .mobile-menu-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-item {
+            color: #212529 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #000 !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-header {
+            color: #6c757d !important;
+            background: rgba(0, 0, 0, 0.03) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="light"] .mobile-menu-divider {
+            border-top: 1px solid #dee2e6 !important;
+        }
+
+
+        :root[data-theme="light"] .chart-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid #dee2e6 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="light"] .chart-card h5 {
+            color: #0d6efd !important;
+        }
+
+        :root[data-theme="light"] .form-control,
+        :root[data-theme="light"] .input-group-text,
+        :root[data-theme="light"] .btn {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border-color: #dee2e6 !important;
+            color: #212529 !important;
+        }
+
+        :root[data-theme="light"] .back-btn {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+
+        /* Desktop Navigation Strip Styling */
+        .desktop-nav-strip {
+            position: relative;
+            z-index: 1020;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-strip-btn {
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+        
+        .nav-strip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+        
+        .nav-strip-btn.btn-outline-primary:hover {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #4da6ff;
+        }
+        
+        .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #5cb85c;
+        }
+        
+        .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        /* Light Theme Navigation Strip */
+        :root[data-theme="light"] .desktop-nav-strip {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.95)) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn {
+            border-color: rgba(13, 110, 253, 0.4) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success {
+            border-color: rgba(25, 135, 84, 0.4) !important;
+            color: #198754 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning {
+            border-color: rgba(255, 193, 7, 0.6) !important;
+            color: #f59e0b !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning.active {
+            background-color: rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger {
+            border-color: rgba(220, 53, 69, 0.4) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.2) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark py-1">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center flex-grow-0" href="{{ url_for('dashboard') }}" style="margin-right: 0;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="MG Logo" class="navbar-logo me-2">
+                <div class="navbar-title">100D-Levels</div>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <!-- Guide Button -->
+                <button class="btn btn-sm theme-toggle me-2" data-bs-toggle="modal" data-bs-target="#userGuideModal" title="User Guide">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button class="btn btn-sm theme-toggle me-2" onclick="toggleTheme()" title="Toggle Theme" id="themeToggleBtn">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <!-- Mobile Menu (Hamburger) -->
+                <div class="mobile-menu-container d-md-none">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+                        <!-- User Profile Section -->
+                        <div class="mobile-menu-header d-flex align-items-center mb-2">
+                            {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Profile" class="rounded-circle me-2" style="width: 36px; height: 36px; border: 2px solid #66b3ff;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: #4da6ff; border: 2px solid #66b3ff;">
+                                <i class="fas fa-user" style="font-size: 18px; color: white;"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: bold; font-size: 0.9rem;">{{ current_user.username }}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">{{ current_user.email }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('account') }}" class="mobile-menu-item">
+                            <i class="fas fa-user-circle me-2"></i>Account
+                        </a>
+                        <div class="mobile-menu-divider"></div>
+                        <div class="mobile-menu-header">Pages</div>
+                        <a href="{{ url_for('dashboard') }}" class="mobile-menu-item">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                        <a href="{{ url_for('all_charts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>100D-Levels
+                        </a>
+                        <a href="{{ url_for('mgheatmap') }}" class="mobile-menu-item">
+                            <i class="fas fa-th me-2"></i>MG Heatmap
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-line me-2"></i>5D Line Charts
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        <a href="{{ url_for('volume_profile') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-area me-2"></i>Volume Profile
+                        </a>
+                        <a href="{{ url_for('technical_indicators_page') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-line me-2"></i>Technical Indicators
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span>
+                        </a>
+                        {% if current_user.is_admin() %}
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('live_chart') }}" class="mobile-menu-item">
+                            <i class="fas fa-chart-candlestick me-2"></i>Live Chart
+                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>
+                        </a>
+                        <a href="{{ url_for('admin_panel') }}" class="mobile-menu-item">
+                            <i class="fas fa-user-shield me-2"></i>Admin Panel
+                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>
+                        </a>
+                        {% endif %}
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="mobile-menu-item">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Navigation Strip (Hidden on Mobile) -->
+    <div class="desktop-nav-strip d-none d-md-block" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.9)); border-bottom: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+        <div class="container-fluid px-3 py-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center justify-content-center">
+                <!-- Dashboard Page Sections -->
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#market-overview'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Market
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#niftyTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-table me-1"></i>F&O
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#camarillaTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-layer-group me-1"></i>Camarilla
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#cprTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-crosshairs me-1"></i>CPR
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#fibonacciTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Fibonacci
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#levels-scan'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-search me-1"></i>Levels
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#rvol-analysis'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-bar me-1"></i>RVOL
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#price-action'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-arrows-alt me-1"></i>Price Action
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(77, 166, 255, 0.3); margin: 0 0.5rem;"></div>
+                
+                <!-- Other Pages -->
+                <button class="btn btn-sm btn-outline-success nav-strip-btn active" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background-color: rgba(255, 193, 7, 0.2);">
+                    <i class="fas fa-chart-area me-1"></i>100D-Levels
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mgheatmap') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-th me-1"></i>MG Heatmap
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mg_linecharts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>5D Charts
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('volume_profile') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>Volume
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('technical_indicators_page') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Indicators
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                {% if current_user.is_admin() %}
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(220, 53, 69, 0.3); margin: 0 0.5rem;"></div>
+                
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('live_chart') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-candlestick me-1"></i>Live
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('admin_panel') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-user-shield me-1"></i>Admin
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Compact Search Section -->
+    <div class="container" style="padding: 15px 15px 10px 15px;">
+        <div class="input-group" style="max-width: 600px;">
+            <span class="input-group-text" style="background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="form-control" id="stockSearch" 
+                   placeholder="Search stock symbols (e.g. RELIANCE, TCS, INFY)..."
+                   style="background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+            <button class="btn" type="button" id="clearSearch" 
+                    style="background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- Charts Grid -->
+    <div class="container-fluid">
+        <div class="charts-grid" id="chartsGrid">
+            <!-- Chart cards will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        class AllChartsManager {
+            constructor() {
+                this.stocks = [];
+                this.loadedCharts = new Map();
+                this.observer = null;
+                this.loadingQueue = [];
+                this.maxConcurrentLoads = 8;
+                this.currentlyLoading = 0;
+                this.totalLoaded = 0;
+                
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadStocksList();
+                    this.createChartCards();
+                    this.setupSearch();
+                    // Auto-load all charts immediately
+                    this.autoLoadAllCharts();
+                } catch (error) {
+                    console.error('Failed to initialize all charts:', error);
+                }
+            }
+
+            async loadStocksList() {
+                try {
+                    const response = await fetch('/api/volume-profile/stocks');
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        this.stocks = data.stocks;
+                        console.log(`📊 All Charts: Found ${this.stocks.length} stocks to display`);
+                    } else {
+                        throw new Error(data.message || 'Failed to load stocks');
+                    }
+                } catch (error) {
+                    console.error('Error loading stocks list:', error);
+                    throw error;
+                }
+            }
+
+            createChartCards() {
+                const grid = document.getElementById('chartsGrid');
+                
+                this.stocks.forEach(stock => {
+                    // Sanitize symbol for use in DOM IDs
+                    const sanitizedSymbol = stock.symbol.replace(/[^a-zA-Z0-9]/g, '_');
+                    
+                    const cardHtml = `
+                        <div class="chart-card" data-symbol="${stock.symbol}" data-sanitized-id="${sanitizedSymbol}">
+                            <h5>${stock.symbol}</h5>
+                            <div class="chart-placeholder" id="placeholder-${sanitizedSymbol}">
+                                <div class="loading-spinner"></div>
+                                <div>Loading chart...</div>
+                            </div>
+                            <div class="chart-container" id="container-${sanitizedSymbol}">
+                                <canvas class="chart-canvas" id="chart-${sanitizedSymbol}"></canvas>
+                            </div>
+                        </div>
+                    `;
+                    grid.insertAdjacentHTML('beforeend', cardHtml);
+                });
+
+                console.log(`📊 All Charts: Created ${this.stocks.length} chart cards`);
+            }
+
+            autoLoadAllCharts() {
+                console.log(`📊 All Charts: Auto-loading all ${this.stocks.length} charts...`);
+                
+                // Load all charts immediately
+                this.stocks.forEach(stock => {
+                    if (!this.loadedCharts.has(stock.symbol)) {
+                        this.queueChartLoad(stock.symbol);
+                    }
+                });
+            }
+
+            setupIntersectionObserver() {
+                // This method is kept for potential future use but not called in auto-load mode
+                const options = {
+                    root: null,
+                    rootMargin: '100px',
+                    threshold: 0.1
+                };
+
+                this.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const symbol = entry.target.dataset.symbol;
+                            if (!this.loadedCharts.has(symbol)) {
+                                this.queueChartLoad(symbol);
+                            }
+                        }
+                    });
+                }, options);
+
+                // Observe all chart cards
+                document.querySelectorAll('.chart-card').forEach(card => {
+                    this.observer.observe(card);
+                });
+            }
+
+            setupSearch() {
+                const searchInput = document.getElementById('stockSearch');
+                const clearButton = document.getElementById('clearSearch');
+
+                if (!searchInput || !clearButton) return;
+
+                // Search functionality
+                searchInput.addEventListener('input', (e) => {
+                    this.filterCharts(e.target.value);
+                });
+
+                // Clear search
+                clearButton.addEventListener('click', () => {
+                    searchInput.value = '';
+                    this.filterCharts('');
+                });
+
+                // Enter key search
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.filterCharts(e.target.value);
+                    }
+                });
+            }
+
+            filterCharts(searchTerm) {
+                const chartCards = document.querySelectorAll('.chart-card');
+                const term = searchTerm.toLowerCase().trim();
+
+                chartCards.forEach(card => {
+                    const symbol = card.dataset.symbol.toLowerCase();
+                    
+                    if (term === '' || symbol.includes(term)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Update intersection observer for visible cards only
+                if (this.observer) {
+                    chartCards.forEach(card => {
+                        this.observer.unobserve(card);
+                        if (card.style.display !== 'none') {
+                            this.observer.observe(card);
+                        }
+                    });
+                }
+            }
+
+            queueChartLoad(symbol) {
+                if (this.currentlyLoading < this.maxConcurrentLoads) {
+                    this.loadChart(symbol);
+                } else {
+                    this.loadingQueue.push(symbol);
+                }
+            }
+
+            async loadChart(symbol) {
+                if (this.loadedCharts.has(symbol)) return;
+                
+                this.currentlyLoading++;
+                this.loadedCharts.set(symbol, 'loading');
+
+                try {
+                    // URL encode the symbol to handle special characters like & in M&M
+                    const encodedSymbol = encodeURIComponent(symbol);
+                    const response = await fetch(`/api/chart-100day/${encodedSymbol}`);
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        this.createChart(symbol, data);
+                        this.loadedCharts.set(symbol, 'loaded');
+                        this.totalLoaded++;
+                    } else {
+                        this.showError(symbol, data.message || 'Failed to load chart data');
+                        this.loadedCharts.set(symbol, 'error');
+                    }
+                } catch (error) {
+                    console.error(`Error loading chart for ${symbol}:`, error);
+                    this.showError(symbol, 'Network error');
+                    this.loadedCharts.set(symbol, 'error');
+                } finally {
+                    this.currentlyLoading--;
+                    this.processQueue();
+                }
+            }
+
+            processQueue() {
+                if (this.loadingQueue.length > 0 && this.currentlyLoading < this.maxConcurrentLoads) {
+                    const nextSymbol = this.loadingQueue.shift();
+                    this.loadChart(nextSymbol);
+                }
+            }
+
+            createChart(symbol, data) {
+                // Get sanitized ID from the chart card
+                const chartCard = document.querySelector(`[data-symbol="${symbol}"]`);
+                const sanitizedId = chartCard ? chartCard.dataset.sanitizedId : symbol.replace(/[^a-zA-Z0-9]/g, '_');
+                
+                const canvas = document.getElementById(`chart-${sanitizedId}`);
+                const placeholder = document.getElementById(`placeholder-${sanitizedId}`);
+                
+                if (!canvas || !data.chart_data) return;
+
+                const container = canvas.parentElement;
+                
+                // Hide placeholder and show chart container
+                placeholder.style.display = 'none';
+                container.style.display = 'block';
+
+                const ctx = canvas.getContext('2d');
+                
+                // Prepare data using exact dashboard approach
+                const labels = data.chart_data.map(d => d.date);
+                const closes = data.chart_data.map(item => item.close);
+                const volumes = data.chart_data.map(item => item.volume);
+
+                const datasets = [
+                    {
+                        label: 'Price',
+                        data: closes,
+                        borderColor: 'transparent',
+                        backgroundColor: 'transparent',
+                        pointRadius: 0,
+                        showLine: false,
+                        yAxisID: 'price-y'
+                    },
+                    {
+                        label: 'Volume',
+                        data: volumes,
+                        backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                        borderColor: 'rgba(54, 162, 235, 0.8)',
+                        type: 'bar',
+                        yAxisID: 'volume-y'
+                    }
+                ];
+
+                // Add volume profile levels as dotted lines
+                if (data.volume_profile_levels && Array.isArray(data.volume_profile_levels)) {
+                    data.volume_profile_levels.forEach((level, index) => {
+                        const lineData = new Array(labels.length).fill(level.value);
+                        
+                        // Use full level names
+                        let abbreviatedLabel = level.label;
+                        if (level.label === 'Support Level') abbreviatedLabel = 'Support';
+                        else if (level.label === 'Resistance Level') abbreviatedLabel = 'Resistance';
+                        else if (level.label === 'VWAP') abbreviatedLabel = 'VWAP';
+                        
+                        datasets.push({
+                            label: abbreviatedLabel,
+                            data: lineData,
+                            type: 'line',
+                            borderColor: level.color,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'price-y',
+                            order: 2 + index,
+                            tension: 0
+                        });
+                    });
+                }
+
+                // Create chart with custom candlestick drawing
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        devicePixelRatio: window.devicePixelRatio || 1,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        scales: {
+                            x: {
+                                display: false
+                            },
+                            'price-y': {
+                                type: 'linear',
+                                position: 'left',
+                                grid: { 
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: { 
+                                    color: '#ffffff',
+                                    maxTicksLimit: window.innerWidth < 768 ? 6 : 8,
+                                    font: {
+                                        size: 10
+                                    },
+                                    callback: function(value) {
+                                        return '₹' + value.toFixed(2);
+                                    }
+                                }
+                            },
+                            'volume-y': {
+                                type: 'linear',
+                                position: 'right',
+                                grid: { 
+                                    display: false
+                                },
+                                ticks: { 
+                                    color: '#ffffff',
+                                    maxTicksLimit: window.innerWidth < 768 ? 4 : 6,
+                                    font: {
+                                        size: 10
+                                    },
+                                    callback: function(value) {
+                                        return value >= 1000000 ? (value/1000000).toFixed(1) + 'M' : 
+                                               value >= 1000 ? (value/1000).toFixed(1) + 'K' : value;
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: '#ffffff',
+                                    font: {
+                                        size: window.innerWidth < 768 ? 10 : 11
+                                    },
+                                    usePointStyle: true,
+                                    pointStyle: 'line',
+                                    boxWidth: 15,
+                                    boxHeight: 2
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(255,255,255,0.3)',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        const datasetLabel = context.dataset.label;
+                                        
+                                        if (datasetLabel === 'Volume') {
+                                            return `Volume: ${value.toLocaleString()}`;
+                                        } else if (datasetLabel === 'Price' && data.chart_data && context.dataIndex < data.chart_data.length) {
+                                            // Show OHLC data for candlestick mode
+                                            const candle = data.chart_data[context.dataIndex];
+                                            return [
+                                                `Open: ₹${candle.open.toFixed(2)}`,
+                                                `High: ₹${candle.high.toFixed(2)}`,
+                                                `Low: ₹${candle.low.toFixed(2)}`,
+                                                `Close: ₹${candle.close.toFixed(2)}`
+                                            ];
+                                        } else {
+                                            return `${datasetLabel}: ₹${value.toFixed(2)}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: []
+                });
+
+                // Add custom candlestick drawing using dashboard approach
+                this.addCandlestickDrawing(chart, data.chart_data);
+
+                console.log(`📊 All Charts: Loaded chart for ${symbol}`);
+            }
+
+            addCandlestickDrawing(chart, chartData) {
+                const originalDraw = chart.draw;
+                
+                chart.draw = function() {
+                    originalDraw.apply(this, arguments);
+                    
+                    const ctx = this.ctx;
+                    const chartArea = this.chartArea;
+                    const priceScale = this.scales['price-y'];
+                    const xScale = this.scales.x;
+                    
+                    if (!chartData || chartData.length === 0) return;
+                    
+                    ctx.save();
+                    
+                    // Mobile-first boundary protection
+                    const isMobile = window.innerWidth < 768;
+                    const margin = isMobile ? 5 : 2;
+                    
+                    // Add strict clipping with mobile margins
+                    ctx.beginPath();
+                    ctx.rect(
+                        chartArea.left + margin, 
+                        chartArea.top + margin, 
+                        (chartArea.right - chartArea.left) - (margin * 2), 
+                        (chartArea.bottom - chartArea.top) - (margin * 2)
+                    );
+                    ctx.clip();
+                    
+                    // Mobile-optimized candle width
+                    const widthFactor = isMobile ? 0.5 : 0.7;
+                    const minWidth = isMobile ? 1.5 : 3;
+                    const maxWidth = isMobile ? 4 : 8;
+                    const candleWidth = Math.max(minWidth, Math.min(maxWidth, (chartArea.right - chartArea.left) / chartData.length * widthFactor));
+                    
+                    chartData.forEach((candle, index) => {
+                        const x = xScale.getPixelForValue(index);
+                        
+                        // Skip if candle is outside visible area
+                        if (x < chartArea.left - candleWidth || x > chartArea.right + candleWidth) {
+                            return;
+                        }
+                        
+                        const open = priceScale.getPixelForValue(candle.open);
+                        const close = priceScale.getPixelForValue(candle.close);
+                        const high = priceScale.getPixelForValue(candle.high);
+                        const low = priceScale.getPixelForValue(candle.low);
+                        
+                        // Constrain all coordinates to chart area
+                        const constrainedHigh = Math.max(chartArea.top, Math.min(chartArea.bottom, high));
+                        const constrainedLow = Math.max(chartArea.top, Math.min(chartArea.bottom, low));
+                        const constrainedOpen = Math.max(chartArea.top, Math.min(chartArea.bottom, open));
+                        const constrainedClose = Math.max(chartArea.top, Math.min(chartArea.bottom, close));
+                        
+                        const isBullish = candle.close >= candle.open;
+                        const bodyColor = isBullish ? 'rgba(76, 175, 80, 0.8)' : 'rgba(244, 67, 54, 0.8)';
+                        const wickColor = isBullish ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)';
+                        
+                        // Draw wick (high-low line) - constrained
+                        ctx.strokeStyle = wickColor;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(x, constrainedHigh);
+                        ctx.lineTo(x, constrainedLow);
+                        ctx.stroke();
+                        
+                        // Draw body (open-close rectangle)
+                        const bodyTop = Math.min(constrainedOpen, constrainedClose);
+                        const bodyHeight = Math.abs(constrainedClose - constrainedOpen);
+                        
+                        if (bodyHeight < 1) {
+                            // Doji - draw thin line
+                            ctx.strokeStyle = wickColor;
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(x - candleWidth/2, constrainedOpen);
+                            ctx.lineTo(x + candleWidth/2, constrainedOpen);
+                            ctx.stroke();
+                        } else {
+                            // Normal candle body
+                            ctx.fillStyle = bodyColor;
+                            ctx.fillRect(x - candleWidth/2, bodyTop, candleWidth, bodyHeight);
+                            
+                            // Body border
+                            ctx.strokeStyle = wickColor;
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(x - candleWidth/2, bodyTop, candleWidth, bodyHeight);
+                        }
+                    });
+                    
+                    ctx.restore();
+                };
+            }
+
+            showError(symbol, message) {
+                // Get sanitized ID from the chart card
+                const chartCard = document.querySelector(`[data-symbol="${symbol}"]`);
+                const sanitizedId = chartCard ? chartCard.dataset.sanitizedId : symbol.replace(/[^a-zA-Z0-9]/g, '_');
+                
+                const placeholder = document.getElementById(`placeholder-${sanitizedId}`);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="chart-error">
+                            <i class="fas fa-exclamation-triangle"></i><br>
+                            Error loading chart<br>
+                            <small>${message}</small>
+                        </div>
+                    `;
+                }
+            }
+
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AllChartsManager();
+        });
+    </script>
+
+    <!-- User Guide Modal -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1" aria-labelledby="userGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background: linear-gradient(135deg, #1a1f2e 0%, #2a2d3e 100%); color: #ffffff; border: 1px solid rgba(77, 166, 255, 0.3);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                    <h5 class="modal-title" id="userGuideModalLabel"><i class="fas fa-book-open me-2 text-info"></i>100-Day Charts User Guide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-info"><i class="fas fa-info-circle me-2"></i>Overview</h6>
+                    <p>100-Day Charts page displays comprehensive candlestick charts with support/resistance levels from volume profile analysis for all F&O stocks.</p>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-star me-2"></i>Key Features</h6>
+                    <ul>
+                        <li><strong>100-Day Candlestick Charts:</strong> Historical price action with OHLC data</li>
+                        <li><strong>Volume Profile Levels:</strong> Support and resistance zones (VPOC, VAH, VAL)</li>
+                        <li><strong>Auto-Loading:</strong> Charts load progressively for optimal performance</li>
+                        <li><strong>Search Functionality:</strong> Quick search to find specific stocks</li>
+                        <li><strong>Responsive Grid:</strong> 2-column layout on desktop, 1-column on mobile</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-mouse-pointer me-2"></i>How to Use</h6>
+                    <ul>
+                        <li><strong>Search:</strong> Type stock symbol in search box to filter charts</li>
+                        <li><strong>Clear Search:</strong> Click X button to show all charts</li>
+                        <li><strong>View Progress:</strong> Loading progress bar shows chart loading status</li>
+                        <li><strong>Scroll:</strong> Charts load as you scroll down the page</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-lightbulb me-2"></i>Understanding the Charts</h6>
+                    <ul>
+                        <li><strong>Green Candles:</strong> Closing price higher than opening (bullish)</li>
+                        <li><strong>Red Candles:</strong> Closing price lower than opening (bearish)</li>
+                        <li><strong>Horizontal Lines:</strong> Volume profile support/resistance levels</li>
+                        <li><strong>VPOC:</strong> Point of Control - highest volume traded price level</li>
+                        <li><strong>VAH/VAL:</strong> Value Area High/Low - 70% volume concentration zone</li>
+                    </ul>
+                    
+                    <h6 class="text-info mt-3"><i class="fas fa-link me-2"></i>Quick Navigation</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-home me-1"></i>Dashboard</a>
+                        <a href="{{ url_for('mgheatmap') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-th me-1"></i>MG Heatmap</a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-line me-1"></i>5D Line Charts</a>
+                        <a href="{{ url_for('volume_profile') }}" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-area me-1"></i>Volume Profile</a>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(77, 166, 255, 0.3);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button icon
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const icon = themeBtn.querySelector('i');
+            icon.className = newTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const dropdown = document.getElementById('mobileMenuDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.querySelector('.mobile-menu-container');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (menu && !menu.contains(event.target)) {
+                document.getElementById('mobileMenuDropdown').classList.remove('show');
+            }
+        });
+
+        // Apply saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (themeBtn) {
+                const icon = themeBtn.querySelector('i');
+                icon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+    </script>
+
+</body>
+</html>

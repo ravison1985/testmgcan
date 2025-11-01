@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minute Historical Data Download</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background-color: #238636;
+            border-color: #238636;
+        }
+        .btn-primary:hover {
+            background-color: #2ea043;
+            border-color: #2ea043;
+        }
+        .alert-success {
+            background-color: #0f2419;
+            border-color: #238636;
+            color: #7ee787;
+        }
+        .alert-danger {
+            background-color: #2d1117;
+            border-color: #da3633;
+            color: #f85149;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-chart-line"></i> Stock Market Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin_panel') }}">
+                    <i class="fas fa-arrow-left"></i> Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-clock"></i> Minute Resolution Historical Data Download
+                </h4>
+            </div>
+            <div class="card-body">
+                <div id="alertContainer"></div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label for="resolutionSelect" class="form-label">Resolution:</label>
+                        <select id="resolutionSelect" class="form-select">
+                            <option value="1">1 Minute</option>
+                            <option value="2">2 Minutes</option>
+                            <option value="3">3 Minutes</option>
+                            <option value="5" selected>5 Minutes</option>
+                            <option value="10">10 Minutes</option>
+                            <option value="15">15 Minutes</option>
+                            <option value="20">20 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="45">45 Minutes</option>
+                            <option value="60">60 Minutes (1 Hour)</option>
+                            <option value="120">120 Minutes (2 Hours)</option>
+                            <option value="180">180 Minutes (3 Hours)</option>
+                            <option value="240">240 Minutes (4 Hours)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="fromDateInput" class="form-label">From Date:</label>
+                        <input type="date" id="fromDateInput" class="form-control">
+                        <small class="text-muted">Start date</small>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="toDateInput" class="form-label">To Date:</label>
+                        <input type="date" id="toDateInput" class="form-control">
+                        <small class="text-muted">End date</small>
+                    </div>
+                    
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button id="downloadAllBtn" class="btn btn-primary w-100">
+                            <i class="fas fa-download"></i> Download All Symbols
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Download Progress</h6>
+                                <div class="progress mb-2">
+                                    <div id="overallProgress" class="progress-bar" role="progressbar" style="width: 0%; background-color: #238636;">
+                                        <span id="progressText">0%</span>
+                                    </div>
+                                </div>
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <small class="text-muted">Total Symbols</small>
+                                        <br><span id="totalSymbols" class="fw-bold">0</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Downloaded</small>
+                                        <br><span id="downloadedSymbols" class="fw-bold text-success">0</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Failed</small>
+                                        <br><span id="failedSymbols" class="fw-bold text-danger">0</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Remaining</small>
+                                        <br><span id="remainingSymbols" class="fw-bold text-warning">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Symbol Download Status</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-dark table-striped mb-0">
+                                        <thead class="sticky-top" style="background-color: #161b22;">
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Status</th>
+                                                <th>Records</th>
+                                                <th>Last Updated</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="symbolTable">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">
+                                                    <i class="fas fa-spinner fa-spin"></i> Loading symbols...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> 
+                            Select a custom date range to download historical minute data. Start with smaller date ranges (e.g., 7-30 days) for faster downloads.
+                            Each resolution is stored in a separate table: hist_data_1min, hist_data_2min, etc.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class MinuteDataManager {
+            constructor() {
+                this.symbols = [];
+                this.downloadStatus = {};
+                this.isDownloading = false;
+                this.init();
+            }
+
+            async init() {
+                this.initializeDates();
+                await this.loadSymbols();
+                this.bindEvents();
+            }
+
+            initializeDates() {
+                // Get most recent weekday (not weekend)
+                const today = new Date();
+                let mostRecentWeekday = new Date(today);
+                while (mostRecentWeekday.getDay() === 0 || mostRecentWeekday.getDay() === 6) {
+                    mostRecentWeekday.setDate(mostRecentWeekday.getDate() - 1);
+                }
+                
+                const thirtyDaysAgo = new Date(mostRecentWeekday);
+                thirtyDaysAgo.setDate(mostRecentWeekday.getDate() - 30);
+                
+                document.getElementById('toDateInput').valueAsDate = mostRecentWeekday;
+                document.getElementById('fromDateInput').valueAsDate = thirtyDaysAgo;
+            }
+
+            async loadSymbols() {
+                try {
+                    const cacheBuster = new Date().getTime();
+                    const response = await fetch(`/api/stocks?_cb=${cacheBuster}`, {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    const data = await response.json();
+                    this.symbols = data.stocks || [];
+                    
+                    console.log(`Loaded ${this.symbols.length} symbols from stock_data table`);
+                    
+                    this.updateSymbolTable();
+                    this.updateCounters();
+                } catch (error) {
+                    console.error('Error loading symbols:', error);
+                    this.showAlert('Failed to load symbols', 'danger');
+                }
+            }
+
+            bindEvents() {
+                document.getElementById('downloadAllBtn').addEventListener('click', () => {
+                    if (!this.isDownloading) {
+                        this.loadSymbols().then(() => {
+                            this.downloadAllSymbols();
+                        });
+                    }
+                });
+            }
+
+            async downloadAllSymbols() {
+                if (this.isDownloading) return;
+                
+                const resolution = document.getElementById('resolutionSelect').value;
+                const fromDate = document.getElementById('fromDateInput').value;
+                const toDate = document.getElementById('toDateInput').value;
+                
+                if (!fromDate || !toDate) {
+                    this.showAlert('Please select both From and To dates', 'danger');
+                    return;
+                }
+                
+                if (new Date(fromDate) > new Date(toDate)) {
+                    this.showAlert('From date must be before To date', 'danger');
+                    return;
+                }
+
+                this.isDownloading = true;
+                const downloadBtn = document.getElementById('downloadAllBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+
+                let completed = 0;
+                let failed = 0;
+                const total = this.symbols.length;
+
+                const BATCH_SIZE = 20;
+                const BATCH_DELAY = 30;
+
+                this.showAlert(`Starting parallel download (${BATCH_SIZE} at a time) of ${resolution}-min data for ${total} symbols (${fromDate} to ${toDate})`, 'success');
+
+                for (let i = 0; i < this.symbols.length; i += BATCH_SIZE) {
+                    const batch = this.symbols.slice(i, i + BATCH_SIZE);
+                    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+                    const totalBatches = Math.ceil(this.symbols.length / BATCH_SIZE);
+                    
+                    console.log(`Processing batch ${batchNumber}/${totalBatches}: ${batch.map(s => s.symbol).join(', ')}`);
+
+                    const batchPromises = batch.map(async (stock) => {
+                        try {
+                            this.updateSymbolStatus(stock.symbol, 'downloading');
+                            const result = await this.downloadSymbolData(stock.symbol, resolution, fromDate, toDate);
+                            const recordCount = result.records_saved || 0;
+                            this.updateSymbolStatus(stock.symbol, 'completed', recordCount);
+                            return { success: true, symbol: stock.symbol };
+                        } catch (error) {
+                            console.error(`Error downloading ${stock.symbol}:`, error);
+                            this.updateSymbolStatus(stock.symbol, 'error');
+                            return { success: false, symbol: stock.symbol, error };
+                        }
+                    });
+
+                    const results = await Promise.all(batchPromises);
+
+                    results.forEach(result => {
+                        if (result.success) {
+                            completed++;
+                        } else {
+                            failed++;
+                        }
+                    });
+
+                    const progress = ((completed + failed) / total) * 100;
+                    this.updateProgress(progress, completed, failed, total - completed - failed);
+                    
+                    if (i + BATCH_SIZE < this.symbols.length) {
+                        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+                    }
+                }
+
+                this.isDownloading = false;
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download All Symbols';
+                
+                this.showAlert(`Download completed! ${completed} successful, ${failed} failed.`, 'success');
+            }
+
+            async downloadSymbolData(symbol, resolution, fromDate, toDate) {
+                const response = await fetch('/api/minute_hist_data/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, resolution, from_date: fromDate, to_date: toDate })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to download ${symbol}`);
+                }
+
+                return await response.json();
+            }
+
+            updateSymbolStatus(symbol, status, recordCount = null) {
+                this.downloadStatus[symbol] = {
+                    status: status,
+                    timestamp: new Date().toLocaleString(),
+                    records: recordCount !== null ? recordCount : '0'
+                };
+                this.updateSymbolTable();
+            }
+
+            updateSymbolTable() {
+                const tbody = document.getElementById('symbolTable');
+                tbody.innerHTML = '';
+
+                this.symbols.forEach(stock => {
+                    const status = this.downloadStatus[stock.symbol] || { 
+                        status: 'pending', 
+                        records: '0', 
+                        timestamp: '-' 
+                    };
+                    const row = document.createElement('tr');
+                    
+                    let statusBadge = '';
+                    if (status.status === 'pending') {
+                        statusBadge = '<span class="badge bg-secondary">Pending</span>';
+                    } else if (status.status === 'downloading') {
+                        statusBadge = '<span class="badge bg-primary"><i class="fas fa-spinner fa-spin"></i> Downloading</span>';
+                    } else if (status.status === 'completed') {
+                        statusBadge = '<span class="badge bg-success">Completed</span>';
+                    } else if (status.status === 'error') {
+                        statusBadge = '<span class="badge bg-danger">Error</span>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${stock.symbol}</td>
+                        <td>${statusBadge}</td>
+                        <td>${status.records}</td>
+                        <td>${status.timestamp}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="manager.downloadSingleSymbol('${stock.symbol}')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            async downloadSingleSymbol(symbol) {
+                const resolution = document.getElementById('resolutionSelect').value;
+                const fromDate = document.getElementById('fromDateInput').value;
+                const toDate = document.getElementById('toDateInput').value;
+                
+                if (!fromDate || !toDate) {
+                    this.showAlert('Please select both From and To dates', 'danger');
+                    return;
+                }
+                
+                try {
+                    this.updateSymbolStatus(symbol, 'downloading');
+                    const result = await this.downloadSymbolData(symbol, resolution, fromDate, toDate);
+                    this.updateSymbolStatus(symbol, 'completed', result.records_saved);
+                    this.showAlert(`Downloaded ${result.records_saved} records for ${symbol}`, 'success');
+                } catch (error) {
+                    this.updateSymbolStatus(symbol, 'error');
+                    this.showAlert(`Failed to download ${symbol}`, 'danger');
+                }
+            }
+
+            updateProgress(progress, completed, failed, remaining) {
+                const progressBar = document.getElementById('overallProgress');
+                const progressText = document.getElementById('progressText');
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${Math.round(progress)}%`;
+                
+                document.getElementById('totalSymbols').textContent = this.symbols.length;
+                document.getElementById('downloadedSymbols').textContent = completed;
+                document.getElementById('failedSymbols').textContent = failed;
+                document.getElementById('remainingSymbols').textContent = remaining;
+            }
+
+            updateCounters() {
+                document.getElementById('totalSymbols').textContent = this.symbols.length;
+                document.getElementById('downloadedSymbols').textContent = 0;
+                document.getElementById('failedSymbols').textContent = 0;
+                document.getElementById('remainingSymbols').textContent = this.symbols.length;
+            }
+
+            showAlert(message, type) {
+                const container = document.getElementById('alertContainer');
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type} alert-dismissible fade show`;
+                alert.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                container.appendChild(alert);
+                
+                setTimeout(() => alert.remove(), 5000);
+            }
+        }
+
+        const manager = new MinuteDataManager();
+    </script>
+</body>
+</html>

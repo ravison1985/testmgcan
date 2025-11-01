@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .plan-card {
+            transition: transform 0.3s ease;
+        }
+        .plan-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_panel') }}">
+                <i class="fas fa-arrow-left me-2"></i>Back to Admin Panel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    Welcome, {{ current_user.username }}
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0"><i class="fas fa-tags me-2"></i>Subscription Plans</h3>
+                            <p class="text-muted mb-0">Manage pricing and plan details</p>
+                        </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+                            <i class="fas fa-plus me-2"></i>Add New Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plans List -->
+        <div class="row" id="plansContainer">
+            {% if plans %}
+                {% for plan in plans %}
+                <div class="col-md-4 mb-4">
+                    <div class="card plan-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title">{{ plan.display_name or plan.plan_name }}</h5>
+                                <span class="badge bg-{{ 'success' if plan.is_active else 'secondary' }}">
+                                    {{ 'Active' if plan.is_active else 'Inactive' }}
+                                </span>
+                            </div>
+                            <div class="mb-3">
+                                <h3 class="text-primary">₹{{ plan.price }}</h3>
+                                {% if plan.strike_price %}
+                                <p class="text-muted mb-1 small">Strike: ₹{{ plan.strike_price }} ({{ plan.get_discount_percent() }}% OFF)</p>
+                                {% endif %}
+                                <p class="text-muted mb-1">{{ plan.validity_days }} days</p>
+                                <p class="text-muted small">{{ plan.description or 'No description' }}</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-plan" 
+                                        data-id="{{ plan.id }}"
+                                        data-name="{{ plan.display_name or plan.plan_name }}"
+                                        data-price="{{ plan.price }}"
+                                        data-strike-price="{{ plan.strike_price or '' }}"
+                                        data-duration="{{ plan.validity_days }}"
+                                        data-description="{{ plan.description or '' }}"
+                                        data-active="{{ 'true' if plan.is_active else 'false' }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-plan" data-id="{{ plan.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                            <h5>No subscription plans found</h5>
+                            <p class="text-muted">Click "Add New Plan" to create your first subscription plan</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Plan Modal -->
+    <div class="modal fade" id="addPlanModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Add New Subscription Plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addPlanForm" method="POST" action="{{ url_for('admin_add_plan') }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="planName" class="form-label">Plan Name *</label>
+                            <input type="text" class="form-control" id="planName" name="name" required placeholder="e.g., Short Term">
+                        </div>
+                        <div class="mb-3">
+                            <label for="planPrice" class="form-label">Price (₹) *</label>
+                            <input type="number" class="form-control" id="planPrice" name="price" required min="0" step="0.01" placeholder="e.g., 999">
+                        </div>
+                        <div class="mb-3">
+                            <label for="planStrikePrice" class="form-label">Strike Price (₹) <small class="text-muted">(Original Price)</small></label>
+                            <input type="number" class="form-control" id="planStrikePrice" name="strike_price" min="0" step="0.01" placeholder="e.g., 1999">
+                            <small class="form-text text-muted">Used to calculate discount percentage</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="planDuration" class="form-label">Duration (Days) *</label>
+                            <input type="number" class="form-control" id="planDuration" name="duration_days" required min="1" placeholder="e.g., 30">
+                        </div>
+                        <div class="mb-3">
+                            <label for="planDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="planDescription" name="description" rows="3" placeholder="Brief description of the plan"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="planActive" name="is_active" checked>
+                            <label class="form-check-label" for="planActive">Active</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Plan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Plan Modal -->
+    <div class="modal fade" id="editPlanModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Subscription Plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editPlanForm" method="POST" action="{{ url_for('admin_update_plan') }}">
+                    <input type="hidden" id="editPlanId" name="plan_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editPlanName" class="form-label">Plan Name *</label>
+                            <input type="text" class="form-control" id="editPlanName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPlanPrice" class="form-label">Price (₹) *</label>
+                            <input type="number" class="form-control" id="editPlanPrice" name="price" required min="0" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPlanStrikePrice" class="form-label">Strike Price (₹) <small class="text-muted">(Original Price)</small></label>
+                            <input type="number" class="form-control" id="editPlanStrikePrice" name="strike_price" min="0" step="0.01">
+                            <small class="form-text text-muted">Used to calculate discount percentage</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPlanDuration" class="form-label">Duration (Days) *</label>
+                            <input type="number" class="form-control" id="editPlanDuration" name="duration_days" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPlanDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editPlanDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="editPlanActive" name="is_active">
+                            <label class="form-check-label" for="editPlanActive">Active</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Edit plan button handler
+            document.querySelectorAll('.btn-edit-plan').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const name = this.dataset.name;
+                    const price = this.dataset.price;
+                    const strikePrice = this.dataset.strikePrice;
+                    const duration = this.dataset.duration;
+                    const description = this.dataset.description;
+                    const isActive = this.dataset.active === 'true';
+                    
+                    document.getElementById('editPlanId').value = id;
+                    document.getElementById('editPlanName').value = name;
+                    document.getElementById('editPlanPrice').value = price;
+                    document.getElementById('editPlanStrikePrice').value = strikePrice || '';
+                    document.getElementById('editPlanDuration').value = duration;
+                    document.getElementById('editPlanDescription').value = description;
+                    document.getElementById('editPlanActive').checked = isActive;
+                    new bootstrap.Modal(document.getElementById('editPlanModal')).show();
+                });
+            });
+
+            // Delete plan button handler
+            document.querySelectorAll('.btn-delete-plan').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
+                        fetch('{{ url_for("admin_delete_plan") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ plan_id: id })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error deleting plan: ' + error);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Live Chart - MG F&O Stocks Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <!-- Include KLineCharts library -->
+    <script src="https://unpkg.com/klinecharts/dist/umd/klinecharts.min.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #131722;
+            color: #d1d4dc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1e222d;
+            padding: 8px 16px;
+            border-bottom: 1px solid #2a2e39;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 48px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+            color: #d1d4dc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header h1 span {
+            color: #2962ff;
+            font-weight: 600;
+        }
+
+        .dashboard-btn {
+            background: #2962ff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dashboard-btn:hover {
+            background: #1e53e5;
+        }
+
+        .chart-container {
+            display: flex;
+            height: calc(100vh - 48px);
+            background: #131722;
+        }
+
+        .chart-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            background: #131722;
+        }
+
+        .chart-container.fullscreen .watchlist-panel {
+            display: none;
+        }
+
+        .chart-section {
+            flex: 1;
+            background: #131722;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .watchlist-panel {
+            width: 280px;
+            background: #1e222d;
+            border-left: 1px solid #2a2e39;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .watchlist-header {
+            padding: 12px 16px;
+            background: #1e222d;
+            border-bottom: 1px solid #2a2e39;
+            font-size: 13px;
+            font-weight: 500;
+            color: #d1d4dc;
+        }
+
+        .watchlist-symbols {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #2a2e39 #1e222d;
+        }
+
+        .watchlist-symbols::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .watchlist-symbols::-webkit-scrollbar-track {
+            background: #1e222d;
+        }
+
+        .watchlist-symbols::-webkit-scrollbar-thumb {
+            background: #2a2e39;
+            border-radius: 3px;
+        }
+
+        .symbol-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #2a2e39;
+            transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .symbol-item:hover {
+            background: #2a2e39;
+        }
+
+        .symbol-item.active {
+            background: #2a2e39;
+            border-left: 2px solid #2962ff;
+        }
+
+        .symbol-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #d1d4dc;
+        }
+
+        .symbol-price {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .symbol-price.positive {
+            color: #26a69a;
+        }
+
+        .symbol-price.negative {
+            color: #ef5350;
+        }
+
+        .chart-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #1e222d;
+            border-bottom: 1px solid #2a2e39;
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: #787b86;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #2a2e39;
+            color: #d1d4dc;
+        }
+
+        .toolbar-btn.active {
+            background: #2a2e39;
+            color: #2962ff;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 1000;
+            background: #2a2e39;
+            border: none;
+            border-radius: 4px;
+            color: #d1d4dc;
+            padding: 6px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: #363a45;
+        }
+
+        /* Mobile Toggle Button */
+        .mobile-watchlist-toggle {
+            display: none;
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 1001;
+            background: #2962ff;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        .mobile-watchlist-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .header {
+                padding: 8px 12px;
+            }
+
+            .header h1 {
+                font-size: 14px;
+            }
+
+            .dashboard-btn {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+
+            .chart-container {
+                flex-direction: column;
+                height: calc(100vh - 40px);
+            }
+
+            .chart-section {
+                height: 100%;
+            }
+
+            .watchlist-panel {
+                position: fixed;
+                top: 40px;
+                right: 0;
+                width: 85%;
+                max-width: 320px;
+                height: calc(100vh - 40px);
+                border-left: 1px solid #2a2e39;
+                border-top: none;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                box-shadow: -4px 0 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .watchlist-panel.open {
+                transform: translateX(0);
+            }
+
+            .mobile-watchlist-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .chart-toolbar {
+                overflow-x: auto;
+                scrollbar-width: thin;
+                padding: 6px 8px;
+                gap: 6px;
+                flex-wrap: nowrap;
+                position: relative;
+            }
+
+            /* Scroll indicator gradient */
+            .chart-toolbar::after {
+                content: '';
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 40px;
+                background: linear-gradient(to right, transparent, #1e222d 70%);
+                pointer-events: none;
+            }
+
+            .chart-toolbar::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .chart-toolbar::-webkit-scrollbar-track {
+                background: #1e222d;
+            }
+
+            .chart-toolbar::-webkit-scrollbar-thumb {
+                background: #2962ff;
+                border-radius: 3px;
+            }
+
+            .toolbar-btn {
+                white-space: nowrap;
+                font-size: 12px;
+                padding: 6px 12px;
+                flex-shrink: 0;
+                font-weight: 500;
+            }
+
+            /* Highlight technical analysis buttons on mobile */
+            #camarillaToggle,
+            #cprToggle,
+            #fibonacciToggle {
+                border: 1px solid #2962ff;
+            }
+
+            .fullscreen-btn {
+                top: 6px;
+                right: 6px;
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+
+            .symbol-item {
+                padding: 10px 16px;
+            }
+
+            .symbol-name {
+                font-size: 14px;
+            }
+
+            .symbol-price {
+                font-size: 13px;
+            }
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+
+        .symbol-selector {
+            margin-bottom: 15px;
+        }
+
+        .symbol-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .symbol-selector select {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .symbol-selector select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        /* Stock Info Ticker Tape (Top) */
+        .stock-info-box {
+            position: absolute;
+            top: 6px;
+            left: 10px;
+            right: 60px;
+            z-index: 999;
+            background: rgba(20, 23, 30, 0.85);
+            border: 1px solid #2a2e39;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 11px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .stock-info-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2962ff;
+            padding-right: 12px;
+            border-right: 1px solid #2a2e39;
+            flex-shrink: 0;
+        }
+
+        .stock-info-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #787b86;
+            flex-shrink: 0;
+        }
+
+        .stock-info-label {
+            color: #787b86;
+            font-size: 10px;
+        }
+
+        .stock-info-value {
+            color: #d1d4dc;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .stock-info-value.positive {
+            color: #26a69a;
+        }
+
+        .stock-info-value.negative {
+            color: #ef5350;
+        }
+
+        .stock-info-badge {
+            display: inline-block;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .stock-info-badge.oh {
+            background: rgba(38, 166, 154, 0.2);
+            color: #26a69a;
+        }
+
+        .stock-info-badge.ol {
+            background: rgba(239, 83, 80, 0.2);
+            color: #ef5350;
+        }
+
+        @media (max-width: 768px) {
+            .stock-info-box {
+                top: 4px;
+                left: 8px;
+                right: 50px;
+                gap: 8px;
+                padding: 5px 10px;
+                font-size: 10px;
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+
+            .stock-info-title {
+                font-size: 11px;
+                padding-right: 10px;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #2a2e39;
+                padding-bottom: 4px;
+                margin-bottom: 2px;
+            }
+            
+            .stock-info-row {
+                gap: 3px;
+            }
+            
+            .stock-info-label {
+                font-size: 9px;
+            }
+            
+            .stock-info-value {
+                font-size: 10px;
+            }
+        }
+
+        .chart-controls {
+            margin-bottom: 15px;
+        }
+
+        .chart-controls h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #00d4ff;
+        }
+
+        .control-button {
+            display: block;
+            width: 100%;
+            padding: 10px 8px;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .control-button:hover {
+            background: #353535;
+            border-color: #555;
+        }
+
+        .control-button.active {
+            background: #00d4ff;
+            color: #000;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .info-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #aaa;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .connection-status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .connection-status.connected {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            width: 100%;
+            background: #131722;
+            position: relative;
+        }
+
+        #chartContainer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        .chart-info {
+            margin-bottom: 15px;
+            display: none;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .current-symbol {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin: 0;
+            text-align: center;
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid #ffa500;
+            border-radius: 8px;
+            padding: 12px;
+            color: #ffa500;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        #chartContainer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .spinner {
+            border: 2px solid #333;
+            border-top: 2px solid #00d4ff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #787b86;
+            font-size: 18px;
+            font-weight: 500;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Drawing Toolkit Styles */
+        .drawing-toolkit {
+            width: 50px;
+            background: #1e222d;
+            border-right: 1px solid #2a2e39;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+            gap: 4px;
+        }
+
+        .drawing-tool {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: #787b86;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .drawing-tool:hover {
+            background: #2a2e39;
+            color: #d1d4dc;
+        }
+
+        .drawing-tool.active {
+            background: #2962ff;
+            color: white;
+        }
+
+        .drawing-tool-separator {
+            width: 30px;
+            height: 1px;
+            background: #2a2e39;
+            margin: 4px 0;
+        }
+
+        .drawing-tool-tooltip {
+            position: absolute;
+            left: 50px;
+            background: #2a2e39;
+            color: #d1d4dc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .drawing-tool:hover .drawing-tool-tooltip {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .drawing-toolkit {
+                width: 40px;
+            }
+            
+            .drawing-tool {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+        }
+
+        /* User Guide Styles */
+        .help-btn {
+            background: transparent;
+            border: 1px solid #2a2e39;
+            border-radius: 50%;
+            color: #787b86;
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .help-btn:hover {
+            background: #2a2e39;
+            color: #2962ff;
+            border-color: #2962ff;
+        }
+
+        .guide-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .guide-modal.active {
+            display: flex;
+        }
+
+        .guide-content {
+            background: #1e222d;
+            border-radius: 8px;
+            max-width: 800px;
+            max-height: 90vh;
+            width: 90%;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .guide-header {
+            background: #2962ff;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .guide-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .guide-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .guide-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .guide-body {
+            padding: 20px;
+            color: #d1d4dc;
+        }
+
+        .guide-section {
+            margin-bottom: 24px;
+        }
+
+        .guide-section h3 {
+            color: #2962ff;
+            font-size: 16px;
+            margin: 0 0 12px 0;
+            font-weight: 500;
+        }
+
+        .guide-section p {
+            margin: 0 0 8px 0;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #b2b5be;
+        }
+
+        .guide-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .guide-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2e39;
+            font-size: 14px;
+        }
+
+        .guide-list li:last-child {
+            border-bottom: none;
+        }
+
+        .guide-list strong {
+            color: #d1d4dc;
+            display: inline-block;
+            min-width: 140px;
+        }
+
+        .guide-kbd {
+            background: #2a2e39;
+            color: #2962ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #2962ff;
+        }
+
+        @media (max-width: 768px) {
+            .guide-content {
+                width: 95%;
+                max-height: 85vh;
+            }
+
+            .guide-body {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>MG Trading</span> Live Chart</h1>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="help-btn" id="helpBtn" title="User Guide">?</button>
+            <button class="dashboard-btn" onclick="window.location.href='/dashboard'">
+                Dashboard
+            </button>
+        </div>
+    </div>
+
+    <div class="chart-container" id="mainContainer">
+        <!-- Drawing Toolkit Panel -->
+        <div class="drawing-toolkit" id="drawingToolkit">
+            <button class="drawing-tool" id="cursorTool" data-tool="cursor" title="Cursor">
+                <span>↖</span>
+                <span class="drawing-tool-tooltip">Cursor (ESC)</span>
+            </button>
+            <div class="drawing-tool-separator"></div>
+            <button class="drawing-tool" id="trendlineTool" data-tool="segment" title="Trendline">
+                <span>╱</span>
+                <span class="drawing-tool-tooltip">Trendline</span>
+            </button>
+            <button class="drawing-tool" id="hLineTool" data-tool="horizontalStraightLine" title="Horizontal Line">
+                <span>—</span>
+                <span class="drawing-tool-tooltip">Horizontal Line</span>
+            </button>
+            <button class="drawing-tool" id="vLineTool" data-tool="verticalStraightLine" title="Vertical Line">
+                <span>│</span>
+                <span class="drawing-tool-tooltip">Vertical Line</span>
+            </button>
+            <button class="drawing-tool" id="rayTool" data-tool="ray" title="Ray">
+                <span>→</span>
+                <span class="drawing-tool-tooltip">Ray Line</span>
+            </button>
+            <div class="drawing-tool-separator"></div>
+            <button class="drawing-tool" id="channelTool" data-tool="parallelStraightLine" title="Channel">
+                <span>⫴</span>
+                <span class="drawing-tool-tooltip">Price Channel</span>
+            </button>
+            <button class="drawing-tool" id="fibTool" data-tool="fibonacciLine" title="Fibonacci">
+                <span>Φ</span>
+                <span class="drawing-tool-tooltip">Fibonacci Retracement</span>
+            </button>
+            <div class="drawing-tool-separator"></div>
+            <button class="drawing-tool" id="rectTool" data-tool="rect" title="Rectangle">
+                <span>▭</span>
+                <span class="drawing-tool-tooltip">Rectangle</span>
+            </button>
+            <button class="drawing-tool" id="circleTool" data-tool="circle" title="Circle">
+                <span>○</span>
+                <span class="drawing-tool-tooltip">Circle</span>
+            </button>
+            <div class="drawing-tool-separator"></div>
+            <button class="drawing-tool" id="textTool" data-tool="text" title="Text">
+                <span>T</span>
+                <span class="drawing-tool-tooltip">Text Annotation</span>
+            </button>
+            <div class="drawing-tool-separator"></div>
+            <button class="drawing-tool" id="clearDrawings" title="Clear All">
+                <span>🗑</span>
+                <span class="drawing-tool-tooltip">Clear All Drawings</span>
+            </button>
+        </div>
+        
+        <div class="chart-section">
+            <!-- Chart Toolbar -->
+            <div class="chart-toolbar">
+                <button class="toolbar-btn active" id="candleBtn">Candles</button>
+                <button class="toolbar-btn" id="gridToggle">Grid</button>
+                <button class="toolbar-btn" id="volumeToggle">Volume</button>
+                <button class="toolbar-btn" id="smaToggle">SMA</button>
+                <button class="toolbar-btn" id="camarillaToggle">Camarilla</button>
+                <button class="toolbar-btn" id="cprToggle">CPR</button>
+                <button class="toolbar-btn" id="fibonacciToggle">Fibonacci</button>
+                <button class="toolbar-btn" id="resetZoom">Reset</button>
+            </div>
+            
+            <!-- Chart Wrapper -->
+            <div class="chart-wrapper" id="chartWrapper">
+                <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+                
+                <!-- Stock Info Box -->
+                <div class="stock-info-box" id="stockInfoBox">
+                    <div class="stock-info-title" id="infoSymbol">--</div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">LTP:</span>
+                        <span class="stock-info-value" id="infoLtp">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">Change:</span>
+                        <span class="stock-info-value" id="infoChange">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">% from Open:</span>
+                        <span class="stock-info-value" id="infoPctOpen">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">% from High:</span>
+                        <span class="stock-info-value" id="infoPctHigh">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">% from Low:</span>
+                        <span class="stock-info-value" id="infoPctLow">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">RVOL:</span>
+                        <span class="stock-info-value" id="infoRvol">--</span>
+                    </div>
+                    <div class="stock-info-row">
+                        <span class="stock-info-label">Volume:</span>
+                        <span class="stock-info-value" id="infoVolume">--</span>
+                    </div>
+                    <div class="stock-info-row" id="infoBadges" style="justify-content: flex-end; padding-top: 4px;">
+                        <!-- O=H and O=L badges will be added here -->
+                    </div>
+                </div>
+                
+                <div id="chartContainer"></div>
+                <div id="chartLoadingMessage" class="chart-loading-message" style="display: none;">
+                    Loading data...
+                </div>
+            </div>
+        </div>
+
+        <!-- Watchlist Panel -->
+        <div class="watchlist-panel" id="watchlistPanel">
+            <div class="watchlist-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>F&O Symbols</span>
+                    <span id="connectionStatus" style="font-size: 11px; color: #787b86;">●</span>
+                </div>
+            </div>
+            <div class="watchlist-symbols" id="watchlistSymbols">
+                <div style="padding: 20px; text-align: center; color: #787b86; font-size: 12px;">
+                    Loading symbols...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Mobile Watchlist Toggle Button -->
+    <button class="mobile-watchlist-toggle" id="mobileToggle" title="Watchlist">
+        ☰
+    </button>
+
+    <!-- User Guide Modal -->
+    <div class="guide-modal" id="guideModal">
+        <div class="guide-content">
+            <div class="guide-header">
+                <h2>📊 Live Chart User Guide</h2>
+                <button class="guide-close" id="guideClose">×</button>
+            </div>
+            <div class="guide-body">
+                <div class="guide-section">
+                    <h3>🎯 Overview</h3>
+                    <p>Professional TradingView-style live chart with real-time F&O stock data, technical analysis tools, and interactive drawing capabilities.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📈 Chart Navigation</h3>
+                    <ul class="guide-list">
+                        <li><strong>Zoom In/Out:</strong> Use mouse scroll wheel or pinch gesture on mobile</li>
+                        <li><strong>Pan Chart:</strong> Click and drag on the chart</li>
+                        <li><strong>Reset View:</strong> Click "Reset" button in toolbar</li>
+                        <li><strong>Fullscreen:</strong> Click ⛶ button (top right of chart)</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📊 Technical Indicators</h3>
+                    <ul class="guide-list">
+                        <li><strong>Grid:</strong> Toggle gridlines for better price alignment</li>
+                        <li><strong>Volume:</strong> Show/hide volume bars below chart</li>
+                        <li><strong>SMA:</strong> Simple Moving Average indicator</li>
+                        <li><strong>Camarilla:</strong> Camarilla pivot points (R1-R5, S1-S5)</li>
+                        <li><strong>CPR:</strong> Central Pivot Range (TC, PP, BC)</li>
+                        <li><strong>Fibonacci:</strong> Fibonacci retracement levels</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>✏️ Drawing Tools (Left Toolbar)</h3>
+                    <ul class="guide-list">
+                        <li><strong>Cursor (↖):</strong> Default selection tool - <span class="guide-kbd">ESC</span></li>
+                        <li><strong>Trendline (╱):</strong> Draw trend lines between two points</li>
+                        <li><strong>Horizontal (—):</strong> Support/resistance horizontal lines</li>
+                        <li><strong>Vertical (│):</strong> Mark important time events</li>
+                        <li><strong>Ray (→):</strong> Lines extending infinitely in one direction</li>
+                        <li><strong>Channel (⫴):</strong> Parallel trend channels</li>
+                        <li><strong>Fibonacci (Φ):</strong> Auto Fib retracement levels</li>
+                        <li><strong>Rectangle (▭):</strong> Draw zones and patterns</li>
+                        <li><strong>Circle (○):</strong> Circular pattern recognition</li>
+                        <li><strong>Text (T):</strong> Add custom annotations</li>
+                        <li><strong>Clear (🗑):</strong> Remove all drawings</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <ul class="guide-list">
+                        <li><strong><span class="guide-kbd">ESC</span>:</strong> Exit drawing mode / Activate cursor</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📱 Stock Information Display</h3>
+                    <p>Ticker tape at top of chart shows:</p>
+                    <ul class="guide-list">
+                        <li><strong>Symbol:</strong> Selected stock symbol</li>
+                        <li><strong>LTP:</strong> Last Traded Price</li>
+                        <li><strong>Change:</strong> Price & percentage change</li>
+                        <li><strong>% from Open/High/Low:</strong> Distance from key levels</li>
+                        <li><strong>RVOL:</strong> Relative Volume indicator</li>
+                        <li><strong>Volume:</strong> Trading volume</li>
+                        <li><strong>Badges:</strong> O=H (Open=High) and O=L (Open=Low)</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📋 Watchlist Panel (Right Side)</h3>
+                    <p>Browse and select from F&O stocks. Click any symbol to load its chart. Real-time price updates shown with color-coded changes (green=up, red=down).</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>💡 Tips & Best Practices</h3>
+                    <ul class="guide-list">
+                        <li><strong>Technical Levels:</strong> All levels are locked to price lines and stay visible during zoom/pan</li>
+                        <li><strong>Drawing Persistence:</strong> Technical levels are preserved when clearing drawings</li>
+                        <li><strong>Mobile View:</strong> Stock info displays in two rows for better readability</li>
+                        <li><strong>Performance:</strong> Chart uses hist_data_5min table for accurate 5-minute data</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>⚠️ Important Notes</h3>
+                    <ul class="guide-list">
+                        <li>Chart displays "Loading data..." if symbol has no historical data</li>
+                        <li>Only real data is shown - no sample/mock data</li>
+                        <li>Technical level tags are positioned at right edge and locked to lines</li>
+                        <li>SMA indicators auto-refresh when changing symbols</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LiveChart {
+            constructor(containerId) {
+                this.containerId = containerId;
+                this.chart = null;
+                this.selectedSymbol = null;
+                this.data = [];
+                this.technicalLevels = null;
+                this.isConnected = false;
+                this.currentCandle = null;
+                this.chartDisplayed = false;
+                
+                // Chart settings
+                this.settings = {
+                    showGrid: true,
+                    showVolume: true,
+                    showSMA: false,
+                    showCamarilla: false,
+                    showCPR: false,
+                    showFibonacci: false
+                };
+                
+                // Drawing tool state
+                this.currentDrawingTool = null;
+                this.isDrawingMode = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.initializeChart();
+                this.setupEventListeners();
+                this.loadSymbols();
+                this.connectWebSocket();
+                this.startRealTimeUpdates();
+                this.setupWatchlist();
+            }
+            
+            initializeChart() {
+                const container = document.getElementById(this.containerId);
+                if (!container) {
+                    console.error('Chart container not found');
+                    return;
+                }
+                
+                // Initialize KLineCharts
+                this.chart = klinecharts.init(this.containerId);
+                
+                // Configure professional dark theme
+                this.chart.setStyles({
+                    grid: {
+                        show: true,
+                        horizontal: {
+                            show: true,
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        vertical: {
+                            show: true,
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    candle: {
+                        type: 'candle_solid',
+                        bar: {
+                            upColor: '#26a69a',
+                            downColor: '#ef5350',
+                            noChangeColor: '#888888'
+                        },
+                        tooltip: {
+                            showRule: 'always',
+                            showType: 'standard'
+                        }
+                    },
+                    xAxis: {
+                        show: true,
+                        axisLine: {
+                            show: true,
+                            color: '#333333'
+                        },
+                        tickText: {
+                            show: true,
+                            color: '#ffffff'
+                        }
+                    },
+                    yAxis: {
+                        show: true,
+                        axisLine: {
+                            show: true,
+                            color: '#333333'
+                        },
+                        tickText: {
+                            show: true,
+                            color: '#ffffff'
+                        }
+                    },
+                    overlay: {
+                        line: {
+                            size: 1
+                        },
+                        polygon: {
+                            stroke: {
+                                size: 1
+                            }
+                        },
+                        circle: {
+                            stroke: {
+                                size: 1
+                            }
+                        },
+                        rect: {
+                            stroke: {
+                                size: 1
+                            }
+                        }
+                    }
+                });
+                
+                // Create volume pane
+                this.chart.createIndicator('VOL', false, { id: 'volume_pane' });
+            }
+            
+            setupEventListeners() {
+                // Mobile Controls
+                this.setupMobileControls();
+                
+                // Fullscreen Controls
+                this.setupFullscreenControls();
+                
+                // Chart control buttons
+                document.getElementById('gridToggle').addEventListener('click', (e) => {
+                    this.settings.showGrid = !this.settings.showGrid;
+                    this.toggleButtonState(e.target, this.settings.showGrid);
+                    this.updateChartOptions();
+                });
+                
+                document.getElementById('volumeToggle').addEventListener('click', (e) => {
+                    this.settings.showVolume = !this.settings.showVolume;
+                    this.toggleButtonState(e.target, this.settings.showVolume);
+                    this.updateVolumeDisplay();
+                });
+                
+                document.getElementById('smaToggle').addEventListener('click', (e) => {
+                    this.settings.showSMA = !this.settings.showSMA;
+                    this.toggleButtonState(e.target, this.settings.showSMA);
+                    this.updateIndicators();
+                });
+                
+                document.getElementById('camarillaToggle').addEventListener('click', (e) => {
+                    this.settings.showCamarilla = !this.settings.showCamarilla;
+                    this.toggleButtonState(e.target, this.settings.showCamarilla);
+                    this.updateTechnicalLevels();
+                });
+                
+                document.getElementById('cprToggle').addEventListener('click', (e) => {
+                    this.settings.showCPR = !this.settings.showCPR;
+                    this.toggleButtonState(e.target, this.settings.showCPR);
+                    this.updateTechnicalLevels();
+                });
+                
+                document.getElementById('fibonacciToggle').addEventListener('click', (e) => {
+                    this.settings.showFibonacci = !this.settings.showFibonacci;
+                    this.toggleButtonState(e.target, this.settings.showFibonacci);
+                    this.updateTechnicalLevels();
+                });
+                
+                document.getElementById('resetZoom').addEventListener('click', () => {
+                    this.resetZoom();
+                });
+                
+                // Drawing tool event listeners
+                this.setupDrawingTools();
+                
+                // Keyboard shortcuts for drawing
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.exitDrawingMode();
+                    }
+                });
+            }
+            
+            setupDrawingTools() {
+                // All drawing tool buttons
+                const drawingTools = document.querySelectorAll('.drawing-tool[data-tool]');
+                
+                drawingTools.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tool = btn.dataset.tool;
+                        
+                        if (tool === 'cursor') {
+                            this.exitDrawingMode();
+                        } else {
+                            this.activateDrawingTool(tool, btn);
+                        }
+                    });
+                });
+                
+                // Clear all drawings button
+                document.getElementById('clearDrawings').addEventListener('click', () => {
+                    this.clearAllDrawings();
+                });
+                
+                // Set cursor as active by default
+                document.getElementById('cursorTool').classList.add('active');
+            }
+            
+            activateDrawingTool(toolName, buttonElement) {
+                if (!this.chart) return;
+                
+                // Deactivate all tools first
+                document.querySelectorAll('.drawing-tool').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Activate selected tool
+                buttonElement.classList.add('active');
+                this.currentDrawingTool = toolName;
+                this.isDrawingMode = true;
+                
+                // Create overlay for drawing
+                this.chart.createOverlay({
+                    name: toolName,
+                    styles: {
+                        line: {
+                            color: '#2962ff',
+                            size: 1
+                        },
+                        point: {
+                            color: '#2962ff',
+                            borderColor: '#2962ff',
+                            activeColor: '#1e53e5',
+                            activeBorderColor: '#1e53e5'
+                        },
+                        text: {
+                            color: '#d1d4dc',
+                            size: 12,
+                            family: 'Arial'
+                        }
+                    }
+                });
+                
+                console.log(`✏️ Activated drawing tool: ${toolName}`);
+            }
+            
+            exitDrawingMode() {
+                if (!this.chart) return;
+                
+                // Deactivate all drawing tools
+                document.querySelectorAll('.drawing-tool').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Activate cursor tool
+                document.getElementById('cursorTool').classList.add('active');
+                
+                // Reset drawing state
+                this.currentDrawingTool = null;
+                this.isDrawingMode = false;
+                
+                console.log('↖️ Exited drawing mode - Cursor active');
+            }
+            
+            clearAllDrawings() {
+                if (!this.chart) return;
+                
+                // Remove all overlays except technical levels
+                const overlays = this.chart.getOverlayById();
+                if (overlays && overlays.length > 0) {
+                    overlays.forEach(overlay => {
+                        // Don't remove our technical level overlays (they have 'overlay_' prefix)
+                        if (!overlay.id.startsWith('overlay_')) {
+                            this.chart.removeOverlay(overlay.id);
+                        }
+                    });
+                }
+                
+                console.log('🗑️ Cleared all drawings');
+            }
+            
+            async loadSymbols() {
+                try {
+                    const response = await fetch('/stock_data');
+                    const data = await response.json();
+                    
+                    this.stocksList = data.data || [];
+                    this.populateWatchlist();
+                } catch (error) {
+                    console.error('Error loading symbols:', error);
+                    const watchlistEl = document.getElementById('watchlistSymbols');
+                    watchlistEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef5350; font-size: 12px;">Failed to load symbols</div>';
+                }
+            }
+            
+            populateWatchlist() {
+                const watchlistEl = document.getElementById('watchlistSymbols');
+                watchlistEl.innerHTML = '';
+                
+                if (!this.stocksList || this.stocksList.length === 0) {
+                    watchlistEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #787b86; font-size: 12px;">No symbols available</div>';
+                    return;
+                }
+                
+                let isFirstSymbol = true;
+                
+                this.stocksList.forEach(stock => {
+                    const item = document.createElement('div');
+                    item.className = 'symbol-item';
+                    item.dataset.symbol = stock.symbol;
+                    
+                    const leftDiv = document.createElement('div');
+                    leftDiv.style.flex = '1';
+                    
+                    const nameSpan = document.createElement('div');
+                    nameSpan.className = 'symbol-name';
+                    nameSpan.textContent = stock.symbol;
+                    
+                    leftDiv.appendChild(nameSpan);
+                    
+                    const rightDiv = document.createElement('div');
+                    rightDiv.style.textAlign = 'right';
+                    
+                    const ltpSpan = document.createElement('div');
+                    ltpSpan.className = 'symbol-ltp';
+                    ltpSpan.style.fontSize = '13px';
+                    ltpSpan.style.fontWeight = '500';
+                    ltpSpan.textContent = stock.ltp ? stock.ltp.toFixed(2) : '--';
+                    ltpSpan.dataset.symbol = stock.symbol;
+                    
+                    const changeSpan = document.createElement('div');
+                    changeSpan.className = 'symbol-change';
+                    changeSpan.style.fontSize = '11px';
+                    changeSpan.style.marginTop = '2px';
+                    changeSpan.dataset.symbol = stock.symbol;
+                    
+                    if (stock.change_percent !== undefined) {
+                        const changePercent = stock.change_percent;
+                        changeSpan.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                        changeSpan.style.color = changePercent >= 0 ? '#26a69a' : '#ef5350';
+                    } else {
+                        changeSpan.textContent = '--';
+                        changeSpan.style.color = '#787b86';
+                    }
+                    
+                    rightDiv.appendChild(ltpSpan);
+                    rightDiv.appendChild(changeSpan);
+                    
+                    item.appendChild(leftDiv);
+                    item.appendChild(rightDiv);
+                    
+                    item.addEventListener('click', () => {
+                        this.selectSymbol(stock.symbol);
+                        document.querySelectorAll('.symbol-item').forEach(el => el.classList.remove('active'));
+                        item.classList.add('active');
+                    });
+                    
+                    watchlistEl.appendChild(item);
+                    
+                    // Auto-select first symbol
+                    if (isFirstSymbol) {
+                        isFirstSymbol = false;
+                        setTimeout(() => {
+                            item.classList.add('active');
+                            this.selectSymbol(stock.symbol);
+                        }, 100);
+                    }
+                });
+            }
+            
+            setupWatchlist() {
+                // Update watchlist prices from real-time data
+                this.watchlistInterval = setInterval(() => {
+                    this.updateWatchlistPrices();
+                }, 2000);
+            }
+            
+            updateWatchlistPrices() {
+                // Fetch real-time data from WebSocket endpoint
+                fetch('/stock_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.data) {
+                            data.data.forEach(stock => {
+                                const ltpEl = document.querySelector(`.symbol-ltp[data-symbol="${stock.symbol}"]`);
+                                const changeEl = document.querySelector(`.symbol-change[data-symbol="${stock.symbol}"]`);
+                                
+                                if (ltpEl && stock.ltp) {
+                                    ltpEl.textContent = stock.ltp.toFixed(2);
+                                }
+                                
+                                if (changeEl && stock.change_percent !== undefined) {
+                                    const changePercent = stock.change_percent;
+                                    changeEl.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                                    changeEl.style.color = changePercent >= 0 ? '#26a69a' : '#ef5350';
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error updating watchlist:', error));
+            }
+            
+            async selectSymbol(symbol) {
+                if (!symbol) return;
+                
+                this.selectedSymbol = symbol;
+                console.log('Selected symbol:', symbol);
+                
+                await this.fetchChartData();
+                await this.updateStockInfoBox();
+            }
+            
+            async updateStockInfoBox() {
+                if (!this.selectedSymbol) return;
+                
+                try {
+                    const response = await fetch('/stock_data');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.data) {
+                        const stockData = result.data.find(stock => stock.symbol === this.selectedSymbol);
+                        
+                        if (stockData) {
+                            document.getElementById('infoSymbol').textContent = stockData.symbol;
+                            
+                            const ltpEl = document.getElementById('infoLtp');
+                            const ltp = stockData.ltp || 0;
+                            ltpEl.textContent = ltp ? ltp.toFixed(2) : '--';
+                            
+                            const changeEl = document.getElementById('infoChange');
+                            const change = stockData.change || 0;
+                            const changePct = stockData.change_percent || 0;
+                            changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`;
+                            changeEl.className = 'stock-info-value ' + (changePct >= 0 ? 'positive' : 'negative');
+                            
+                            // Calculate % from open
+                            const openPrice = stockData.open_price || 0;
+                            const pctOpen = openPrice > 0 ? ((ltp - openPrice) / openPrice * 100) : 0;
+                            const pctOpenEl = document.getElementById('infoPctOpen');
+                            pctOpenEl.textContent = `${pctOpen >= 0 ? '+' : ''}${pctOpen.toFixed(2)}%`;
+                            pctOpenEl.className = 'stock-info-value ' + (pctOpen >= 0 ? 'positive' : 'negative');
+                            
+                            // Calculate % from high
+                            const highPrice = stockData.high_price || 0;
+                            const pctHigh = highPrice > 0 ? ((ltp - highPrice) / highPrice * 100) : 0;
+                            const pctHighEl = document.getElementById('infoPctHigh');
+                            pctHighEl.textContent = `${pctHigh >= 0 ? '+' : ''}${pctHigh.toFixed(2)}%`;
+                            pctHighEl.className = 'stock-info-value ' + (pctHigh >= 0 ? 'positive' : 'negative');
+                            
+                            // Calculate % from low
+                            const lowPrice = stockData.low_price || 0;
+                            const pctLow = lowPrice > 0 ? ((ltp - lowPrice) / lowPrice * 100) : 0;
+                            const pctLowEl = document.getElementById('infoPctLow');
+                            pctLowEl.textContent = `${pctLow >= 0 ? '+' : ''}${pctLow.toFixed(2)}%`;
+                            pctLowEl.className = 'stock-info-value ' + (pctLow >= 0 ? 'positive' : 'negative');
+                            
+                            // RVOL not available in real-time data, show volume only
+                            const rvolEl = document.getElementById('infoRvol');
+                            rvolEl.textContent = '--';
+                            rvolEl.className = 'stock-info-value';
+                            
+                            const volumeEl = document.getElementById('infoVolume');
+                            const volume = stockData.volume || 0;
+                            volumeEl.textContent = this.formatVolume(volume);
+                            
+                            // Check O=H and O=L conditions
+                            const badgesEl = document.getElementById('infoBadges');
+                            badgesEl.innerHTML = '';
+                            if (openPrice > 0 && highPrice > 0 && Math.abs(openPrice - highPrice) < 0.01) {
+                                badgesEl.innerHTML += '<span class="stock-info-badge oh">O=H</span>';
+                            }
+                            if (openPrice > 0 && lowPrice > 0 && Math.abs(openPrice - lowPrice) < 0.01) {
+                                badgesEl.innerHTML += '<span class="stock-info-badge ol">O=L</span>';
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating stock info box:', error);
+                }
+            }
+            
+            formatVolume(volume) {
+                if (volume >= 10000000) {
+                    return (volume / 10000000).toFixed(2) + ' Cr';
+                } else if (volume >= 100000) {
+                    return (volume / 100000).toFixed(2) + ' L';
+                } else if (volume >= 1000) {
+                    return (volume / 1000).toFixed(2) + ' K';
+                }
+                return volume.toString();
+            }
+            
+            showLoadingMessage() {
+                const loadingMsg = document.getElementById('chartLoadingMessage');
+                if (loadingMsg) {
+                    loadingMsg.style.display = 'block';
+                }
+            }
+            
+            hideLoadingMessage() {
+                const loadingMsg = document.getElementById('chartLoadingMessage');
+                if (loadingMsg) {
+                    loadingMsg.style.display = 'none';
+                }
+            }
+            
+            clearChart() {
+                if (this.chart) {
+                    // Clear all data and overlays
+                    this.chart.applyNewData([]);
+                    this.removeTechnicalOverlays();
+                    this.data = [];
+                }
+            }
+            
+            async fetchChartData() {
+                if (!this.selectedSymbol) return;
+                
+                try {
+                    console.log('🔄 Fetching chart data for symbol:', this.selectedSymbol);
+                    const response = await fetch(`/api/chart-5min/${this.selectedSymbol}`);
+                    console.log('📡 API Response status:', response.status);
+                    
+                    const result = await response.json();
+                    console.log('📊 API Result:', result);
+                    
+                    if (result.status === 'success' && result.candles && result.candles.length > 0) {
+                        console.log('✅ Received candles:', result.candles.length);
+                        this.data = result.candles;
+                        this.updateChartData();
+                        this.updateInfoDisplay(result);
+                        await this.fetchTechnicalLevels();
+                    } else {
+                        console.log('📭 No data available for symbol:', this.selectedSymbol);
+                        this.showLoadingMessage();
+                        this.clearChart();
+                    }
+                } catch (error) {
+                    console.error('💥 Error fetching chart data:', error);
+                    this.showLoadingMessage();
+                    this.clearChart();
+                }
+            }
+            
+            updateChartData() {
+                if (!this.chart) {
+                    console.error('❌ Chart not initialized');
+                    return;
+                }
+                
+                if (!this.data.length) {
+                    console.log('📭 No data to display');
+                    this.showLoadingMessage();
+                    return;
+                }
+                
+                // Hide loading message when data is available
+                this.hideLoadingMessage();
+                
+                console.log('🔄 Updating chart with data:', this.data.length, 'candles');
+                
+                // Convert our data format to KLineCharts format
+                // KLineCharts expects timestamp in MILLISECONDS (confirmed from docs)
+                const formattedData = this.data.map(candle => ({
+                    timestamp: candle.time, // Keep in milliseconds as required by KLineCharts
+                    open: candle.open,
+                    high: candle.high,
+                    low: candle.low,
+                    close: candle.close,
+                    volume: candle.volume
+                }));
+                
+                console.log('📊 Formatted data sample (FIXED TIMESTAMP):', formattedData[0]);
+                console.log('📈 KLineCharts receiving:', formattedData.length, 'candles');
+                
+                try {
+                    // Clear all indicators before loading new data to prevent stacking
+                    this.chart.removeIndicator('candle_pane', 'MA');
+                    
+                    // Load data into KLineCharts
+                    this.chart.applyNewData(formattedData);
+                    console.log('✅ Data applied to KLineCharts successfully');
+                    
+                    // Re-apply indicators based on current settings
+                    if (this.settings.showSMA) {
+                        this.chart.createIndicator('MA', true, { paneId: 'candle_pane' });
+                    }
+                } catch (error) {
+                    console.error('💥 Error applying data to KLineCharts:', error);
+                }
+                
+                // Resize chart to ensure proper rendering
+                requestAnimationFrame(() => {
+                    if (this.chart) {
+                        this.chart.resize();
+                        console.log('🎯 Chart resized after data loaded');
+                    }
+                });
+                
+                // Mark chart as successfully displayed to stop refresh loop
+                this.chartDisplayed = true;
+                console.log('🎯 Chart successfully displayed, stopping refresh loop');
+                
+                // Update indicators if enabled
+                this.updateIndicators();
+            }
+            
+            updateChartOptions() {
+                if (!this.chart) return;
+                
+                // Update grid visibility
+                this.chart.setStyles({
+                    grid: {
+                        show: this.settings.showGrid,
+                        horizontal: {
+                            show: this.settings.showGrid,
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        vertical: {
+                            show: this.settings.showGrid,
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                });
+            }
+            
+            updateVolumeDisplay() {
+                if (!this.chart) return;
+                
+                if (this.settings.showVolume) {
+                    this.chart.createIndicator('VOL', false, { id: 'volume_pane' });
+                } else {
+                    this.chart.removeIndicator('volume_pane');
+                }
+            }
+            
+            updateIndicators() {
+                if (!this.chart) return;
+                
+                // Handle SMA indicator
+                if (this.settings.showSMA) {
+                    this.chart.createIndicator('MA', true, { paneId: 'candle_pane' });
+                } else {
+                    this.chart.removeIndicator('candle_pane', 'MA');
+                }
+            }
+            
+            updateTechnicalLevels() {
+                if (!this.chart || !this.technicalLevels) return;
+                
+                // Remove only technical level overlays, not user drawings
+                this.removeTechnicalOverlays();
+                
+                // Add technical levels as overlays and track their IDs
+                this.technicalOverlayIds = [];
+                if (this.settings.showCamarilla && this.technicalLevels.camarilla) {
+                    this.addTechnicalOverlays(this.technicalLevels.camarilla.levels, '#ffaa00');
+                    // Add support zone between S3 and S4
+                    this.addCamarillaSupportZone(this.technicalLevels.camarilla.levels);
+                }
+                if (this.settings.showCPR && this.technicalLevels.cpr) {
+                    this.addTechnicalOverlays(this.technicalLevels.cpr.levels, '#00aaff');
+                }
+                if (this.settings.showFibonacci && this.technicalLevels.fibonacci) {
+                    this.addTechnicalOverlays(this.technicalLevels.fibonacci.levels, '#aa00ff');
+                }
+            }
+            
+            removeTechnicalOverlays() {
+                // Remove only technical level overlays by their tracked IDs
+                if (this.technicalOverlayIds && this.technicalOverlayIds.length > 0) {
+                    this.technicalOverlayIds.forEach(overlayId => {
+                        try {
+                            this.chart.removeOverlay(overlayId);
+                        } catch (error) {
+                            console.warn('⚠️ Could not remove technical overlay:', overlayId, error);
+                        }
+                    });
+                    this.technicalOverlayIds = [];
+                    console.log('✅ Technical overlays removed');
+                }
+                
+                // Remove custom HTML level tags
+                this.removeLevelTags();
+            }
+            
+            addTechnicalOverlays(levels, color) {
+                if (!levels || !Array.isArray(levels)) return;
+                
+                console.log('🎯 CREATE OVERLAY API: Adding', levels.length, 'technical levels using createOverlay method');
+                
+                levels.forEach((level, index) => {
+                    try {
+                        // Create horizontal line (clean, no text on line)
+                        const lineTemplate = {
+                            name: 'horizontalStraightLine',
+                            lock: true,
+                            points: [{ value: level.value }],
+                            styles: {
+                                line: {
+                                    color: level.color || color,
+                                    size: 1,
+                                    style: level.type === 'pivot' ? 'solid' : 'dashed'
+                                }
+                            },
+                            extendData: {
+                                label: level.label,
+                                value: level.value,
+                                type: level.type
+                            }
+                        };
+                        
+                        const lineId = this.chart.createOverlay(lineTemplate);
+                        
+                        if (lineId) {
+                            if (!this.technicalOverlayIds) this.technicalOverlayIds = [];
+                            this.technicalOverlayIds.push(lineId);
+                            console.log('✅ CREATE OVERLAY: Technical line created -', level.label, level.value, 'ID:', lineId);
+                        }
+                        
+                        // Create custom HTML tag at right corner
+                        this.createLevelTag(level.label, level.value, level.color || color);
+                        
+                    } catch (error) {
+                        console.error('💥 CREATE OVERLAY ERROR:', level.label, error);
+                    }
+                });
+            }
+            
+            createLevelTag(label, price, color) {
+                // Get chart container
+                const container = document.getElementById('chartContainer');
+                if (!container) return;
+                
+                // Create tiny tag element
+                const tag = document.createElement('div');
+                tag.className = 'level-tag';
+                tag.textContent = label;
+                tag.style.cssText = `
+                    position: absolute;
+                    right: 66px;
+                    background-color: ${color};
+                    color: #ffffff;
+                    font-size: 9px;
+                    font-weight: bold;
+                    padding: 2px 5px;
+                    border-radius: 3px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    font-family: Arial, sans-serif;
+                `;
+                tag.dataset.price = price;
+                tag.dataset.label = label;
+                
+                container.appendChild(tag);
+                
+                // Position the tag vertically based on price
+                this.updateLevelTagPosition(tag, price);
+                
+                // Track for cleanup
+                if (!this.levelTags) this.levelTags = [];
+                this.levelTags.push(tag);
+            }
+            
+            updateLevelTagPosition(tag, price) {
+                if (!this.chart || !tag) return;
+                
+                try {
+                    // Use KLineCharts v9+ convertToPixel API
+                    const pixelCoord = this.chart.convertToPixel(
+                        { value: price },
+                        { paneId: 'candle_pane' }
+                    );
+                    
+                    if (pixelCoord && typeof pixelCoord.y === 'number') {
+                        tag.style.top = `${pixelCoord.y}px`;
+                    } else {
+                        console.warn('⚠️ convertToPixel returned invalid result for', tag.dataset.label);
+                    }
+                } catch (error) {
+                    console.error('💥 Error positioning level tag:', tag.dataset.label, error);
+                }
+            }
+            
+            updateAllLevelTagPositions() {
+                if (!this.levelTags || this.levelTags.length === 0) return;
+                
+                this.levelTags.forEach(tag => {
+                    const price = parseFloat(tag.dataset.price);
+                    if (!isNaN(price)) {
+                        this.updateLevelTagPosition(tag, price);
+                    }
+                });
+            }
+            
+            removeLevelTags() {
+                if (this.levelTags && this.levelTags.length > 0) {
+                    this.levelTags.forEach(tag => {
+                        if (tag && tag.parentNode) {
+                            tag.parentNode.removeChild(tag);
+                        }
+                    });
+                    this.levelTags = [];
+                    console.log('✅ Level tags removed');
+                }
+            }
+            
+            addCamarillaSupportZone(levels) {
+                if (!levels || !Array.isArray(levels)) return;
+                
+                // Find S3 and S4 levels
+                const s3Level = levels.find(l => l.label === 'S3');
+                const s4Level = levels.find(l => l.label === 'S4');
+                
+                if (!s3Level || !s4Level) {
+                    console.warn('⚠️ S3 or S4 level not found for support zone');
+                    return;
+                }
+                
+                try {
+                    console.log('🎯 Creating Strong Intraday Support Zone between S3 and S4');
+                    console.log(`   S3: ${s3Level.value}, S4: ${s4Level.value}`);
+                    
+                    const midPrice = (s3Level.value + s4Level.value) / 2;
+                    
+                    // Get the data range to span only current day
+                    const dataList = this.chart.getDataList();
+                    if (!dataList || dataList.length === 0) {
+                        console.warn('⚠️ No chart data available for zone');
+                        return;
+                    }
+                    
+                    // Find today's start and end timestamps
+                    const now = new Date();
+                    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+                    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                    
+                    // Filter candles for today only
+                    const todayCandles = dataList.filter(candle => 
+                        candle.timestamp >= todayStart && candle.timestamp <= todayEnd
+                    );
+                    
+                    // If no today candles, use last 75 candles (approximately one trading day)
+                    const zoneCandles = todayCandles.length > 0 ? todayCandles : dataList.slice(-75);
+                    
+                    if (zoneCandles.length === 0) {
+                        console.warn('⚠️ No candles available for zone');
+                        return;
+                    }
+                    
+                    const firstTimestamp = zoneCandles[0].timestamp;
+                    const lastTimestamp = zoneCandles[zoneCandles.length - 1].timestamp;
+                    
+                    console.log(`   Zone span: ${zoneCandles.length} candles (${new Date(firstTimestamp).toLocaleTimeString()} - ${new Date(lastTimestamp).toLocaleTimeString()})`);
+                    
+                    // Create rect overlay with 4 corner points (required by KLineCharts)
+                    const zoneOverlay = {
+                        name: 'rect',
+                        lock: true,
+                        points: [
+                            { timestamp: firstTimestamp, value: s3Level.value },  // Top-left
+                            { timestamp: lastTimestamp, value: s3Level.value },   // Top-right
+                            { timestamp: lastTimestamp, value: s4Level.value },   // Bottom-right
+                            { timestamp: firstTimestamp, value: s4Level.value }   // Bottom-left
+                        ],
+                        styles: {
+                            style: 'fill',
+                            color: 'rgba(75, 192, 192, 0.15)', // Transparent green
+                            borderColor: 'rgba(75, 192, 192, 0.4)',
+                            borderSize: 1,
+                            borderStyle: 'dashed',
+                            borderDashedValue: [4, 4]
+                        }
+                    };
+                    
+                    const zoneId = this.chart.createOverlay(zoneOverlay);
+                    
+                    if (zoneId) {
+                        if (!this.technicalOverlayIds) this.technicalOverlayIds = [];
+                        this.technicalOverlayIds.push(zoneId);
+                        console.log('✅ Support zone rectangle created with ID:', zoneId);
+                    } else {
+                        console.warn('⚠️ Rect overlay failed, zone may not be visible');
+                    }
+                    
+                    // Add text label for the zone (positioned at 30% of current day's candles)
+                    const labelTimestamp = zoneCandles[Math.floor(zoneCandles.length * 0.3)].timestamp;
+                    const labelOverlay = {
+                        name: 'simpleTag',
+                        lock: true,
+                        points: [{ timestamp: labelTimestamp, value: midPrice }],
+                        text: 'Strong Intraday Support Zone',
+                        styles: {
+                            line: {
+                                color: 'transparent'
+                            },
+                            text: {
+                                color: '#ffffff',
+                                size: 11,
+                                family: 'Arial',
+                                weight: 'bold',
+                                paddingLeft: 10,
+                                paddingRight: 10,
+                                paddingTop: 5,
+                                paddingBottom: 5,
+                                borderRadius: 4,
+                                backgroundColor: 'rgba(38, 166, 154, 0.85)',
+                                borderColor: 'rgba(38, 166, 154, 1)',
+                                borderSize: 1
+                            }
+                        }
+                    };
+                    
+                    const labelId = this.chart.createOverlay(labelOverlay);
+                    
+                    if (labelId) {
+                        if (!this.technicalOverlayIds) this.technicalOverlayIds = [];
+                        this.technicalOverlayIds.push(labelId);
+                        console.log('✅ Support zone label created with ID:', labelId);
+                    }
+                    
+                } catch (error) {
+                    console.error('💥 Error creating support zone:', error);
+                }
+            }
+            
+            addHorizontalLine(price, color, label, type) {
+                // Add horizontal line using KLineCharts annotation API
+                try {
+                    if (!this.chart) return;
+                    
+                    // Create simple horizontal line annotation
+                    const annotation = {
+                        type: 'line',
+                        mode: 'horizontal',
+                        scaleID: 'candle_pane',
+                        value: price,
+                        borderColor: color,
+                        borderWidth: 1,
+                        borderDash: type === 'pivot' ? [] : [5, 5],
+                        label: {
+                            enabled: true,
+                            content: `${label}: ${price.toFixed(2)}`,
+                            position: 'start',
+                            backgroundColor: color,
+                            color: '#ffffff',
+                            font: {
+                                size: 10
+                            }
+                        }
+                    };
+                    
+                    // Try to add annotation to chart
+                    if (this.chart.options && this.chart.options.plugins) {
+                        if (!this.chart.options.plugins.annotation) {
+                            this.chart.options.plugins.annotation = { annotations: {} };
+                        }
+                        
+                        const annotationId = `technical_level_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        this.chart.options.plugins.annotation.annotations[annotationId] = annotation;
+                        
+                        // Track for removal
+                        if (!this.technicalOverlayIds) this.technicalOverlayIds = [];
+                        this.technicalOverlayIds.push(annotationId);
+                        
+                        // Update chart
+                        this.chart.update('none');
+                        
+                        console.log('📊 Horizontal line added:', label, price);
+                    } else {
+                        // Fallback: Draw line directly on canvas
+                        this.drawDirectLine(price, color, label, type);
+                    }
+                } catch (error) {
+                    console.error('💥 Error adding horizontal line:', error);
+                    // Final fallback: draw on canvas
+                    this.drawDirectLine(price, color, label, type);
+                }
+            }
+            
+            // Remove old canvas drawing - now using KLineCharts overlay API
+            
+            drawDirectLine(price, color, label, type) {
+                // Direct canvas drawing as final fallback (like dashboard approach)
+                try {
+                    if (!this.chart || !this.chart.getDom) return;
+                    
+                    const canvas = this.chart.getDom();
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const chartHeight = canvas.height;
+                    const chartWidth = canvas.width;
+                    
+                    // Calculate Y position for price level
+                    // This is a simplified approach - in real implementation you'd need proper scaling
+                    const minPrice = Math.min(...this.data.map(d => d.low));
+                    const maxPrice = Math.max(...this.data.map(d => d.high));
+                    const priceRange = maxPrice - minPrice;
+                    const yPos = chartHeight - ((price - minPrice) / priceRange * chartHeight * 0.8) - 50;
+                    
+                    // Draw horizontal line
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    if (type !== 'pivot') {
+                        ctx.setLineDash([5, 5]);
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(50, yPos);
+                    ctx.lineTo(chartWidth - 50, yPos);
+                    ctx.stroke();
+                    
+                    // Draw label
+                    ctx.fillStyle = color;
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`${label}: ${price.toFixed(2)}`, 60, yPos - 5);
+                    
+                    ctx.restore();
+                    
+                    console.log('📊 Direct line drawn:', label, price);
+                } catch (error) {
+                    console.error('💥 Error drawing direct line:', error);
+                }
+            }
+            
+            updateInfoDisplay(result) {
+                if (!result || !result.statistics || !this.data.length) return;
+                
+                const stats = result.statistics;
+                const latestCandle = this.data[this.data.length - 1];
+                
+                // Update price info (with null checks for TradingView-style layout)
+                const ltpEl = document.getElementById('currentLTP');
+                if (ltpEl) {
+                    ltpEl.textContent = stats.current_ltp?.toFixed(2) || latestCandle.close.toFixed(2);
+                }
+                
+                const changeEl = document.getElementById('currentChange');
+                if (changeEl) {
+                    changeEl.textContent = `${stats.price_change > 0 ? '+' : ''}${stats.price_change?.toFixed(2)} (${stats.price_change_percent?.toFixed(2)}%)`;
+                }
+                
+                const volumeEl = document.getElementById('currentVolume');
+                if (volumeEl) {
+                    volumeEl.textContent = this.formatVolume(stats.total_volume || 0);
+                }
+                
+                // Update percentage metrics (with null checks)
+                const open = latestCandle.open;
+                const high = stats.period_high || latestCandle.high;
+                const low = stats.period_low || latestCandle.low;
+                const current = stats.current_ltp || latestCandle.close;
+                
+                const percentFromOpen = ((current - open) / open * 100).toFixed(2);
+                const percentFromHigh = ((current - high) / high * 100).toFixed(2);
+                const percentFromLow = ((current - low) / low * 100).toFixed(2);
+                
+                const percentFromOpenEl = document.getElementById('percentFromOpen');
+                if (percentFromOpenEl) {
+                    percentFromOpenEl.textContent = `${percentFromOpen > 0 ? '+' : ''}${percentFromOpen}%`;
+                }
+                
+                const percentFromHighEl = document.getElementById('percentFromHigh');
+                if (percentFromHighEl) {
+                    percentFromHighEl.textContent = `${percentFromHigh > 0 ? '+' : ''}${percentFromHigh}%`;
+                }
+                
+                const percentFromLowEl = document.getElementById('percentFromLow');
+                if (percentFromLowEl) {
+                    percentFromLowEl.textContent = `${percentFromLow > 0 ? '+' : ''}${percentFromLow}%`;
+                }
+                
+                // Store current candle for real-time updates
+                this.currentCandle = latestCandle;
+            }
+            
+            async fetchTechnicalLevels() {
+                if (!this.selectedSymbol) return;
+                
+                try {
+                    console.log('🔄 Fetching technical levels for symbol:', this.selectedSymbol);
+                    const response = await fetch(`/api/technical-levels/${this.selectedSymbol}`);
+                    console.log('📡 Technical levels API Response status:', response.status);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('📊 Technical levels API Result:', data);
+                        this.technicalLevels = data.levels;
+                        console.log('🎯 Technical levels stored:', this.technicalLevels);
+                        this.updateTechnicalLevels();
+                    } else {
+                        console.warn('⚠️ Technical levels API failed with status:', response.status);
+                        const errorText = await response.text();
+                        console.warn('⚠️ Error response:', errorText);
+                    }
+                } catch (error) {
+                    console.error('💥 Error fetching technical levels for', this.selectedSymbol, ':', error);
+                }
+            }
+            
+            formatVolume(volume) {
+                if (volume >= 1000000) {
+                    return (volume / 1000000).toFixed(1) + 'M';
+                } else if (volume >= 1000) {
+                    return (volume / 1000).toFixed(1) + 'K';
+                }
+                return volume.toString();
+            }
+            
+            resetZoom() {
+                if (this.chart) {
+                    this.chart.zoomAtCoordinate(0.5, 1.0, { x: 0, y: 0 });
+                }
+            }
+            
+            toggleButtonState(button, isActive) {
+                if (isActive) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            }
+            
+            async checkConnection() {
+                try {
+                    const response = await fetch('/websocket_status');
+                    const status = await response.json();
+                    
+                    this.isConnected = status.is_connected;
+                    const statusElement = document.getElementById('connectionStatus');
+                    
+                    if (this.isConnected) {
+                        statusElement.style.color = '#26a69a';
+                        statusElement.textContent = '● Live';
+                    } else {
+                        statusElement.style.color = '#ef5350';
+                        statusElement.textContent = '● Offline';
+                    }
+                } catch (error) {
+                    this.isConnected = false;
+                    const statusElement = document.getElementById('connectionStatus');
+                    statusElement.style.color = '#ef5350';
+                    statusElement.textContent = '● Error';
+                }
+            }
+            
+            connectWebSocket() {
+                // Check WebSocket status and connect to our data stream
+                this.checkConnection();
+                setInterval(() => this.checkConnection(), 5000);
+            }
+            
+            startRealTimeUpdates() {
+                // Handle real-time price updates from the WebSocket
+                this.startUpdateLoop();
+            }
+            
+            startUpdateLoop() {
+                // Update chart with live data every 3 seconds
+                this.updateInterval = setInterval(() => {
+                    if (this.isConnected && this.selectedSymbol && this.chartDisplayed) {
+                        this.updateLiveCandle();
+                    }
+                }, 3000);
+                
+                // Update stock info box every 3 seconds
+                this.infoBoxInterval = setInterval(() => {
+                    if (this.selectedSymbol) {
+                        this.updateStockInfoBox();
+                    }
+                }, 3000);
+            }
+            
+            async updateLiveCandle() {
+                if (!this.chart || !this.selectedSymbol || !this.data.length) return;
+                
+                try {
+                    // Fetch live price data
+                    const response = await fetch('/stock_data');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.data) {
+                        const symbolData = result.data.find(s => s.symbol === this.selectedSymbol);
+                        
+                        if (symbolData && symbolData.ltp) {
+                            const ltp = symbolData.ltp;
+                            const lastCandle = this.data[this.data.length - 1];
+                            
+                            // Update last candle with live price
+                            lastCandle.close = ltp;
+                            lastCandle.high = Math.max(lastCandle.high, ltp);
+                            lastCandle.low = Math.min(lastCandle.low, ltp);
+                            
+                            // Update chart with modified data
+                            this.chart.applyNewData(this.data);
+                            
+                            // Update stock info display
+                            this.updateInfoDisplay({ candles: this.data });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating live candle:', error);
+                }
+            }
+            
+            // Drawing Tools Implementation
+            activateDrawingTool(overlayType, button) {
+                if (!this.chart) return;
+                
+                console.log('🎨 Activating drawing tool:', overlayType);
+                
+                // Reset all drawing tool buttons
+                document.querySelectorAll('.drawing-tool').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Activate selected button
+                button.classList.add('active');
+                
+                // Use KLineCharts correct overlay creation API
+                try {
+                    // Create overlay template with proper styling
+                    const overlayTemplate = {
+                        name: overlayType,
+                        styles: {
+                            line: {
+                                color: '#00d4ff',
+                                size: 2,
+                                style: 'solid'
+                            },
+                            text: {
+                                color: '#00d4ff',
+                                size: 12
+                            },
+                            polygon: {
+                                stroke: {
+                                    color: '#00d4ff',
+                                    size: 2
+                                },
+                                fill: {
+                                    color: 'rgba(0, 212, 255, 0.1)'
+                                }
+                            }
+                        },
+                        onDrawEnd: (data) => {
+                            console.log('✅ Drawing completed:', overlayType, data);
+                            // Reset button state after drawing
+                            button.classList.remove('active');
+                        }
+                    };
+                    
+                    // Use createOverlay for drawing mode
+                    const overlayId = this.chart.createOverlay(overlayTemplate);
+                    if (overlayId) {
+                        console.log('🎯 Drawing mode activated for:', overlayType, 'with ID:', overlayId);
+                    } else {
+                        // Fallback to direct overlay creation if createOverlay doesn't work
+                        this.enableDrawingMode(overlayType, button);
+                    }
+                    
+                } catch (error) {
+                    console.error('💥 Error activating drawing tool:', error);
+                    // Fallback method
+                    this.enableDrawingMode(overlayType, button);
+                }
+            }
+            
+            enableDrawingMode(overlayType, button) {
+                // Alternative drawing implementation using direct overlay creation
+                console.log('🔄 Using alternative drawing method for:', overlayType);
+                
+                // Create a visual indicator that drawing mode is active
+                const notification = document.createElement('div');
+                notification.textContent = `Click to draw ${overlayType}. Press ESC to cancel.`;
+                notification.style.cssText = `
+                    position: fixed; top: 10px; right: 10px; 
+                    background: rgba(0, 212, 255, 0.9); color: white; 
+                    padding: 10px; border-radius: 5px; z-index: 1000;
+                `;
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 3000);
+                
+                // Reset button after short delay
+                setTimeout(() => {
+                    button.classList.remove('active');
+                }, 1000);
+            }
+            
+            clearAllDrawings() {
+                if (!this.chart) return;
+                
+                console.log('🗑️ Clearing all user drawings');
+                
+                try {
+                    // Store technical overlay IDs to preserve them
+                    const preservedTechnicalIds = this.technicalOverlayIds ? [...this.technicalOverlayIds] : [];
+                    
+                    // Remove all overlays
+                    this.chart.removeOverlay();
+                    console.log('✅ All user drawings cleared');
+                    
+                    // Restore technical overlays if they were active
+                    this.technicalOverlayIds = preservedTechnicalIds;
+                    this.updateTechnicalLevels();
+                    
+                    // Reset all drawing tool button states
+                    document.querySelectorAll('.drawing-tool').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                } catch (error) {
+                    console.error('💥 Error clearing drawings:', error);
+                    
+                    // Fallback: Just re-add technical levels
+                    if (this.technicalLevels) {
+                        this.updateTechnicalLevels();
+                    }
+                }
+            }
+
+            setupMobileControls() {
+                // Mobile watchlist toggle
+                const mobileToggle = document.getElementById('mobileToggle');
+                const watchlistPanel = document.getElementById('watchlistPanel');
+                const mobileOverlay = document.getElementById('mobileOverlay');
+
+                if (mobileToggle && watchlistPanel && mobileOverlay) {
+                    // Toggle watchlist on button click
+                    mobileToggle.addEventListener('click', () => {
+                        watchlistPanel.classList.toggle('open');
+                        mobileOverlay.classList.toggle('active');
+                    });
+
+                    // Close watchlist when overlay is clicked
+                    mobileOverlay.addEventListener('click', () => {
+                        watchlistPanel.classList.remove('open');
+                        mobileOverlay.classList.remove('active');
+                    });
+
+                    // Close watchlist when a symbol is selected (on mobile)
+                    watchlistPanel.addEventListener('click', (e) => {
+                        if (e.target.closest('.symbol-item')) {
+                            setTimeout(() => {
+                                watchlistPanel.classList.remove('open');
+                                mobileOverlay.classList.remove('active');
+                            }, 300);
+                        }
+                    });
+                }
+
+                // Handle orientation changes
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        if (this.chart) {
+                            this.chart.resize();
+                        }
+                    }, 200);
+                });
+
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    if (this.chart) {
+                        this.chart.resize();
+                        // Update level tag positions after resize
+                        setTimeout(() => this.updateAllLevelTagPositions(), 100);
+                    }
+                });
+                
+                // Set up continuous position updates for tags during chart interaction
+                this.setupTagPositionUpdates();
+            }
+
+            setupTagPositionUpdates() {
+                // Get the chart container element
+                const chartContainer = document.getElementById('chartContainer');
+                if (!chartContainer) return;
+                
+                // Update tags on mouse/touch interactions (pan/zoom)
+                let isInteracting = false;
+                let updateInterval = null;
+                
+                const startInteraction = () => {
+                    isInteracting = true;
+                    // Update positions continuously while interacting
+                    if (!updateInterval) {
+                        updateInterval = setInterval(() => {
+                            if (isInteracting) {
+                                this.updateAllLevelTagPositions();
+                            }
+                        }, 50); // Update every 50ms during interaction
+                    }
+                };
+                
+                const endInteraction = () => {
+                    isInteracting = false;
+                    // One final update after interaction ends
+                    setTimeout(() => {
+                        this.updateAllLevelTagPositions();
+                        if (updateInterval) {
+                            clearInterval(updateInterval);
+                            updateInterval = null;
+                        }
+                    }, 100);
+                };
+                
+                // Mouse events (for desktop)
+                chartContainer.addEventListener('mousedown', startInteraction);
+                chartContainer.addEventListener('mouseup', endInteraction);
+                chartContainer.addEventListener('mouseleave', endInteraction);
+                chartContainer.addEventListener('wheel', () => {
+                    // Update immediately on scroll wheel
+                    this.updateAllLevelTagPositions();
+                });
+                
+                // Touch events (for mobile)
+                chartContainer.addEventListener('touchstart', startInteraction);
+                chartContainer.addEventListener('touchend', endInteraction);
+                chartContainer.addEventListener('touchcancel', endInteraction);
+            }
+            
+            setupFullscreenControls() {
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                const mainContainer = document.getElementById('mainContainer');
+
+                if (fullscreenBtn) {
+                    fullscreenBtn.addEventListener('click', () => {
+                        this.toggleFullscreen(mainContainer, fullscreenBtn);
+                    });
+                }
+
+                // Handle escape key to exit fullscreen
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && mainContainer.classList.contains('fullscreen')) {
+                        this.exitFullscreen(mainContainer, fullscreenBtn);
+                    }
+                });
+            }
+
+            toggleFullscreen(container, button) {
+                if (container.classList.contains('fullscreen')) {
+                    this.exitFullscreen(container, button);
+                } else {
+                    this.enterFullscreen(container, button);
+                }
+            }
+
+            enterFullscreen(container, button) {
+                container.classList.add('fullscreen');
+                button.textContent = '✕';
+                button.title = 'Exit Fullscreen';
+                
+                // Resize chart after animation
+                setTimeout(() => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                }, 300);
+
+                console.log('📈 Chart entered fullscreen mode');
+            }
+
+            exitFullscreen(container, button) {
+                container.classList.remove('fullscreen');
+                button.textContent = '⛶';
+                button.title = 'Fullscreen';
+                
+                // Resize chart after animation
+                setTimeout(() => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                }, 300);
+
+                console.log('📈 Chart exited fullscreen mode');
+            }
+        }
+
+        // Initialize the professional live chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.liveChart = new LiveChart('chartContainer');
+            
+            // User Guide Modal controls
+            const guideModal = document.getElementById('guideModal');
+            const helpBtn = document.getElementById('helpBtn');
+            const guideClose = document.getElementById('guideClose');
+            
+            // Open guide modal
+            helpBtn.addEventListener('click', () => {
+                guideModal.classList.add('active');
+            });
+            
+            // Close guide modal
+            guideClose.addEventListener('click', () => {
+                guideModal.classList.remove('active');
+            });
+            
+            // Close modal when clicking outside
+            guideModal.addEventListener('click', (e) => {
+                if (e.target === guideModal) {
+                    guideModal.classList.remove('active');
+                }
+            });
+            
+            // Close modal with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && guideModal.classList.contains('active')) {
+                    guideModal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

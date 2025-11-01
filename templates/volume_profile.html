@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Profile - 5-Day Volume Analysis</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 25%, #2a2d3e 50%, #1a1f2e 75%, #0f1419 100%);
+            min-height: 100vh;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(17, 24, 39, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+            max-width: 1800px;
+            overflow-x: hidden;
+        }
+        
+        .search-bar {
+            background: rgba(30, 35, 50, 0.8);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .search-input {
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px solid rgba(100, 116, 139, 0.3);
+            color: #ffffff !important;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(17, 24, 39, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            color: #ffffff !important;
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .volume-profile-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+            
+            .volume-profile-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .volume-chart-card {
+                padding: 8px;
+                min-width: 0;
+            }
+            
+            .chart-canvas {
+                height: 180px;
+                width: 100%;
+                overflow: hidden;
+            }
+        }
+        
+        .volume-chart-card {
+            background: rgba(20, 25, 30, 0.8);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .volume-chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        
+        .symbol-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .vpoc-label {
+            font-size: 0.65rem;
+            color: #9ca3af;
+        }
+        
+        .chart-canvas {
+            height: 200px;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+        
+        .volume-chart-card {
+            cursor: pointer;
+        }
+        
+        .volume-chart-card:active {
+            transform: scale(0.98);
+        }
+        
+        .modal-chart-canvas {
+            height: 600px;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-chart-canvas {
+                height: 400px;
+            }
+        }
+        
+        .stats-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(30, 35, 50, 0.6);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        /* Hamburger Menu Styles */
+        .hamburger-icon {width: 20px; height: 15px; position: relative; cursor: pointer;}
+        .hamburger-icon span {display: block; position: absolute; height: 2px; width: 100%; background: #ffffff; border-radius: 1px; opacity: 1; left: 0; transition: .25s ease-in-out;}
+        .hamburger-icon span:nth-child(1) { top: 0px; }
+        .hamburger-icon span:nth-child(2) { top: 6px; }
+        .hamburger-icon span:nth-child(3) { top: 12px; }
+        .mobile-menu-dropdown {position: absolute; top: 100%; right: 0; background: rgba(20, 25, 35, 0.95); border: 1px solid #444; border-radius: 8px; min-width: 200px; z-index: 9999; display: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);}
+        .mobile-menu-dropdown.show { display: block; }
+        .mobile-menu-item {display: block; padding: 12px 16px; color: #ffffff; text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); transition: background-color 0.2s ease;}
+        .mobile-menu-item:hover {background-color: rgba(255, 255, 255, 0.1); color: #ffffff; text-decoration: none;}
+        .mobile-menu-item:last-child { border-bottom: none; }
+        .mobile-menu-divider {border-top: 1px solid #444; margin: 4px 0;}
+        .mobile-menu-header {padding: 8px 16px; color: #6c757d; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.1);}
+        .mobile-menu-item .badge { float: right; }
+        .navbar-logo {height: 35px; width: 35px;}
+        .navbar-title {font-size: 0.9rem; font-weight: bold; line-height: 1.1; color: #4da6ff !important;}
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            border-radius: 8px;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 193, 7, 0.25);
+            border-color: #ffc107;
+            transform: scale(1.05);
+        }
+        
+        /* LIGHT THEME STYLES */
+        :root[data-theme="light"] body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #dee2e6 50%, #e9ecef 75%, #f8f9fa 100%) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .navbar-title {
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .theme-toggle {
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.3) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .search-bar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        :root[data-theme="light"] .search-input {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input:focus {
+            background: #fff !important;
+            border-color: #0d6efd !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .search-input::placeholder {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .input-group-text {
+            background: rgba(248, 249, 250, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .volume-chart-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        :root[data-theme="light"] .volume-chart-card:hover {
+            box-shadow: 0 4px 20px rgba(13, 110, 253, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .chart-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .stock-symbol {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .stock-price {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .stats-info {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .stat-label {
+            color: #6c757d !important;
+        }
+        
+        :root[data-theme="light"] .stat-value {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .loading-text {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-dropdown {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item {
+            color: #000 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-header {
+            color: #000 !important;
+            background: rgba(13, 110, 253, 0.1) !important;
+            border-bottom: 1px solid rgba(13, 110, 253, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .mobile-menu-divider {
+            border-top: 1px solid #dee2e6 !important;
+        }
+        
+        :root[data-theme="light"] .hamburger-icon span {
+            background: #000 !important;
+        }
+        
+        :root[data-theme="light"] .navbar .btn-outline-warning,
+        :root[data-theme="light"] .navbar .btn-outline-info {
+            border: none !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .modal-content {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.95)) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .modal-body {
+            color: #000 !important;
+        }
+        
+        :root[data-theme="light"] .btn-close {
+            filter: invert(1);
+        }
+        
+        /* Desktop Navigation Strip Styling */
+        .desktop-nav-strip {
+            position: relative;
+            z-index: 1020;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-strip-btn {
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+        
+        .nav-strip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+            border-color: rgba(77, 166, 255, 0.6);
+        }
+        
+        .nav-strip-btn.btn-outline-primary:hover {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #4da6ff;
+        }
+        
+        .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #5cb85c;
+        }
+        
+        .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        /* Light Theme Navigation Strip */
+        :root[data-theme="light"] .desktop-nav-strip {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.95)) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn {
+            border-color: rgba(13, 110, 253, 0.4) !important;
+            color: #0d6efd !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success {
+            border-color: rgba(25, 135, 84, 0.4) !important;
+            color: #198754 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning {
+            border-color: rgba(255, 193, 7, 0.6) !important;
+            color: #f59e0b !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning.active {
+            background-color: rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger {
+            border-color: rgba(220, 53, 69, 0.4) !important;
+            color: #dc3545 !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-success:hover {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.2) !important;
+        }
+        
+        :root[data-theme="light"] .nav-strip-btn.btn-outline-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- High/Low Alert Container -->
+    <div id="alertContainer" class="alert-container">
+        <!-- Dynamic alerts will be inserted here -->
+    </div>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-1">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center flex-grow-0" href="{{ url_for('dashboard') }}" style="margin-right: 0;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="MG Logo" class="navbar-logo me-2">
+                <div class="navbar-title">Volume Profile</div>
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <div class="me-3 d-flex align-items-center" title="WebSocket Status"><i class="fas fa-circle" style="font-size: 10px; color: #6c757d;"></i></div>
+                <button class="btn btn-sm theme-toggle me-3" onclick="toggleTheme()" title="Toggle Theme" id="themeToggleBtn"><i class="fas fa-moon"></i></button>
+                <button class="btn btn-sm btn-outline-warning me-3 d-flex align-items-center" onclick="toggleAlerts()" title="Toggle Alerts" id="alertToggleBtn"><i class="fas fa-bell"></i></button>
+                <button class="btn btn-sm btn-outline-info me-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#userGuideModal" title="User Guide"><i class="fas fa-question-circle"></i></button>
+                <div class="me-3">
+                    {% if current_user.profile_image_url %}
+                    <img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #4da6ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button">
+                    {% else %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #4da6ff; border: 2px solid #66b3ff; cursor: pointer;" onclick="window.location.href='{{ url_for('account') }}';" role="button"><i class="fas fa-user" style="font-size: 16px; color: white;"></i></div>
+                    {% endif %}
+                </div>
+                <div style="position: relative;" class="d-md-none">
+                    <button class="btn btn-outline-light btn-sm" type="button" id="mobileMenuToggle" style="border: none; padding: 4px 8px;"><div class="hamburger-icon"><span></span><span></span><span></span></div></button>
+                    <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+                        <div class="mobile-menu-header d-flex align-items-center mb-2" style="padding: 12px; background: rgba(77, 166, 255, 0.1); border-bottom: 1px solid rgba(77, 166, 255, 0.3);">
+                            {% if current_user.profile_image_url %}<img src="{{ current_user.profile_image_url }}" alt="{{ current_user.username }}" class="rounded-circle me-2" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid #4da6ff;">{% else %}<div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; background-color: #4da6ff; border: 2px solid #66b3ff;"><i class="fas fa-user" style="font-size: 18px; color: white;"></i></div>{% endif %}<div><div style="font-weight: bold; font-size: 0.9rem;">{{ current_user.username }}</div><div style="font-size: 0.75rem; opacity: 0.8;">{{ current_user.email }}</div></div>
+                        </div>
+                        <a href="{{ url_for('account') }}" class="mobile-menu-item"><i class="fas fa-user-circle me-2"></i>Account</a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('dashboard') }}" class="mobile-menu-item"><i class="fas fa-home me-2"></i>Dashboard</a>
+                        <div class="mobile-menu-divider"></div>
+                        <a href="{{ url_for('all_charts') }}" class="mobile-menu-item"><i class="fas fa-chart-area me-2"></i>100D-Levels</a>
+                        <a href="{{ url_for('mgheatmap') }}" class="mobile-menu-item"><i class="fas fa-th me-2"></i>MG Heatmap<span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span></a>
+                        <a href="{{ url_for('mg_linecharts') }}" class="mobile-menu-item"><i class="fas fa-chart-line me-2"></i>5D Line Charts<span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Premium</span></a>
+                        <a href="{{ url_for('volume_profile') }}" class="mobile-menu-item"><i class="fas fa-chart-area me-2"></i>Volume Profile</a>
+                        <a href="{{ url_for('logout') }}" class="mobile-menu-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Desktop Navigation Strip (Hidden on Mobile) -->
+    <div class="desktop-nav-strip d-none d-md-block" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.9)); border-bottom: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+        <div class="container-fluid px-3 py-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center justify-content-center">
+                <!-- Dashboard Page Sections -->
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#market-overview'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Market
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#niftyTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-table me-1"></i>F&O
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#camarillaTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-layer-group me-1"></i>Camarilla
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#cprTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-crosshairs me-1"></i>CPR
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#fibonacciTable'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Fibonacci
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#levels-scan'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-search me-1"></i>Levels
+                </button>
+                <button class="btn btn-sm btn-outline-primary nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#rvol-analysis'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-bar me-1"></i>RVOL
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('dashboard') }}#price-action'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-arrows-alt me-1"></i>Price Action
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(77, 166, 255, 0.3); margin: 0 0.5rem;"></div>
+                
+                <!-- Other Pages -->
+                <button class="btn btn-sm btn-outline-success nav-strip-btn" onclick="window.location.href='{{ url_for('all_charts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-area me-1"></i>100D-Levels
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mgheatmap') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-th me-1"></i>MG Heatmap
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('mg_linecharts') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>5D Charts
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                <button class="btn btn-sm btn-outline-success nav-strip-btn active" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background-color: rgba(255, 193, 7, 0.2);">
+                    <i class="fas fa-chart-area me-1"></i>Volume
+                </button>
+                <button class="btn btn-sm btn-outline-warning nav-strip-btn" onclick="window.location.href='{{ url_for('technical_indicators_page') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-line me-1"></i>Indicators
+                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem;">Premium</span>
+                </button>
+                
+                {% if current_user.is_admin() %}
+                <!-- Separator -->
+                <div style="width: 1px; height: 24px; background: rgba(220, 53, 69, 0.3); margin: 0 0.5rem;"></div>
+                
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('live_chart') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-chart-candlestick me-1"></i>Live
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger nav-strip-btn" onclick="window.location.href='{{ url_for('admin_panel') }}'" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">
+                    <i class="fas fa-user-shield me-1"></i>Admin
+                    <span class="badge bg-danger ms-1" style="font-size: 0.55rem;">Admin</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Page Title with Subtitle -->
+        <div class="text-center mb-3 mt-2">
+            <h5 class="mb-0" style="color: rgba(255,255,255,0.9); font-weight: 500;">
+                <i class="fas fa-chart-area me-2"></i>Volume Profile
+            </h5>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Based on 5 days Volume</p>
+        </div>
+
+        <div class="search-bar">
+            <div class="input-group">
+                <span class="input-group-text" style="background: rgba(17, 24, 39, 0.6); border: 2px solid rgba(100, 116, 139, 0.3); border-right: none;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" 
+                       class="form-control search-input" 
+                       id="stockSearch" 
+                       placeholder="Search stocks by symbol (e.g., RELIANCE, TCS, INFY...)"
+                       style="border-left: none;">
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div>Loading volume profile data for all stocks...</div>
+            </div>
+        </div>
+        
+        <div id="volumeProfileGrid" class="volume-profile-grid" style="display: none;">
+            <!-- Charts will be populated here -->
+        </div>
+    </div>
+
+    <!-- Zoom Modal -->
+    <div class="modal fade" id="chartZoomModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="background: linear-gradient(145deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.85)); border: 1px solid rgba(100, 116, 139, 0.3);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(100, 116, 139, 0.2);">
+                    <h5 class="modal-title" id="modalSymbol" style="color: #3b82f6; font-weight: 700;">Volume Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div style="background: rgba(255, 99, 132, 0.1); padding: 10px; border-radius: 8px; border-left: 3px solid rgb(255, 99, 132);">
+                                <div style="color: #9ca3af; font-size: 0.75rem;">VPOC</div>
+                                <div style="color: rgb(255, 99, 132); font-weight: 700; font-size: 1.1rem;" id="modalVPOC">-</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div style="background: rgba(75, 192, 192, 0.1); padding: 10px; border-radius: 8px; border-left: 3px solid rgb(75, 192, 192);">
+                                <div style="color: #9ca3af; font-size: 0.75rem;">VAH</div>
+                                <div style="color: rgb(75, 192, 192); font-weight: 700; font-size: 1.1rem;" id="modalVAH">-</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div style="background: rgba(255, 205, 86, 0.1); padding: 10px; border-radius: 8px; border-left: 3px solid rgb(255, 205, 86);">
+                                <div style="color: #9ca3af; font-size: 0.75rem;">VAL</div>
+                                <div style="color: rgb(255, 205, 86); font-weight: 700; font-size: 1.1rem;" id="modalVAL">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-chart-canvas">
+                        <canvas id="modalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allCharts = [];
+        let activeCharts = new Map();
+        let modalChart = null;
+        let allVolumeData = {};
+
+        async function loadAllVolumeProfiles() {
+            try {
+                const grid = document.getElementById('volumeProfileGrid');
+                grid.innerHTML = '';
+                
+                // Fetch ALL volume profiles in ONE request - SUPER FAST!
+                const response = await fetch('/api/volume-profile/all');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const volumeProfiles = result.volume_profiles;
+                    const symbols = Object.keys(volumeProfiles).sort();
+                    
+                    // Store all data globally for zoom modal
+                    allVolumeData = volumeProfiles;
+                    
+                    // Create charts for all stocks
+                    symbols.forEach(symbol => {
+                        const data = volumeProfiles[symbol];
+                        createVolumeChart(symbol, data);
+                    });
+                    
+                    // Show grid and hide loading
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    grid.style.display = 'grid';
+                    
+                    console.log(`Loaded ${symbols.length} volume profile charts instantly!`);
+                } else {
+                    throw new Error(result.message || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading volume profiles:', error);
+                document.getElementById('loadingSpinner').innerHTML = '<div class="text-danger">Error loading data. Please refresh the page.</div>';
+            }
+        }
+
+        function createVolumeChart(symbol, data) {
+            const grid = document.getElementById('volumeProfileGrid');
+            
+            // Skip if no volume profile data
+            if (!data || !data.volume_profile || data.volume_profile.length === 0) {
+                return;
+            }
+            
+            // Create card
+            const card = document.createElement('div');
+            card.className = 'volume-chart-card';
+            card.setAttribute('data-symbol', symbol);
+            
+            const canvasId = `chart_${symbol.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            
+            card.innerHTML = `
+                <div class="chart-header">
+                    <div class="symbol-title">${symbol}</div>
+                    <div class="vpoc-label">VPOC: ₹${data.important_levels?.vpoc?.toFixed(2) || '-'}</div>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="${canvasId}"></canvas>
+                </div>
+            `;
+            
+            grid.appendChild(card);
+            allCharts.push({ symbol, card });
+            
+            // Add click handler to zoom chart
+            card.addEventListener('click', () => openChartModal(symbol));
+            
+            // Get canvas after appending to DOM
+            const canvas = card.querySelector('canvas');
+            if (!canvas) {
+                console.error(`📊 Volume Profile: Chart canvas not found for ${symbol}`);
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            const volumeProfile = data.volume_profile || [];
+            const priceLabels = volumeProfile.map(item => `₹${item.price.toFixed(2)}`);
+            const volumes = volumeProfile.map(item => item.volume);
+            
+            // Get important levels
+            const vpoc = data.important_levels?.vpoc || 0;
+            const vah = data.important_levels?.value_area_high || 0;
+            const val = data.important_levels?.value_area_low || 0;
+            
+            // Find index positions for the lines
+            const vpocIndex = volumeProfile.findIndex(item => item.price === vpoc);
+            const vahIndex = volumeProfile.findIndex(item => item.price === vah);
+            const valIndex = volumeProfile.findIndex(item => item.price === val);
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: priceLabels,
+                    datasets: [{
+                        label: 'Volume',
+                        data: volumes,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        annotation: {
+                            annotations: {
+                                vpocLine: {
+                                    type: 'line',
+                                    yMin: vpocIndex,
+                                    yMax: vpocIndex,
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        display: true,
+                                        content: 'VPOC',
+                                        position: 'end',
+                                        backgroundColor: 'rgb(255, 99, 132)',
+                                        color: '#fff',
+                                        font: { size: 8 }
+                                    }
+                                },
+                                vahLine: {
+                                    type: 'line',
+                                    yMin: vahIndex,
+                                    yMax: vahIndex,
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    borderWidth: 2,
+                                    label: {
+                                        display: true,
+                                        content: 'VAH',
+                                        position: 'end',
+                                        backgroundColor: 'rgb(75, 192, 192)',
+                                        color: '#fff',
+                                        font: { size: 8 }
+                                    }
+                                },
+                                valLine: {
+                                    type: 'line',
+                                    yMin: valIndex,
+                                    yMax: valIndex,
+                                    borderColor: 'rgb(255, 205, 86)',
+                                    borderWidth: 2,
+                                    label: {
+                                        display: true,
+                                        content: 'VAL',
+                                        position: 'end',
+                                        backgroundColor: 'rgb(255, 205, 86)',
+                                        color: '#fff',
+                                        font: { size: 8 }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                                font: { size: 8 },
+                                callback: function(value) {
+                                    return value >= 1000000 ? (value/1000000).toFixed(1) + 'M' : 
+                                           value >= 1000 ? (value/1000).toFixed(1) + 'K' : value;
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255,255,255,0.05)'
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                                font: { size: 7 }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            activeCharts.set(symbol, chart);
+        }
+
+        // Search functionality
+        document.getElementById('stockSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toUpperCase();
+            let visibleCount = 0;
+            
+            allCharts.forEach(({ symbol, card }) => {
+                if (symbol.includes(searchTerm) || searchTerm === '') {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('showingCount').textContent = visibleCount;
+        });
+
+        // Open chart in modal for zoomed view
+        function openChartModal(symbol) {
+            const data = allVolumeData[symbol];
+            if (!data) return;
+            
+            // Update modal title and levels
+            document.getElementById('modalSymbol').textContent = `${symbol} - Volume Profile Analysis`;
+            document.getElementById('modalVPOC').textContent = `₹${data.important_levels.vpoc.toFixed(2)}`;
+            document.getElementById('modalVAH').textContent = `₹${data.important_levels.value_area_high.toFixed(2)}`;
+            document.getElementById('modalVAL').textContent = `₹${data.important_levels.value_area_low.toFixed(2)}`;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('chartZoomModal'));
+            modal.show();
+            
+            // Destroy previous chart if exists
+            if (modalChart) {
+                modalChart.destroy();
+            }
+            
+            // Create large chart
+            setTimeout(() => {
+                const canvas = document.getElementById('modalChart');
+                const ctx = canvas.getContext('2d');
+                
+                const volumeProfile = data.volume_profile || [];
+                const priceLabels = volumeProfile.map(item => `₹${item.price.toFixed(2)}`);
+                const volumes = volumeProfile.map(item => item.volume);
+                
+                const vpoc = data.important_levels?.vpoc || 0;
+                const vah = data.important_levels?.value_area_high || 0;
+                const val = data.important_levels?.value_area_low || 0;
+                
+                const vpocIndex = volumeProfile.findIndex(item => item.price === vpoc);
+                const vahIndex = volumeProfile.findIndex(item => item.price === vah);
+                const valIndex = volumeProfile.findIndex(item => item.price === val);
+                
+                modalChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: priceLabels,
+                        datasets: [{
+                            label: 'Volume',
+                            data: volumes,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            annotation: {
+                                annotations: {
+                                    vpocLine: {
+                                        type: 'line',
+                                        yMin: vpocIndex,
+                                        yMax: vpocIndex,
+                                        borderColor: 'rgb(255, 99, 132)',
+                                        borderWidth: 3,
+                                        borderDash: [5, 5],
+                                        label: {
+                                            display: true,
+                                            content: 'VPOC',
+                                            position: 'end',
+                                            backgroundColor: 'rgb(255, 99, 132)',
+                                            color: '#fff',
+                                            font: { size: 12, weight: 'bold' }
+                                        }
+                                    },
+                                    vahLine: {
+                                        type: 'line',
+                                        yMin: vahIndex,
+                                        yMax: vahIndex,
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        borderWidth: 3,
+                                        label: {
+                                            display: true,
+                                            content: 'VAH',
+                                            position: 'end',
+                                            backgroundColor: 'rgb(75, 192, 192)',
+                                            color: '#fff',
+                                            font: { size: 12, weight: 'bold' }
+                                        }
+                                    },
+                                    valLine: {
+                                        type: 'line',
+                                        yMin: valIndex,
+                                        yMax: valIndex,
+                                        borderColor: 'rgb(255, 205, 86)',
+                                        borderWidth: 3,
+                                        label: {
+                                            display: true,
+                                            content: 'VAL',
+                                            position: 'end',
+                                            backgroundColor: 'rgb(255, 205, 86)',
+                                            color: '#fff',
+                                            font: { size: 12, weight: 'bold' }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: {
+                                    color: '#ffffff',
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return value >= 1000000 ? (value/1000000).toFixed(1) + 'M' : 
+                                               value >= 1000 ? (value/1000).toFixed(1) + 'K' : value;
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255,255,255,0.05)'
+                                },
+                                ticks: {
+                                    color: '#ffffff',
+                                    font: { size: 10 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }, 200);
+        }
+        
+        // Initialize - load all stocks instantly
+        loadAllVolumeProfiles();
+    </script>
+
+    <!-- User Guide Modal -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1" aria-labelledby="userGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="background: linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(30, 41, 59, 0.95)); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 16px; color: #fff;">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(100, 116, 139, 0.2);">
+                    <h5 class="modal-title" id="userGuideModalLabel">
+                        <i class="fas fa-book-open me-2 text-info"></i>Volume Profile - User Guide
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div style="margin-bottom: 24px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chart-bar"></i>
+                            What is Volume Profile?
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: #fff;">Volume Profile:</strong> Shows the distribution of trading volume across different price levels over the last 5 trading days. This helps identify where most trading activity occurred and key support/resistance zones.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: #fff;">Horizontal Chart:</strong> Each horizontal bar represents the total volume traded at that specific price level across 5 days.
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-crosshairs"></i>
+                            Key Levels Explained
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: rgb(255, 99, 132);">VPOC (Volume Point of Control):</strong> The price level with the HIGHEST trading volume in 5 days. This is where traders were most active and often acts as a strong support or resistance level. Shown in <span style="color: rgb(255, 99, 132);">red</span>.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: rgb(75, 192, 192);">VAH (Value Area High):</strong> The upper boundary of the 70% value area. This defines the highest price where 70% of the volume was traded. Often acts as resistance. Shown in <span style="color: rgb(75, 192, 192);">teal</span>.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: rgb(255, 205, 86);">VAL (Value Area Low):</strong> The lower boundary of the 70% value area. This defines the lowest price where 70% of the volume was traded. Often acts as support. Shown in <span style="color: rgb(255, 205, 86);">yellow</span>.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong style="color: #fff;">Value Area (70%):</strong> The price range between VAH and VAL where 70% of all trading volume occurred. This is the "fair value" zone where most traders agreed on price.
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chart-line"></i>
+                            How to Read the Charts
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Longer bars:</strong> More volume traded at that price → stronger support/resistance
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Shorter bars:</strong> Less volume traded at that price → weaker support/resistance
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>VPOC level:</strong> Most important price level - watch for bounces or breaks
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Above VAH:</strong> Price is trading above fair value (bullish zone)
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Below VAL:</strong> Price is trading below fair value (bearish zone)
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items-center; gap: 8px;">
+                            <i class="fas fa-mouse-pointer"></i>
+                            Interactive Features
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Click to Zoom:</strong> Click on any stock chart to open a larger, detailed view with bigger labels and clearer price levels.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Search:</strong> Type any stock symbol (e.g., RELIANCE, TCS, INFY) to quickly find specific stocks.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Instant Loading:</strong> All 206 F&O stock volume profiles load in ONE query - super fast!
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items-center; gap: 8px;">
+                            <i class="fas fa-lightbulb"></i>
+                            Trading Tips
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>VPOC as Support:</strong> If price holds above VPOC, it often acts as strong support
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>VPOC as Resistance:</strong> If price breaks below VPOC, it often becomes resistance
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Value Area Breakout:</strong> Breaking above VAH with volume suggests bullish momentum
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Value Area Breakdown:</strong> Breaking below VAL with volume suggests bearish momentum
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            • <strong>Mean Reversion:</strong> Prices often gravitate back toward VPOC (point of control)
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 0px; padding: 16px; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #3b82f6; margin-bottom: 12px; display: flex; align-items-center; gap: 8px;">
+                            <i class="fas fa-info-circle"></i>
+                            Data Information
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Data Source:</strong> All volume profiles are calculated from the last 5 trading days of historical data stored in hist_data_365 database.
+                        </div>
+                        <div style="margin-bottom: 10px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Coverage:</strong> Displays all 206 F&O stocks (excludes indices like NIFTY, SENSEX, etc.)
+                        </div>
+                        <div style="margin-bottom: 0px; padding-left: 8px; line-height: 1.6; color: #e5e7eb;">
+                            <strong>Layout:</strong> 6 columns on desktop, 2 columns on mobile for easy viewing
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuDropdown = document.getElementById('mobileMenuDropdown');
+            
+            if (mobileMenuToggle && mobileMenuDropdown) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    mobileMenuDropdown.classList.toggle('show');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuToggle.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                        mobileMenuDropdown.classList.remove('show');
+                    }
+                });
+            }
+        });
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const root = document.documentElement;
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update icon
+            if (themeToggleBtn) {
+                const icon = themeToggleBtn.querySelector('i');
+                icon.className = newTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const root = document.documentElement;
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            
+            root.setAttribute('data-theme', savedTheme);
+            
+            if (themeToggleBtn) {
+                const icon = themeToggleBtn.querySelector('i');
+                icon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+
+        // Alert Toggle Functionality
+        let alertsVisible = localStorage.getItem('alertsVisible') !== 'false';
+
+        function toggleAlerts() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (!alertContainer) {
+                console.error('❌ Alert container not found!');
+                return;
+            }
+
+            alertsVisible = !alertsVisible;
+            localStorage.setItem('alertsVisible', alertsVisible.toString());
+
+            if (alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+                console.log('✅ ALERTS SHOWN');
+            } else {
+                alertContainer.classList.remove('show');
+                if (button) {
+                    button.classList.remove('active');
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }
+                console.log('❌ ALERTS HIDDEN');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertContainer = document.getElementById('alertContainer');
+            const button = document.getElementById('alertToggleBtn');
+
+            if (alertContainer && alertsVisible) {
+                alertContainer.classList.add('show');
+                if (button) {
+                    button.classList.add('active');
+                    button.style.backgroundColor = '#ffc107';
+                    button.style.color = 'black';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

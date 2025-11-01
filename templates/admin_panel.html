@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Panel - Stock Dashboard</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-purple {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+        }
+        .btn-purple:hover {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            color: white;
+        }
+        .btn-teal {
+            background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
+            color: white;
+            border: none;
+        }
+        .btn-teal:hover {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+        }
+        .text-purple {
+            color: #9b59b6;
+        }
+        .text-teal {
+            color: #16a085;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-user-shield me-2"></i>Admin Panel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="btn btn-light btn-sm me-3" href="{{ url_for('dashboard') }}">
+                    <i class="fas fa-chart-line me-1"></i>Go to Dashboard
+                </a>
+                <span class="navbar-text me-3">
+                    Welcome, {{ current_user.username }}
+                </span>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Admin Navigation Tabs -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Admin Control Panel</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Stock Dashboard -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                                        <h6>Stock Dashboard</h6>
+                                        <p class="text-muted small">Live market data & analytics</p>
+                                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>Open
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Database Management -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_database') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-database fa-2x text-info mb-3"></i>
+                                        <h6>Database</h6>
+                                        <p class="text-muted small">View daily OHLC data table</p>
+                                        <a href="{{ url_for('admin_database') }}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-table me-1"></i>View Data
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Management -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_users') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x text-success mb-3"></i>
+                                        <h6>User Management</h6>
+                                        <p class="text-muted small">Manage users & permissions</p>
+                                        <a href="{{ url_for('admin_users') }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-users-cog me-1"></i>Manage
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subscription Plans -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_plans') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-tags fa-2x text-warning mb-3"></i>
+                                        <h6>Subscription Plans</h6>
+                                        <p class="text-muted small">Manage pricing & plans</p>
+                                        <a href="{{ url_for('admin_plans') }}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit me-1"></i>Manage
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Coupon Codes -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_coupons') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-ticket-alt fa-2x text-danger mb-3"></i>
+                                        <h6>Coupon Codes</h6>
+                                        <p class="text-muted small">Manage discount coupons</p>
+                                        <a href="{{ url_for('admin_coupons') }}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-percent me-1"></i>Manage
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!-- 365-Day Historical Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_hist_data_365') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt fa-2x text-purple mb-3"></i>
+                                        <h6>365-Day Historical Data</h6>
+                                        <p class="text-muted small">View & manage daily data</p>
+                                        <a href="{{ url_for('admin_hist_data_365') }}" class="btn btn-purple btn-sm">
+                                            <i class="fas fa-history me-1"></i>View Data
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Minute Resolution Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100" onclick="window.location.href='{{ url_for('admin_minute_data') }}'">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clock fa-2x text-teal mb-3"></i>
+                                        <h6>Minute Resolution Data</h6>
+                                        <p class="text-muted small">1-240 min historical data</p>
+                                        <a href="{{ url_for('admin_minute_data') }}" class="btn btn-teal btn-sm">
+                                            <i class="fas fa-chart-bar me-1"></i>View Data
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System Settings -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card feature-card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cog fa-2x text-secondary mb-3"></i>
+                                        <h6>System Settings</h6>
+                                        <p class="text-muted small">Configuration & preferences</p>
+                                        <button class="btn btn-secondary btn-sm" disabled>
+                                            <i class="fas fa-tools me-1"></i>Coming Soon
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fyers Authentication Section -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Authentication</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Fyers Authentication -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card feature-card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-key fa-3x text-success mb-3"></i>
+                                        <h5>Fyers Authentication</h5>
+                                        <p class="text-muted">Manage Fyers API authentication tokens for market data access</p>
+                                        <a href="{{ url_for('auth_page') }}" class="btn btn-success">
+                                            <i class="fas fa-link me-2"></i>Authenticate Fyers
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fyers Authentication for Historical Data -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card feature-card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-history fa-3x text-warning mb-3"></i>
+                                        <h5>Fyers Auth for HistData</h5>
+                                        <p class="text-muted">Authenticate with Fyers API for 365-day historical data access</p>
+                                        <a href="{{ url_for('hist_auth_page') }}" class="btn btn-warning">
+                                            <i class="fas fa-database me-2"></i>Auth for HistData
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EOD Data Management -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-save me-2"></i>End of Day (EOD) Data Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Manual EOD Save -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-download fa-3x text-primary mb-3"></i>
+                                        <h6>Manual EOD Save</h6>
+                                        <p class="text-muted small">Save current live WebSocket data as OHLC records</p>
+                                        <button id="saveEodBtn" class="btn btn-primary" onclick="saveEodData()">
+                                            <i class="fas fa-save me-2"></i>Save EOD Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Scheduler Status -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clock fa-3x text-info mb-3"></i>
+                                        <h6>Scheduler Status</h6>
+                                        <p class="text-muted small">Next auto-save: <span id="nextRunTime">Loading...</span></p>
+                                        <button class="btn btn-info" onclick="checkSchedulerStatus()">
+                                            <i class="fas fa-sync me-2"></i>Refresh Status
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- OHLC Storage Stats -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-database fa-3x text-success mb-3"></i>
+                                        <h6>OHLC Storage</h6>
+                                        <p class="text-muted small">Today: <span id="todayCount">--</span> | Total: <span id="totalCount">--</span></p>
+                                        <button class="btn btn-success" onclick="checkOhlcStatus()">
+                                            <i class="fas fa-chart-bar me-2"></i>Check Storage
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Technical Analysis from Stored Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calculator fa-3x text-warning mb-3"></i>
+                                        <h6>Technical Analysis</h6>
+                                        <p class="text-muted small">Calculate from stored OHLC when API limits reached</p>
+                                        <button id="techAnalysisBtn" class="btn btn-warning" onclick="calculateTechnicalAnalysisFromStoredData()">
+                                            <i class="fas fa-chart-line me-2"></i>Calculate Tech Analysis
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Second row for Transfer Data -->
+                        <div class="row mt-3">
+                            <!-- Transfer Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-danger">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-exchange-alt fa-3x text-danger mb-3"></i>
+                                        <h6>Transfer Data</h6>
+                                        <p class="text-muted small">Move current day OHLC data to historical backup for rate limit scenarios</p>
+                                        <button id="transferDataBtn" class="btn btn-danger" onclick="transferCurrentDayData()">
+                                            <i class="fas fa-arrow-right me-2"></i>Transfer Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Download 365 Day Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-download fa-3x text-info mb-3"></i>
+                                        <h6>Download 365 Day Data</h6>
+                                        <p class="text-muted small">365-day historical data access</p>
+                                        <a href="{{ url_for('hist_data_365_download') }}" class="btn btn-info">
+                                            <i class="fas fa-history me-2"></i>Download Historical Data
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Download Minute Resolution Data -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clock fa-3x text-success mb-3"></i>
+                                        <h6>Minute Resolution Data</h6>
+                                        <p class="text-muted small">Download 1-240 min historical data</p>
+                                        <a href="{{ url_for('minute_hist_data_download') }}" class="btn btn-success">
+                                            <i class="fas fa-download me-2"></i>Minute Data Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Initialize Stock Symbols -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-plus-circle fa-3x text-warning mb-3"></i>
+                                        <h6>Initialize Stock Symbols</h6>
+                                        <p class="text-muted small">Populate stock_data table with all NIFTY50 symbols</p>
+                                        <button id="initStockSymbolsBtn" class="btn btn-warning" onclick="initializeStockSymbols()">
+                                            <i class="fas fa-plus me-2"></i>Initialize Symbols
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly OHLC Data Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header" style="background-color: #000; color: white;">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-chart-bar me-2"></i>Weekly OHLC Data
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="fw-bold mb-1">Aggregate Daily Data</h6>
+                                                        <p class="text-muted mb-0 small">Aggregate daily OHLC data into weekly periods for technical analysis</p>
+                                                    </div>
+                                                    <button type="button" 
+                                                            class="btn btn-success ms-3" 
+                                                            onclick="transferWeeklyData()"
+                                                            id="weeklyTransferBtn">
+                                                        <i class="fas fa-sync-alt me-2"></i>Transfer Data
+                                                    </button>
+                                                </div>
+                                                <div id="weeklyDataStatus" class="alert alert-info" style="display: none;">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <span id="weeklyDataMessage">Ready to transfer...</span>
+                                                </div>
+                                                <div id="weeklyDataProgress" class="progress mt-2" style="display: none; height: 20px;">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                         role="progressbar" 
+                                                         style="width: 0%">
+                                                         <span id="progressText">0%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card border-light bg-light">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="card-title mb-2">Data Summary</h6>
+                                                        <div class="row text-center">
+                                                            <div class="col-6">
+                                                                <div class="border-end">
+                                                                    <div class="h5 mb-0" id="totalDailyRecords">Loading...</div>
+                                                                    <small class="text-muted">Daily Records</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <div class="h5 mb-0" id="totalWeeklyRecords">Loading...</div>
+                                                                <small class="text-muted">Weekly Records</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Display -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div id="eodStatusAlert" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentEditingUserId = null;
+
+        function toggleUserStatus(userId) {
+            if (confirm('Are you sure you want to change this user\'s status?')) {
+                fetch(`/admin/toggle-user/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+
+        function editUser(userId) {
+            currentEditingUserId = userId;
+            // Fetch user data
+            fetch(`/admin/get-user/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const user = data.user;
+                        document.getElementById('editUsername').value = user.username;
+                        document.getElementById('editRole').value = user.role;
+                        document.getElementById('editEmail').value = user.email || '';
+                        document.getElementById('editMobile').value = user.mobile || '';
+                        document.getElementById('editSubscriptionPeriod').value = user.subscription_period || 'monthly';
+                        document.getElementById('editSubscriptionStart').value = user.subscription_start || '';
+                        document.getElementById('editSubscriptionEnd').value = user.subscription_end || '';
+                    } else {
+                        alert('Error loading user data: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function saveUserChanges() {
+            if (!currentEditingUserId) return;
+            
+            const formData = new FormData(document.getElementById('editUserForm'));
+            
+            fetch(`/admin/edit-user/${currentEditingUserId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('User updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        function createNewUser() {
+            const formData = new FormData(document.getElementById('createUserForm'));
+            
+            fetch('/admin/create-user', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('User created successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        // Reset create form when modal is closed
+        document.addEventListener('DOMContentLoaded', function() {
+            const createUserModal = document.getElementById('createUserModal');
+            const createUserForm = document.getElementById('createUserForm');
+            
+            if (createUserModal && createUserForm) {
+                createUserModal.addEventListener('hidden.bs.modal', function () {
+                    createUserForm.reset();
+                });
+            }
+        });
+
+        // EOD Data Management Functions
+        function saveEodData() {
+            const btn = document.getElementById('saveEodBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            fetch('/save_eod_ohlc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showEodAlert('success', `✅ ${data.message} at ${data.timestamp || 'now'}`);
+                    // Refresh OHLC status after successful save
+                    checkOhlcStatus();
+                } else {
+                    showEodAlert('danger', `❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                showEodAlert('danger', `❌ Network error: ${error.message}`);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        function checkSchedulerStatus() {
+            fetch('/scheduler_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const nextRun = data.next_run ? data.next_run.ist : 'Not scheduled';
+                        const nextRunTimeEl = document.getElementById('nextRunTime');
+                        if (nextRunTimeEl) nextRunTimeEl.textContent = nextRun;
+                        
+                        const status = data.scheduler_running ? '🟢 Running' : '🔴 Stopped';
+                        showEodAlert('info', `📊 Scheduler Status: ${status} | Next run: ${nextRun} | Last save: ${data.last_eod_save.count || 0} symbols`);
+                    } else {
+                        showEodAlert('warning', `⚠️ Could not get scheduler status: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    showEodAlert('danger', `❌ Error checking scheduler: ${error.message}`);
+                });
+        }
+
+        function checkOhlcStatus() {
+            fetch('/ohlc_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const todayCountEl = document.getElementById('todayCount');
+                        const totalCountEl = document.getElementById('totalCount');
+                        if (todayCountEl) todayCountEl.textContent = data.today_count || 0;
+                        if (totalCountEl) totalCountEl.textContent = data.total_count || 0;
+                        
+                        const eodStatus = data.is_eod_time ? '⏰ EOD Time' : '🕐 Market Hours';
+                        showEodAlert('success', `📈 OHLC Status: ${eodStatus} | Today: ${data.today_count} records | Total: ${data.total_count} records`);
+                    } else {
+                        showEodAlert('warning', `⚠️ Could not get OHLC status: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    showEodAlert('danger', `❌ Error checking OHLC status: ${error.message}`);
+                });
+        }
+
+        function calculateTechnicalAnalysisFromStoredData() {
+            const btn = document.getElementById('techAnalysisBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculating...';
+            
+            fetch('/technical_analysis/from_stored_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showEodAlert('success', `✅ ${data.message} | Processed: ${data.records_processed}/${data.total_available} symbols from ${data.source_date}`);
+                } else {
+                    showEodAlert('danger', `❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                showEodAlert('danger', `❌ Network error: ${error.message}`);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        function transferCurrentDayData() {
+            const btn = document.getElementById('transferDataBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Transferring...';
+            
+            fetch('/admin/transfer-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showEodAlert('success', `✅ ${data.message} | Transferred: ${data.records_transferred} symbols from ${data.transfer_date}`);
+                } else {
+                    showEodAlert('danger', `❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                showEodAlert('danger', `❌ Network error: ${error.message}`);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        function initializeStockSymbols() {
+            const btn = document.getElementById('initStockSymbolsBtn');
+            const originalText = btn.innerHTML;
+            
+            if (!confirm('This will initialize the stock_data table with all NIFTY50 symbols. Continue?')) {
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Initializing...';
+            
+            fetch('/admin/initialize-stock-symbols', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showEodAlert('success', `✅ ${data.message} | Created: ${data.symbols_created}, Updated: ${data.symbols_updated}, Total: ${data.total_symbols}`);
+                } else {
+                    showEodAlert('danger', `❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                showEodAlert('danger', `❌ Network error: ${error.message}`);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        // Weekly Data Transfer Functions
+        function transferWeeklyData() {
+            if (!confirm('Are you sure you want to transfer daily OHLC data to weekly data? This will aggregate all daily data into weekly periods.')) {
+                return;
+            }
+
+            const btn = document.getElementById('weeklyTransferBtn');
+            const statusDiv = document.getElementById('weeklyDataStatus');
+            const messageSpan = document.getElementById('weeklyDataMessage');
+            const progressDiv = document.getElementById('weeklyDataProgress');
+            const progressBar = progressDiv.querySelector('.progress-bar');
+            const progressText = document.getElementById('progressText');
+
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'alert alert-info';
+            messageSpan.textContent = 'Starting weekly data transfer...';
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '10%';
+            progressText.textContent = '10%';
+
+            fetch('/admin/transfer-weekly-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+                    statusDiv.className = 'alert alert-success';
+                    messageSpan.textContent = `✅ Successfully created ${data.records_created} weekly records from daily data!`;
+                    
+                    // Update data summary
+                    updateDataSummary();
+                    
+                    // Hide progress after 3 seconds
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                    }, 3000);
+                } else {
+                    statusDiv.className = 'alert alert-danger';
+                    messageSpan.textContent = `❌ Error: ${data.message}`;
+                    progressDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                statusDiv.className = 'alert alert-danger';
+                messageSpan.textContent = `❌ Error: ${error.message}`;
+                progressDiv.style.display = 'none';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Transfer Data';
+            });
+        }
+
+        function updateDataSummary() {
+            // Fetch current data summary
+            fetch('/admin/data-summary')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('totalDailyRecords').textContent = data.daily_records.toLocaleString();
+                    document.getElementById('totalWeeklyRecords').textContent = data.weekly_records.toLocaleString();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data summary:', error);
+            });
+        }
+
+        // Load data summary on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDataSummary();
+        });
+
+        function showEodAlert(type, message) {
+            const alertDiv = document.getElementById('eodStatusAlert');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertDiv.style.display = 'block';
+            
+            // Auto-hide success and info alerts after 5 seconds
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Auto-load status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSchedulerStatus();
+            checkOhlcStatus();
+            
+            // Auto-refresh scheduler status every 30 seconds
+            setInterval(checkSchedulerStatus, 30000);
+        });
+    </script>
+</body>
+</html>

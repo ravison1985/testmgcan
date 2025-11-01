@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .breadcrumb {
+            background-color: transparent;
+            font-size: 0.9rem;
+        }
+        .price-positive {
+            color: #28a745;
+            font-weight: 500;
+        }
+        .price-negative {
+            color: #dc3545;
+            font-weight: 500;
+        }
+        .table thead th {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        .table tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_panel') }}">
+                <i class="fas fa-database me-2"></i>Database Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    Welcome, {{ current_user.username }}
+                </span>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_panel') }}"><i class="fas fa-home"></i> Admin Panel</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-database"></i> Database</li>
+            </ol>
+        </nav>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Database Tables Navigation -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><i class="fas fa-table me-2"></i>Technical Analysis Database Tables</h4>
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-layer-group fa-2x text-primary"></i>
+                                </div>
+                                <h6 class="card-title">Camarilla Levels</h6>
+                                <p class="card-text text-muted small">View Camarilla pivot points and support/resistance levels</p>
+                                <a href="{{ url_for('admin_camarilla_levels') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-chart-line fa-2x text-success"></i>
+                                </div>
+                                <h6 class="card-title">CPR Levels</h6>
+                                <p class="card-text text-muted small">Central Pivot Range (TC, PP, BC) calculations</p>
+                                <a href="{{ url_for('admin_cpr_levels') }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-chart-area fa-2x text-warning"></i>
+                                </div>
+                                <h6 class="card-title">Fibonacci Levels</h6>
+                                <p class="card-text text-muted small">Fibonacci retracement levels and calculations</p>
+                                <a href="{{ url_for('admin_fibonacci_levels') }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-info">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-history fa-2x text-info"></i>
+                                </div>
+                                <h6 class="card-title">Historical Data</h6>
+                                <p class="card-text text-muted small">Historical OHLC data from Fyers API</p>
+                                <a href="{{ url_for('admin_historical_data') }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-dark">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-key fa-2x text-dark"></i>
+                                </div>
+                                <h6 class="card-title">Access Tokens</h6>
+                                <p class="card-text text-muted small">API authentication tokens and expiry status</p>
+                                <a href="{{ url_for('admin_access_tokens') }}" class="btn btn-dark btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-danger">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-database fa-2x text-danger"></i>
+                                </div>
+                                <h6 class="card-title">365-Day Historical Data</h6>
+                                <p class="card-text text-muted small">365-day historical OHLC data from Fyers Historical Auth</p>
+                                <a href="{{ url_for('admin_hist_data_365') }}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Table
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-users fa-2x text-secondary"></i>
+                                </div>
+                                <h6 class="card-title">Users Database</h6>
+                                <p class="card-text text-muted small">Download or upload users database (CSV format)</p>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{{ url_for('download_users_csv') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadUsersCSVModal">
+                                        <i class="fas fa-upload me-1"></i>Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Daily OHLC Data View -->
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>Daily OHLC Data (Current View)</h4>
+            </div>
+        </div>
+
+        <!-- Database Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Daily OHLC Data Table
+                        <span class="badge bg-primary ms-2">{{ total_records }} total records</span>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Download CSV Button -->
+                        <a href="{{ url_for('download_daily_ohlc_csv') }}" class="btn btn-success btn-sm me-2">
+                            <i class="fas fa-download me-1"></i>Download CSV
+                        </a>
+                        
+                        <!-- Upload CSV Button -->
+                        <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#uploadCSVModal">
+                            <i class="fas fa-upload me-1"></i>Upload CSV
+                        </button>
+                        
+                        <!-- Search Form -->
+                        <form method="GET" class="d-flex align-items-center">
+                            <input type="search" name="search" class="form-control form-control-sm me-2" 
+                                   placeholder="Search symbols..." value="{{ search }}" style="min-width: 200px;">
+                            <input type="hidden" name="page" value="1">
+                            <input type="hidden" name="per_page" value="{{ per_page }}">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            {% if search %}
+                            <a href="{{ url_for('admin_database') }}" class="btn btn-outline-secondary btn-sm ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Full Symbol</th>
+                                <th>Date</th>
+                                <th>Open</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Close</th>
+                                <th>Volume</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td>
+                                    <strong>{{ record.symbol }}</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ record.full_symbol or 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ record.trading_date.strftime('%Y-%m-%d') if record.trading_date else 'N/A' }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold">₹{{ "%.2f"|format(record.open_price) if record.open_price else 'N/A' }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="price-positive">₹{{ "%.2f"|format(record.high_price) if record.high_price else 'N/A' }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="price-negative">₹{{ "%.2f"|format(record.low_price) if record.low_price else 'N/A' }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold">₹{{ "%.2f"|format(record.close_price) if record.close_price else 'N/A' }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <small class="text-muted">{{ "{:,}".format(record.volume) if record.volume else 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ record.created_at.strftime('%m-%d %H:%M') if record.created_at else 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ record.updated_at.strftime('%m-%d %H:%M') if record.updated_at else 'N/A' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted">
+                            Showing {{ ((page-1) * per_page + 1) }} to {{ (page * per_page) if (page * per_page) < total_records else total_records }} 
+                            of {{ total_records }} records
+                        </small>
+                        <form method="GET" class="ms-3 d-flex align-items-center">
+                            <label class="form-label mb-0 me-2 small">Per page:</label>
+                            <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                                <option value="25" {{ 'selected' if per_page == 25 else '' }}>25</option>
+                                <option value="50" {{ 'selected' if per_page == 50 else '' }}>50</option>
+                                <option value="100" {{ 'selected' if per_page == 100 else '' }}>100</option>
+                                <option value="200" {{ 'selected' if per_page == 200 else '' }}>200</option>
+                            </select>
+                            <input type="hidden" name="page" value="{{ page }}">
+                            <input type="hidden" name="search" value="{{ search }}">
+                        </form>
+                    </div>
+                    
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_database', page=1, per_page=per_page, search=search) }}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_database', page=page-1, per_page=per_page, search=search) }}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for p in range([1, page-2]|max, [total_pages+1, page+3]|min) %}
+                                <li class="page-item {{ 'active' if p == page else '' }}">
+                                    <a class="page-link" href="{{ url_for('admin_database', page=p, per_page=per_page, search=search) }}">
+                                        {{ p }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                            
+                            {% if has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_database', page=page+1, per_page=per_page, search=search) }}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_database', page=total_pages, per_page=per_page, search=search) }}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ total_records }}</h5>
+                        <p class="card-text">Total OHLC Records</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ total_pages }}</h5>
+                        <p class="card-text">Total Pages</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">{{ per_page }}</h5>
+                        <p class="card-text">Records per Page</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ page }}</h5>
+                        <p class="card-text">Current Page</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload CSV Modal -->
+    <div class="modal fade" id="uploadCSVModal" tabindex="-1" aria-labelledby="uploadCSVModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadCSVModalLabel">
+                        <i class="fas fa-upload me-2"></i>Upload Daily OHLC CSV Data
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('upload_daily_ohlc_csv') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <strong>CSV Format:</strong> Symbol, Full Symbol, Trading Date, Open, High, Low, Close, Volume
+                        </div>
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">Select CSV File</label>
+                            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Users CSV Modal -->
+    <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" aria-labelledby="uploadUsersCSVModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadUsersCSVModalLabel">
+                        <i class="fas fa-upload me-2"></i>Upload Users Database CSV
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('upload_users_csv') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Important:</strong> This will update existing users or create new ones based on Username. Passwords will NOT be changed.
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>CSV Format:</strong> ID, Username, Email, Mobile, Role, Google ID, Profile Image URL, Subscription Period, Subscription Start, Subscription End, Has Used Trial, Account Active, Created At, Last Login
+                        </div>
+                        <div class="mb-3">
+                            <label for="users_csv_file" class="form-label">Select CSV File</label>
+                            <input type="file" class="form-control" id="users_csv_file" name="csv_file" accept=".csv" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

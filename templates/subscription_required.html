@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Required - MG Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #f1f1f1;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif;
+        }
+        .subscription-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .subscription-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin: 2rem;
+        }
+        .mg-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            filter: drop-shadow(0 10px 20px rgba(0,229,255,0.3));
+        }
+        .subscription-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00e5ff;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(0,229,255,0.5);
+        }
+        .subscription-message {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        .status-inactive {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255,107,107,0.3);
+        }
+        .contact-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .contact-info {
+            font-size: 0.95rem;
+            color: #cccccc;
+            line-height: 1.8;
+        }
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102,126,234,0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .feature-list {
+            text-align: left;
+            margin: 2rem 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            color: #e0e0e0;
+        }
+        .feature-icon {
+            color: #00e5ff;
+            margin-right: 1rem;
+            width: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="subscription-container">
+        <div class="subscription-card">
+            <!-- MG Logo -->
+            <div class="mg-logo">
+                <img src="{{ url_for('static', filename='mg_logo.png') }}" alt="MG Dashboard" class="img-fluid">
+            </div>
+            
+            <!-- Subscription Title -->
+            <h1 class="subscription-title">Subscription Required</h1>
+            
+            <!-- Main Message -->
+            <p class="subscription-message">
+                <strong>Kindly Subscribe plan to Start MG Dashboard</strong>
+            </p>
+            
+            <!-- Current Status -->
+            <div class="status-badge status-inactive">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ subscription_status.message }}
+            </div>
+            
+            <!-- Feature Highlights -->
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <span>Real-Time RVOL Analysis</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bullseye feature-icon"></i>
+                    <span>Camarilla Levels (R1-R5, S1-S5)</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-compass feature-icon"></i>
+                    <span>CPR (Central Pivot Range)</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-area feature-icon"></i>
+                    <span>Fibonacci Retracements</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-broadcast-tower feature-icon"></i>
+                    <span>Live Market Streaming (200+ F&O Stocks)</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-analytics feature-icon"></i>
+                    <span>Market Overview Dashboard</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-external-link-alt feature-icon"></i>
+                    <span>One Click TradingView Chart</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt feature-icon"></i>
+                    <span>Responsive Design</span>
+                </div>
+            </div>
+            
+            <!-- Buy Subscription Button -->
+            <a href="https://www.marketguldasta.com/pricing-plans/list" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: linear-gradient(135deg, #00e5ff, #0091ea); border: none; padding: 1rem 2.5rem; border-radius: 25px; color: white; font-weight: 600; text-decoration: none; display: inline-block; margin: 1.5rem 0; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(0,229,255,0.3); font-size: 1.1rem;">
+                <i class="fas fa-shopping-cart me-2"></i>
+                Buy Subscription Plan
+            </a>
+            
+            <!-- Contact Section -->
+            <div class="contact-section">
+                <div class="contact-info">
+                    <p><strong>To activate your subscription, please contact:</strong></p>
+                    <p>
+                        <i class="fas fa-envelope me-2 text-info"></i>
+                        Email: marketguldasta@gmail.com
+                    </p>
+                    <p>
+                        <i class="fas fa-phone me-2 text-info"></i>
+                        Phone: +91-9049536966
+                    </p>
+                    <p>
+                        <i class="fas fa-whatsapp me-2 text-success"></i>
+                        WhatsApp: +91-9049536966
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Logout Button -->
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt me-2"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

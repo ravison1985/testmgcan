@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .breadcrumb {
+            background-color: transparent;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_panel') }}">
+                <i class="fas fa-users me-2"></i>User Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    Welcome, {{ current_user.username }}
+                </span>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_panel') }}"><i class="fas fa-home"></i> Admin Panel</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-users"></i> User Management</li>
+            </ol>
+        </nav>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Today's Activations Panel -->
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info bg-opacity-10 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-info">
+                    <i class="fas fa-calendar-day me-2"></i>Today's Activations
+                    <span class="badge bg-info ms-2">{{ todays_activation_count }}</span>
+                </h5>
+                <small class="text-muted">Subscriptions activated today</small>
+            </div>
+            <div class="card-body">
+                {% if todays_activations %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Plan</th>
+                                <th>Activation Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in todays_activations %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-user me-2 text-info"></i>
+                                    <strong>{{ user.username }}</strong>
+                                </td>
+                                <td>{{ user.email or 'Not provided' }}</td>
+                                <td>
+                                    {% if user.subscription_plan %}
+                                        <span class="badge bg-{{ 'warning' if user.subscription_plan == 'Trial' else 'success' }}">
+                                            {{ user.subscription_plan }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No Plan</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.subscription_start.strftime('%H:%M:%S') if user.subscription_start else 'N/A' }}</td>
+                                <td>
+                                    {% if user.is_subscription_active() %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                    <p>No subscription activations today</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pending Activation Section -->
+        {% if pending_users %}
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-warning">
+                    <i class="fas fa-clock me-2"></i>Pending Activation
+                    <span class="badge bg-warning text-dark ms-2">{{ pending_count }} awaiting activation</span>
+                </h5>
+                <small class="text-muted">Users waiting for admin approval</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="pendingTable" class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in pending_users %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-user me-2 text-warning"></i>
+                                    <strong>{{ user.username }}</strong>
+                                </td>
+                                <td>{{ user.email or 'Not provided' }}</td>
+                                <td>{{ user.mobile or 'Not provided' }}</td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" 
+                                            onclick="activateUser({{ user.id }})"
+                                            title="Activate this user">
+                                        <i class="fas fa-check me-1"></i>Activate
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="editUser({{ user.id }})" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal"
+                                            title="Edit user details">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if pending_count > 0 %}
+                <div class="mt-3">
+                    <button class="btn btn-success" onclick="activateAllPending()" title="Activate all pending users">
+                        <i class="fas fa-check-double me-2"></i>Activate All Pending ({{ pending_count }})
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- User Management -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>User Management
+                    <span class="badge bg-primary ms-2">{{ users|length }} total</span>
+                    {% if pending_count > 0 %}
+                    <span class="badge bg-warning ms-1">{{ pending_count }} pending</span>
+                    {% endif %}
+                    <span class="badge bg-success ms-1">{{ active_users_count }} active</span>
+                    <span class="badge bg-secondary ms-1">{{ inactive_users_count }} inactive</span>
+                </h5>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('download_users_csv') }}" class="btn btn-info" title="Download all users as CSV">
+                        <i class="fas fa-download me-2"></i>Download CSV
+                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadUsersCSVModal" title="Upload users from CSV">
+                        <i class="fas fa-upload me-2"></i>Upload CSV
+                    </button>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                        <i class="fas fa-plus me-2"></i>Create User
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Subscription Period</th>
+                                <th>Subscription Status</th>
+                                <th>Role</th>
+                                <th>Account Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>
+                                    <i class="fas fa-{{ 'user-shield' if user.is_admin() else 'user' }} me-2"></i>
+                                    {{ user.username }}
+                                </td>
+                                <td>{{ user.email or 'Not provided' }}</td>
+                                <td>{{ user.mobile or 'Not provided' }}</td>
+                                <td>
+                                    {% if user.subscription_start and user.subscription_end %}
+                                        <small class="text-muted d-block">{{ user.subscription_start.strftime('%d-%m-%Y') }} to</small>
+                                        <small class="text-muted">{{ user.subscription_end.strftime('%d-%m-%Y') }}</small>
+                                        <div class="mt-1">
+                                            <span class="badge bg-{{ 'success' if user.subscription_period == 'lifetime' else 'info' if user.subscription_period == 'yearly' else 'warning' }}">
+                                                {{ user.subscription_period.title() if user.subscription_period else 'None' }}
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No subscription dates</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status = user.get_subscription_status() %}
+                                    <span class="badge bg-{{ 'success' if status.status == 'active' else 'danger' }}">
+                                        {{ status.message }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if user.is_admin() else 'secondary' }}">
+                                        {{ user.role.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if user.account_active else 'danger' }}">
+                                        {{ 'Active' if user.account_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary me-1" 
+                                            onclick="editUser({{ user.id }})" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal"
+                                            title="Edit user details">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    {% if user.id != current_user.id %}
+                                    <button class="btn btn-sm btn-{{ 'warning' if user.account_active else 'success' }} me-1" 
+                                            onclick="toggleUserStatus({{ user.id }})"
+                                            title="{{ 'Deactivate' if user.account_active else 'Activate' }} user">
+                                        <i class="fas fa-{{ 'ban' if user.account_active else 'check' }}"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" 
+                                            onclick="deleteUser({{ user.id }}, '{{ user.username }}')"
+                                            title="Delete user permanently">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted ms-2">Current User</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="editUsername" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editRole" class="form-label">Role</label>
+                                <select class="form-select" id="editRole" name="role">
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" name="email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editMobile" class="form-label">Mobile</label>
+                                <input type="text" class="form-control" id="editMobile" name="mobile">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="editSubscriptionPeriod" class="form-label">Subscription Period</label>
+                                <select class="form-select" id="editSubscriptionPeriod" name="subscription_period">
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                    <option value="lifetime">Lifetime</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editSubscriptionStart" class="form-label">Subscription Start</label>
+                                <input type="date" class="form-control" id="editSubscriptionStart" name="subscription_start">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editSubscriptionEnd" class="form-label">Subscription End</label>
+                                <input type="date" class="form-control" id="editSubscriptionEnd" name="subscription_end">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUserChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="createUsername" class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="createUsername" name="username" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="createPassword" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="createPassword" name="password" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="createEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="createEmail" name="email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="createMobile" class="form-label">Mobile</label>
+                                <input type="text" class="form-control" id="createMobile" name="mobile">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="createRole" class="form-label">Role</label>
+                                <select class="form-select" id="createRole" name="role">
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="createSubscriptionPeriod" class="form-label">Subscription Period</label>
+                                <select class="form-select" id="createSubscriptionPeriod" name="subscription_period">
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                    <option value="lifetime">Lifetime</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="createSubscriptionStart" class="form-label">Subscription Start</label>
+                                <input type="date" class="form-control" id="createSubscriptionStart" name="subscription_start">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="createSubscriptionEnd" class="form-label">Subscription End</label>
+                                <input type="date" class="form-control" id="createSubscriptionEnd" name="subscription_end">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="createNewUser()">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Users CSV Modal -->
+    <div class="modal fade" id="uploadUsersCSVModal" tabindex="-1" aria-labelledby="uploadUsersCSVModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadUsersCSVModalLabel">
+                        <i class="fas fa-upload me-2"></i>Upload Users Database CSV
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('upload_users_csv') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Important:</strong> This will update existing users or create new ones based on Username. Passwords will NOT be changed for security.
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>CSV Format:</strong> ID, Username, Email, Mobile, Role, Google ID, Profile Image URL, Subscription Period, Subscription Start, Subscription End, Has Used Trial, Account Active, Created At, Last Login
+                        </div>
+                        <div class="mb-3">
+                            <label for="users_csv_file" class="form-label">Select CSV File</label>
+                            <input type="file" class="form-control" id="users_csv_file" name="csv_file" accept=".csv" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentEditingUserId = null;
+
+        function toggleUserStatus(userId) {
+            if (confirm('Are you sure you want to change this user\'s status?')) {
+                fetch(`/admin/toggle-user/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+
+        function editUser(userId) {
+            currentEditingUserId = userId;
+            // Fetch user data
+            fetch(`/admin/get-user/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const user = data.user;
+                        document.getElementById('editUsername').value = user.username;
+                        document.getElementById('editEmail').value = user.email || '';
+                        document.getElementById('editMobile').value = user.mobile || '';
+                        document.getElementById('editRole').value = user.role;
+                        document.getElementById('editSubscriptionPeriod').value = user.subscription_period || 'monthly';
+                        document.getElementById('editSubscriptionStart').value = user.subscription_start || '';
+                        document.getElementById('editSubscriptionEnd').value = user.subscription_end || '';
+                    } else {
+                        alert('Error loading user data: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function saveUserChanges() {
+            if (!currentEditingUserId) return;
+
+            const formData = new FormData(document.getElementById('editUserForm'));
+            
+            fetch(`/admin/edit-user/${currentEditingUserId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('User updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        function createNewUser() {
+            const formData = new FormData(document.getElementById('createUserForm'));
+            
+            fetch('/admin/create-user', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        function activateUser(userId) {
+            if (confirm('Are you sure you want to activate this user?')) {
+                fetch(`/admin/toggle-user/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+
+        function deleteUser(userId, username) {
+            if (confirm(`⚠️ WARNING: Are you sure you want to PERMANENTLY DELETE user "${username}"?\n\nThis action CANNOT be undone and will remove:\n- User account\n- All user data\n- Subscription information\n\nType the username to confirm deletion.`)) {
+                const confirmedUsername = prompt(`Please type "${username}" to confirm deletion:`);
+                
+                if (confirmedUsername === username) {
+                    fetch(`/admin/delete-user/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('User deleted successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error.message);
+                    });
+                } else if (confirmedUsername !== null) {
+                    alert('Username did not match. Deletion cancelled.');
+                }
+            }
+        }
+
+        function activateAllPending() {
+            if (confirm('Are you sure you want to activate ALL pending users? This action cannot be undone.')) {
+                // Get all pending user IDs from the table
+                const pendingRows = document.querySelectorAll('#pendingTable tbody tr');
+                const userIds = [];
+                
+                pendingRows.forEach(row => {
+                    const activateBtn = row.querySelector('button[onclick*="activateUser"]');
+                    if (activateBtn) {
+                        const userId = activateBtn.getAttribute('onclick').match(/activateUser\((\d+)\)/)[1];
+                        userIds.push(userId);
+                    }
+                });
+
+                if (userIds.length === 0) {
+                    alert('No pending users found to activate.');
+                    return;
+                }
+
+                // Activate users one by one
+                let activatedCount = 0;
+                let totalCount = userIds.length;
+                
+                function activateNext(index) {
+                    if (index >= userIds.length) {
+                        alert(`Successfully activated ${activatedCount} out of ${totalCount} users.`);
+                        location.reload();
+                        return;
+                    }
+
+                    fetch(`/admin/toggle-user/${userIds[index]}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            activatedCount++;
+                        }
+                        // Continue with next user regardless of success/failure
+                        activateNext(index + 1);
+                    })
+                    .catch(error => {
+                        console.error('Error activating user ' + userIds[index] + ':', error);
+                        // Continue with next user even on error
+                        activateNext(index + 1);
+                    });
+                }
+
+                activateNext(0);
+            }
+        }
+
+    </script>
+</body>
+</html>
