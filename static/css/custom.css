@@ -1,0 +1,961 @@
+/* Import HoloLens MDL2 Assets Font */
+@import url(https://db.onlinewebfonts.com/c/ad27928aea2fb97ec9925cad3e896fea?family=HoloLens+MDL2+Assets);
+
+/* Ultra-Modern Financial Dashboard Styles - Matching Premium Dark Theme */
+body {
+    font-family: "HoloLens MDL2 Assets", "Segoe MDL2 Assets", sans-serif;
+    background: #000000;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+/* Simple Loading Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.fa-sync.spinning {
+    animation: spin 1s linear infinite;
+    color: #007acc;
+}
+
+/* 📊 Premium Table Enhancements */
+.table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+    background: #0a0a0a;
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    scroll-behavior: smooth;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background: #0a0a0a;
+    color: #cccccc;
+    font-weight: 600;
+    text-transform: uppercase;
+    z-index: 10;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #1a1a1a;
+}
+.table tbody tr:hover {
+    background: #111111;
+}
+
+/* Simple Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.status-live { background-color: #00ff88; }
+.status-stale { background-color: #ffaa00; }
+.status-error { background-color: #ff4444; }
+
+/* Premium Dark Cards */
+.card {
+    background: #0a0a0a;
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.card:hover {
+    border-color: #333333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* Premium Dark Buttons */
+.btn {
+    background: #111111;
+    border: 1px solid #000000;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn:hover {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #007acc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background: #1a1a1a;
+    border: 1px solid #333333;
+    color: #ffffff;
+}
+.btn-secondary:hover {
+    background: #222222;
+    color: #ffffff;
+    border-color: #007acc;
+}
+
+/* Premium Alert Styles */
+.alert {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: #0a0a0a;
+    font-weight: 500;
+    border: 1px solid #1a1a1a;
+}
+.alert-success { border-left-color: #00ff88; color: #00ff88; }
+.alert-danger { border-left-color: #a90a0a; color: #c40e0e; }
+.alert-warning { border-left-color: #ffaa00; color: #ffaa00; }
+.alert-info { border-left-color: #007acc; color: #007acc; }
+
+/* Financial Data Status Colors */
+.data-fresh { color: #00ff88; }
+.data-stale { color: #ffaa00; }
+.data-error { color: #ff4444; }
+
+/* Typography Enhancement */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+h5 {
+    margin-bottom: 1.25rem !important;
+    font-size: 1.1rem;
+}
+
+/* Proper spacing between components */
+.card.mt-2 {
+    margin-top: 0.75rem !important;
+}
+
+/* 🎯 Premium Sidebar Styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: clamp(300px, 90vw, 380px);
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    background: #000000;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+    border-left: 1px solid #1a1a1a;
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+/* 📱 Mobile Optimizations */
+@media (max-width: 576px) {
+    body {
+        overflow-x: hidden !important;
+    }
+
+    .container-fluid {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    .index-card {
+        min-width: 75px !important;
+    }
+
+    .index-card .card-body {
+        padding: 0.4rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .index-card .index-name {
+        font-size: 0.6rem !important;
+        font-weight: 600;
+    }
+
+    .index-card .index-price {
+        font-size: 0.75rem !important;
+        font-weight: 600;
+    }
+
+    .index-card .index-change,
+    .index-card .index-open-percent {
+        font-size: 0.55rem !important;
+    }
+}
+
+/* 📱 Enhanced Mobile Responsive */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem !important;
+        background: #000000 !important;
+        border-bottom: 1px solid #1a1a1a;
+    }
+
+    .navbar-brand {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+        padding: 0.25rem 0 !important;
+        color: #ffffff !important;
+    }
+
+    #globalTimestamp {
+        font-size: 0.8rem !important;
+        color: #cccccc !important;
+    }
+
+    h5 {
+        font-size: 0.95rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .card.mt-2 {
+        margin-top: 0.5rem !important;
+    }
+
+    .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        overflow-x: hidden;
+    }
+
+    .main-content {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    .market-overview-scroll-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.75rem;
+        scroll-behavior: smooth;
+    }
+
+    .index-card {
+        min-width: 85px !important;
+        flex-shrink: 0;
+    }
+    
+    .table-responsive { 
+        font-size: 0.8rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* All Technical Tables Full Height on Mobile */
+    #niftyTable, #camarillaTable, #cprTable, #fibonacciTable {
+        height: calc(100vh - 120px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #niftyTable .card-header, #camarillaTable .card-header, #cprTable .card-header, #fibonacciTable .card-header {
+        flex-shrink: 0 !important;
+    }
+
+    #niftyTable .card-body, #camarillaTable .card-body, #cprTable .card-body, #fibonacciTable .card-body {
+        flex: 1 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #niftyTable .table-responsive, #camarillaTable .table-responsive, #cprTable .table-responsive, #fibonacciTable .table-responsive {
+        height: 100% !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar {
+        width: 100vw;
+        left: 0;
+        right: 0;
+    }
+
+    .table th {
+        position: sticky;
+        top: 0;
+        background: #0a0a0a !important;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        z-index: 15;
+        white-space: nowrap;
+        padding: 0.6rem 0.4rem;
+        font-size: 0.75rem;
+        border-bottom: 2px solid #1a1a1a;
+    }
+
+    .table td {
+        padding: 0.5rem 0.4rem;
+        white-space: nowrap;
+        font-size: 0.75rem;
+    }
+
+    .card-body { 
+        padding: 0.75rem; 
+    }
+
+    .navbar-brand { 
+        font-size: 1.1rem; 
+    }
+}
+
+/* 📊 Volume Profile Horizontal Scrolling */
+.volume-profile-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    /* Force containment to prevent page-wide horizontal scroll */
+    contain: layout size;
+    position: relative;
+}
+
+/* Slim Progress Bar Style Scrollbar for Volume Profile */
+.volume-profile-scroll-container::-webkit-scrollbar {
+    height: 8px !important; /* Slim height like progress bar - force override */
+}
+
+.volume-profile-scroll-container::-webkit-scrollbar-track {
+    background: rgba(40, 50, 60, 0.3);
+    border-radius: 4px;
+    margin: 0 1rem; /* Add margins on sides */
+}
+
+.volume-profile-scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #007bff 0%, #0056b3 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.volume-profile-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #004085 100%);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.4);
+}
+
+.volume-profile-scroll-container::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(90deg, #004085 0%, #002752 100%);
+}
+
+.volume-profile-charts-grid {
+    display: flex;
+    gap: 1rem;
+    width: max-content;
+}
+
+/* NEW: Paginated Layout for Volume Profile Charts */
+.volume-profile-charts-grid-paginated {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 charts per row on desktop */
+    grid-template-rows: repeat(2, 1fr); /* 2 rows */
+    gap: 15px;
+    padding: 15px;
+    min-height: 380px;
+}
+
+/* Mobile: 1 chart per page */
+@media (max-width: 768px) {
+    .volume-profile-charts-grid-paginated {
+        grid-template-columns: 1fr; /* 1 chart per row on mobile */
+        grid-template-rows: none; /* Let it flow naturally */
+        gap: 10px;
+        padding: 10px;
+    }
+}
+
+.volume-profile-chart-card {
+    width: 100%; /* Full width in grid */
+    background: rgba(20, 25, 30, 0.8) !important;
+    height: 350px; /* Adjusted height for grid layout */
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Chart levels sidebar */
+.volume-chart-levels {
+    position: absolute;
+    top: 50px;
+    right: 5px;
+    width: 60px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 6px;
+    padding: 5px;
+    border: 1px solid rgba(100, 150, 200, 0.3);
+    z-index: 10;
+}
+
+.volume-chart-levels .level-item {
+    font-size: 0.6rem;
+    margin: 2px 0;
+    padding: 1px 3px;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.volume-chart-levels .vpoc-level {
+    background: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    border: 1px solid #ffd700;
+}
+
+.volume-chart-levels .vah-level {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    border: 1px solid #00ff00;
+}
+
+.volume-chart-levels .val-level {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff0000;
+    border: 1px solid #ff0000;
+}
+
+.volume-profile-chart-card .card-header {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.75rem;
+}
+
+.volume-profile-chart-card .card-body {
+    position: relative;
+    height: 340px; /* Restored proper chart body height for full chart visibility */
+    padding: 0.5rem;
+}
+
+.volume-profile-chart-card canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Mobile Volume Profile Layout */
+@media (max-width: 768px) {
+    .volume-profile-charts-grid {
+        gap: 0.75rem;
+    }
+    
+    .volume-profile-chart-card {
+        width: 350px; /* Adjusted mobile width for better proportion */
+        min-width: 350px;
+        max-width: 350px;
+        height: 380px; /* Proper mobile height for chart visibility */
+    }
+    
+    .volume-profile-chart-card .card-body {
+        height: 300px; /* Proper mobile chart body height */
+    }
+    
+    .volume-profile-scroll-container {
+        padding: 0.75rem;
+    }
+}
+
+/* Connection Status Indicator */
+.connection-indicator {
+    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+}
+
+/* Financial Price Change Colors */
+.price-up {
+    color: #00ff88 !important;
+    transition: color 0.3s ease;
+    font-weight: 600;
+}
+.price-down {
+    color: #ff4444 !important;
+    transition: color 0.3s ease;
+    font-weight: 600;
+}
+
+/* Technical Analysis Levels - Neutral Gray */
+.level-value.text-danger,
+.level-value.text-success,
+.level-value.text-info,
+.level-value {
+    color: #888888 !important;
+    text-shadow: none !important;
+}
+
+/* Technical Tables - Consistent Gray Levels */
+#camarillaTableBody .text-danger,
+#camarillaTableBody .text-success,
+#camarillaTableBody .text-info,
+#cprTableBody .text-danger,
+#cprTableBody .text-success,
+#cprTableBody .text-info,
+#fibTableBody .text-danger,
+#fibTableBody .text-success,
+#fibTableBody .text-info {
+    color: #003033 !important;
+    text-shadow: none !important;
+}
+
+/* Premium Spinner */
+.spinner-border-lg {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top-color: #007acc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Table Number Formatting */
+.table td {
+    font-variant-numeric: tabular-nums;
+    padding: 0.75rem;
+    color: #ffffff;
+}
+
+/* Premium Metric Cards */
+.metric-card {
+    border-left: 4px solid #007acc;
+    background: #0a0a0a;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid #1a1a1a;
+}
+.metric-card:hover {
+    border-left-color: #0099ff;
+    transform: translateY(-1px);
+}
+
+/* Premium Alert Container */
+.alert-container {
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    width: 350px;
+    z-index: 999;
+    transform: translateX(-110%);
+    transition: transform 0.3s ease-in-out;
+    background: #0a0a0a;
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+.alert-container.show {
+    transform: translateX(0);
+}
+
+.alert-container h6 {
+    color: #007acc;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Price Alert Styles */
+.price-alert {
+    background: #111111;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+.price-alert.fadeOut {
+    animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+/* Alert Layout */
+.alert-single-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.alert-symbol-small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.alert-symbol-small .icon {
+    font-size: 0.7rem;
+    margin-right: 0.4rem;
+}
+
+.alert-ltp {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.alert-ltp .high-price {
+    color: #00ff88;
+    font-weight: 600;
+}
+
+.alert-ltp .low-price {
+    color: #ff4444;
+    font-weight: 600;
+}
+
+.price-alert.high { border-left-color: #00ff88; }
+.price-alert.low { border-left-color: #ff4444; }
+
+/* Premium Break Table Styling */
+#ltpBreakTable tbody tr {
+    background: #111111;
+    border-radius: 8px;
+    margin-bottom: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+#ltpBreakTable tbody tr:hover {
+    background: #1a1a1a;
+    transform: translateY(-1px);
+}
+
+#ltpBreakTable tbody tr:hover td:first-child {
+    border-left-color: #007acc;
+}
+
+/* Break Level Colors */
+#ltpBreakTable tbody tr td.text-success {
+    color: #00ff88 !important;
+    font-weight: 600;
+}
+
+#ltpBreakTable tbody tr td.text-danger {
+    color: #ff4444 !important;
+    font-weight: 600;
+}
+
+#ltpBreakTable tbody tr td.text-warning {
+    color: #ffaa00 !important;
+    font-weight: 600;
+}
+
+#ltpBreakTable tbody tr td.text-info {
+    color: #007acc !important;
+    font-weight: 600;
+}
+
+/* Break Table Structure */
+#ltpBreakTable {
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+
+#ltpBreakTable tbody tr td {
+    border: none;
+    padding: 0.75rem;
+    font-size: inherit;
+    color: #ffffff;
+}
+
+#ltpBreakTable tbody tr td:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-left: 3px solid #333333;
+    transition: border-left-color 0.3s ease;
+}
+
+#ltpBreakTable tbody tr td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.alert-symbol {
+    font-weight: 600;
+    color: #007acc;
+}
+
+.alert-type {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.alert-price {
+    font-weight: 600;
+    font-family: "HoloLens MDL2 Assets", "Segoe MDL2 Assets", sans-serif;
+}
+
+/* Mobile Alert Responsiveness */
+@media (max-width: 768px) {
+    .alert-container {
+        width: 320px;
+        left: 15px;
+        transform: translateX(-110%);
+    }
+
+    .alert-container.show {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .alert-container {
+        width: calc(100vw - 30px);
+        left: 15px;
+        transform: translateX(-110%);
+    }
+
+    .alert-container.show {
+        transform: translateX(0);
+    }
+}
+
+/* Table Column Responsive Sizing */
+.symbol-col { width: 80px; }
+.ltp-col { width: 70px; }
+.break-col { width: 90px; }
+.pdh-col { width: 60px; }
+.pdl-col { width: 60px; }
+.wkh-col { width: 60px; }
+.wkl-col { width: 60px; }
+
+@media (max-width: 768px) {
+    .symbol-col { width: 60px; min-width: 50px; }
+    .ltp-col { width: 55px; min-width: 45px; }
+    .break-col { width: 70px; min-width: 60px; }
+    .pdh-col { width: 50px; min-width: 40px; }
+    .pdl-col { width: 50px; min-width: 40px; }
+    .wkh-col { width: 50px; min-width: 40px; }
+    .wkl-col { width: 50px; min-width: 40px; }
+}
+
+@media (max-width: 480px) {
+    .symbol-col { width: 45px; min-width: 40px; font-size: 0.65rem !important; }
+    .ltp-col { width: 40px; min-width: 35px; font-size: 0.6rem !important; }
+    .break-col { width: 50px; min-width: 45px; font-size: 0.6rem !important; }
+    .pdh-col { width: 35px; min-width: 30px; font-size: 0.55rem !important; }
+    .pdl-col { width: 35px; min-width: 30px; font-size: 0.55rem !important; }
+    .wkh-col { width: 35px; min-width: 30px; font-size: 0.55rem !important; }
+    .wkl-col { width: 35px; min-width: 30px; font-size: 0.55rem !important; }
+}
+
+/* Premium Scrollbar Styling */
+.alert-container * {
+    box-sizing: border-box;
+}
+
+.alert-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.alert-container::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-radius: 3px;
+}
+
+.alert-container::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 3px;
+}
+
+.alert-container::-webkit-scrollbar-thumb:hover {
+    background: #444444;
+}
+
+/* Additional Premium Enhancements */
+.navbar {
+    background: #000000 !important;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+}
+
+/* Input Field Styling */
+input, select, textarea {
+    background: #111111 !important;
+    border: 1px solid #333333 !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #007acc !important;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2) !important;
+}
+
+/* Chart Container Enhancements */
+.chart-container {
+    background: #0a0a0a;
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    padding: 1rem;
+}
+
+/* Index Card Premium Styling */
+.index-card {
+    background: #0a0a0a !important;
+    border: 1px solid #1a1a1a !important;
+    border-radius: 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+.index-card:hover {
+    border-color: #333333 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* Volume Profile Pagination Dots */
+.pagination-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.pagination-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(100, 150, 200, 0.4);
+    border: 2px solid rgba(100, 150, 200, 0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.pagination-dot:hover {
+    background: rgba(100, 150, 200, 0.7);
+    border-color: rgba(100, 150, 200, 0.9);
+    transform: scale(1.1);
+}
+
+.pagination-dot.active {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border-color: #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    transform: scale(1.2);
+}
+
+.pagination-dot.active::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.pagination-info {
+    color: rgba(200, 200, 200, 0.8);
+    font-size: 0.75rem;
+}
+
+/* Custom Responsive Layout for Mobile and Desktop */
+
+/* Progress bars: 10 total - 5 per row on mobile, all in single row on desktop */
+.progress-bar-mobile {
+    flex: 0 0 auto;
+}
+
+/* Desktop: 10 progress bars in single row */
+@media (min-width: 992px) {
+    .progress-bar-mobile {
+        width: 10%; /* 10 bars = 100% / 10 = 10% each */
+    }
+}
+
+/* Mobile: 5 progress bars per row */
+@media (max-width: 991.98px) {
+    .progress-bar-mobile {
+        width: 20%; /* 5 per row = 100% / 5 = 20% */
+    }
+}
+
+/* F&O Summary cards: 14 total - 7 per row on mobile, all in single row on desktop */
+.summary-card-mobile {
+    flex: 0 0 auto;
+}
+
+/* Desktop: 14 F&O summary cards in single row */
+@media (min-width: 992px) {
+    .summary-card-mobile {
+        width: calc(100% / 14); /* 14 cards = 100% / 14 = ~7.14% each */
+    }
+}
+
+/* Mobile: 7 F&O summary cards per row */
+@media (max-width: 991.98px) {
+    .summary-card-mobile {
+        width: calc(100% / 7); /* 7 per row = ~14.28% */
+    }
+}
