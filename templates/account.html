@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - MG Dashboard</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N0J406PHQN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N0J406PHQN');
+    </script>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .account-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .account-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .account-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .account-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .account-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .subscription-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        
+        .badge-free {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .badge-premium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .badge-expired {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .account-body {
+            padding: 40px 30px;
+        }
+        
+        .info-section {
+            margin-bottom: 30px;
+        }
+        
+        .info-section h3 {
+            color: #667eea;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-label i {
+            margin-right: 10px;
+            color: #667eea;
+            width: 20px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-custom {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-dashboard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-dashboard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-upgrade {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(240, 147, 251, 0.4);
+            color: white;
+        }
+        
+        .btn-logout {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-home {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: slideDown 0.5s ease;
+        }
+        
+        .success-message i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .success-message h4 {
+            margin: 10px 0;
+            font-weight: 700;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .account-container {
+                margin: 20px auto;
+                padding: 10px;
+            }
+            
+            .account-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .info-value {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="account-container">
+        <div class="account-card">
+            <!-- Success Message (shown after sign-up or payment) -->
+            {% if show_success %}
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <h4>🎉 Account Created Successfully!</h4>
+                <p>Welcome to MG Dashboard. Your account is now active.</p>
+            </div>
+            {% endif %}
+            
+            <!-- Account Header -->
+            <div class="account-header">
+                <h1><i class="fas fa-user-circle"></i> My Account</h1>
+                <p>{{ current_user.email }}</p>
+                
+                <!-- Subscription Badge -->
+                {% set sub_status = current_user.get_subscription_status() %}
+                {% if sub_status.status == 'active' %}
+                    {% if current_user.subscription_period == 'free' %}
+                        <span class="subscription-badge badge-free">
+                            <i class="fas fa-gift"></i> Free Trial Member
+                        </span>
+                    {% else %}
+                        <span class="subscription-badge badge-premium">
+                            <i class="fas fa-crown"></i> Premium Member
+                        </span>
+                    {% endif %}
+                {% elif sub_status.type == 'expired' %}
+                    <span class="subscription-badge badge-expired">
+                        <i class="fas fa-times-circle"></i> Subscription Expired
+                    </span>
+                {% else %}
+                    <span class="subscription-badge badge-expired">
+                        <i class="fas fa-info-circle"></i> No Active Plan
+                    </span>
+                {% endif %}
+            </div>
+            
+            <!-- Account Body -->
+            <div class="account-body">
+                <!-- Personal Information -->
+                <div class="info-section">
+                    <h3><i class="fas fa-user"></i> Personal Information</h3>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-id-card"></i>
+                            Username
+                        </div>
+                        <div class="info-value">{{ current_user.username }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </div>
+                        <div class="info-value">{{ current_user.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-phone"></i>
+                            Mobile Number
+                        </div>
+                        <div class="info-value">{{ current_user.mobile if current_user.mobile else 'Not provided' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Member Since
+                        </div>
+                        <div class="info-value">{{ current_user.created_at.strftime('%B %d, %Y') if current_user.created_at else 'N/A' }}</div>
+                    </div>
+                </div>
+                
+                <!-- Subscription Information -->
+                <div class="info-section">
+                    <h3><i class="fas fa-crown"></i> Subscription Details</h3>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-tag"></i>
+                            Plan Type
+                        </div>
+                        <div class="info-value">
+                            {% if current_user.subscription_period == 'free' %}
+                                Free Trial (3 Days)
+                            {% elif current_user.subscription_period == 'monthly' %}
+                                Short Term (1 Month)
+                            {% elif current_user.subscription_period == 'quarterly' %}
+                                Mid Term (3 Months)
+                            {% elif current_user.subscription_period == 'half_yearly' %}
+                                Long Term (6 Months)
+                            {% else %}
+                                {{ current_user.subscription_period|title }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar-check"></i>
+                            Start Date
+                        </div>
+                        <div class="info-value">{{ current_user.subscription_start.strftime('%B %d, %Y') if current_user.subscription_start else 'Not started' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar-times"></i>
+                            Expiry Date
+                        </div>
+                        <div class="info-value">{{ current_user.subscription_end.strftime('%B %d, %Y') if current_user.subscription_end else 'Not set' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-check-circle"></i>
+                            Status
+                        </div>
+                        <div class="info-value">
+                            {% set sub_status = current_user.get_subscription_status() %}
+                            {% if sub_status.status == 'active' %}
+                                <span style="color: #28a745; font-weight: 700;">Active ✓</span>
+                            {% elif sub_status.type == 'expired' %}
+                                <span style="color: #dc3545; font-weight: 700;">Expired ✗</span>
+                            {% else %}
+                                <span style="color: #ff9800; font-weight: 700;">No Active Plan</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="{{ url_for('landing') }}" class="btn btn-custom btn-home">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-custom btn-dashboard">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    {% if not current_user.is_subscription_active() or current_user.subscription_period == 'free' %}
+                    <a href="{{ url_for('landing') }}#pricing" class="btn btn-custom btn-upgrade">
+                        <i class="fas fa-rocket"></i> Upgrade
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('google_auth.google_logout') }}" class="btn btn-custom btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
