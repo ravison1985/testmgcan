@@ -1,0 +1,100 @@
+modules = ["python-3.11", "postgresql-16", "python3"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["cargo", "freetype", "glibcLocales", "lcms2", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload --timeout 300 --worker-class gthread --threads 4 --workers 1 main:app"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 32923
+externalPort = 6800
+
+[[ports]]
+localPort = 32993
+externalPort = 3000
+
+[[ports]]
+localPort = 33901
+externalPort = 8081
+
+[[ports]]
+localPort = 35333
+externalPort = 5173
+
+[[ports]]
+localPort = 35363
+externalPort = 8099
+
+[[ports]]
+localPort = 35477
+externalPort = 5000
+
+[[ports]]
+localPort = 35675
+externalPort = 8000
+
+[[ports]]
+localPort = 36305
+externalPort = 8080
+
+[[ports]]
+localPort = 37125
+externalPort = 4200
+
+[[ports]]
+localPort = 37941
+externalPort = 6000
+
+[[ports]]
+localPort = 40199
+externalPort = 8008
+
+[[ports]]
+localPort = 41725
+externalPort = 3002
+
+[[ports]]
+localPort = 43719
+externalPort = 9000
+
+[[ports]]
+localPort = 43965
+externalPort = 3003
+
+[[ports]]
+localPort = 46069
+externalPort = 3001
+
+[agent]
+integrations = ["python_log_in_with_replit:1.0.0", "python_database:1.0.0"]
