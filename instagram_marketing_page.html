@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MG F&O Stocks Dashboard - Be your own analyst</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container-fluid {
+            padding: 8px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .logo {
+            text-align: center;
+            margin: 5px 0 8px 0;
+        }
+        
+        .logo h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+        }
+        
+        .logo .subtitle {
+            font-size: 0.6rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        .headline {
+            text-align: center;
+            margin: 8px 0;
+        }
+        
+        .headline h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+        
+        .headline .highlight {
+            color: #4a90e2;
+        }
+        
+        .headline p {
+            font-size: 0.65rem;
+            line-height: 1.2;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            margin: 6px 0;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        
+        .feature-card {
+            background: #111;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #333;
+            transition: border-color 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: #444;
+        }
+        
+        .feature-icon {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 4px auto;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #4a90e2;
+        }
+        
+        .feature-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .feature-desc {
+            font-size: 0.6rem;
+            opacity: 0.8;
+        }
+        
+        .special-feature {
+            background: #111;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 8px 0;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .special-feature h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .special-feature p {
+            font-size: 0.65rem;
+            opacity: 0.9;
+        }
+        
+        .social-proof {
+            text-align: center;
+            margin: 6px 0;
+            opacity: 0.8;
+        }
+        
+        .social-proof i {
+            margin: 0 3px;
+            font-size: 0.8rem;
+        }
+        
+        .contact-section {
+            background: #111;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 8px 0;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .contact-section h4 {
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+        }
+        
+        @media (max-width: 576px) {
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            
+            .container-fluid {
+                padding: 8px;
+            }
+            
+            .contact-info {
+                flex-direction: row;
+                gap: 10px;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+        
+        .floating-action:hover {
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .trial-tag {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: inline-block;
+            margin: 5px 0;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3); }
+            to { box-shadow: 0 2px 15px rgba(255, 215, 0, 0.6); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Logo -->
+        <div class="logo">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <img src="data:image/png;base64,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" alt="MG Logo" style="height: 50px; width: 50px;">
+                <div>
+                    <h1 style="margin: 0; font-size: 1.1rem;">MG F&O Stocks Dashboard</h1>
+                    <div class="subtitle">Be your own analyst.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Headline -->
+        <div class="headline">
+            <div class="trial-tag">3 Days Free Trial*</div>
+            <h2>Struggling with <span class="highlight">Technical Analysis?</span></h2>
+            <p>Get instant alerts of New High and New Low, Camarilla CPR Fibonacci instant level break signals. RVOL analysis and volume profile insights.</p>
+            <a href="#contact" class="cta-button pulse">Get Started Now</a>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="feature-title">New High/Low Alerts</div>
+                <div class="feature-desc">Instant price breakout signals</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="feature-title">Camarilla CPR</div>
+                <div class="feature-desc">Fibonacci level breaks</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="feature-title">RVOL Analysis</div>
+                <div class="feature-desc">Relative volume insights</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="feature-title">LEVELS SCAN</div>
+                <div class="feature-desc">Auto-detect key levels</div>
+            </div>
+        </div>
+        
+        
+        <!-- Special Feature -->
+        <div class="special-feature">
+            <h3>🎯 AI-Powered Insights</h3>
+            <p>Advanced algorithms deliver instant Camarilla CPR, Fibonacci level break signals, and RVOL analysis for precise market timing. No more guesswork!</p>
+        </div>
+        
+        <!-- Social Proof -->
+        <div class="social-proof">
+            <div>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+            <div style="font-size: 0.65rem; margin-top: 3px;">Professional-grade analytics</div>
+        </div>
+        
+        <!-- Contact Section -->
+        <div class="contact-section" id="contact">
+            <h4>Ready to Transform Your Trading?</h4>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>marketguldasta@gmail.com</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 6px;">
+                <a href="#" class="cta-button">Visit Website</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; padding: 5px; font-size: 0.55rem; opacity: 0.6;">
+            © 2025 MG F&O Stocks Dashboard. Professional Analytics Platform.
+        </div>
+    </div>
+    
+    
+    <script>
+        // Simple scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        document.querySelectorAll('.feature-card, .special-feature').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

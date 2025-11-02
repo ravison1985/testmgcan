@@ -1,0 +1,28 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "email-validator>=2.3.0",
+    "fyers-apiv3>=3.1.7",
+    "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.10",
+    "oauthlib>=3.3.1",
+    "pyjwt>=2.10.1",
+    "schedule>=1.2.2",
+    "sqlalchemy>=2.0.43",
+    "pytz>=2025.2",
+    "flask-login==0.6.2",
+    "flask-dance==7.0.0",
+    "flask-sqlalchemy==3.0.5",
+    "werkzeug==2.3.7",
+    "flask>=2.3.3",
+    "jinja2==3.1.2",
+    "razorpay>=2.0.0",
+    "requests>=2.31.0",
+    "pillow>=11.3.0",
+    "numpy>=2.3.3",
+    "pandas>=2.3.3",
+    "cryptography>=46.0.3",
+]
